@@ -1,0 +1,26 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="Login">
+        <EditTextPreference
+            android:defaultValue="https://cloud.example.com"
+            android:key="server"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="Address of your nextcloud server"
+            android:title="Nextcloud address" />
+        <EditTextPreference
+            android:key="password"
+            android:title="Password"
+            android:summary="Your password"
+            android:inputType="textWebPassword"
+            android:password="true"
+            />
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="login"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="Your username"
+            android:title="Login" />
+    </PreferenceCategory>
+</PreferenceScreen>
