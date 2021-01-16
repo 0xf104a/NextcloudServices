@@ -69,7 +69,7 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject>{
             //OutputStream os = conn.getOutputStream();
             //os.close();
             String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> https://cloud.p01ar.net/ocs/v2.php/apps/notifications/api/v2/notifications -- "+responseCode);
+            Log.d(TAG, "--> https://"+services[0].server+"/ocs/v2.php/apps/notifications/api/v2/notifications -- "+responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder buffer = new StringBuilder("");
@@ -222,7 +222,6 @@ public class NotificationService extends Service {
 
                 @Override
                 public void run() {
-                    // display toast
                     username=getPreference("login");
                     password=getPreference("password");
                     server=getPreference("server");
