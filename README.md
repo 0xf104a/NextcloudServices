@@ -1,7 +1,7 @@
 # Nextcloud services
 Nextcloud services is a simple app to poll notifications from your Nextcloud server. 
 ## Screenshots
-![Screenshot 1](https://github.com/Andrewerr/NextcloudServices/raw/main/img/Screenshot_20210116-121514_Nextcloud_Services.png)
+![Screenshot 1](https://github.com/Andrewerr/NextcloudServices/raw/main/img/Screenshot_scaled.png)
 ## Instructions
 Currently login available only by putting credentials into app. So to login into your Nextcloud via this app follow steps below:
 * At your Nextcloud  open settings and navigate to "Security" 
