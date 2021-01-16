@@ -1,5 +1,5 @@
 # Nextcloud services
-Nextcloud services is a simple app to poll notifications from your Nextcloud server. 
+Nextcloud services is a simple app to poll notifications from your Nextcloud server without using proprietary Google Play services. 
 ## Screenshots
 ![Screenshot 1](https://github.com/Andrewerr/NextcloudServices/raw/main/img/Screenshot_scaled.png)
 ## Instructions
