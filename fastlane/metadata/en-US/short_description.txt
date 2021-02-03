@@ -1,0 +1,1 @@
+Simple fetcher of notification from Nextcloud for devices without Google Play services
