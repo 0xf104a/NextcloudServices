@@ -135,6 +135,22 @@ public class NotificationService extends Service {
                 .build();
         mNotificationManager.notify(id, notification);
     }
+    public static String prettifyChannelName(String Name){
+        if(Name.equals("updatenotification")){
+            return "Update notifications";
+        }
+        if(Name.equals("spreed")){
+            return "Nextcloud talk";
+        }
+        String[] parts = Name.split("_");
+        StringBuilder nice_name= new StringBuilder();
+        for (String part : parts) {
+            nice_name.append(part);
+        }
+        String result=nice_name.toString();
+        result=Character.toUpperCase(result.charAt(0)) + result.substring(1);
+        return result;
+    }
     public void onPollFinished(JSONObject response){
         synchronized (active_notifications){
             try {
@@ -150,7 +166,8 @@ public class NotificationService extends Service {
                         Log.d(TAG,"Sending notification:"+notification_id);
                         active_notifications.add(notification_id);
                         notificationSend(notification_id,notification.getString("subject"),
-                                notification.getString("message"),notification.getString("app"));
+                                notification.getString("message"),
+                                prettifyChannelName(notification.getString("app")));
                     }
                 }
                 NotificationManager mNotificationManager=
