@@ -1,0 +1,2 @@
+- Added prettifier for Nextcloud app names(from beta2 on GitHub)
+- Added Fastlane changelog
