@@ -178,6 +178,7 @@ public class NotificationService extends Service {
                     active_notifications.remove(remove_id);
                 }
 
+
             }catch (Exception e){
                 e.printStackTrace();
             }
