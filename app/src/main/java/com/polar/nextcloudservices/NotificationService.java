@@ -121,14 +121,14 @@ public class NotificationService extends Service {
         }
     }
 
-    private void notificationSend(int id,String title, String text, String app){
+    private void notificationSend(int id,String title, String text, String app, String app_name){
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (android.os.Build.VERSION.SDK_INT  >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(app, app, NotificationManager.IMPORTANCE_HIGH);
             mNotificationManager.createNotificationChannel(channel);
         }
         Notification notification = new NotificationCompat.Builder(getBaseContext(),app)
-                .setSmallIcon(iconByApp(app))
+                .setSmallIcon(iconByApp(app_name))
                 .setContentTitle(title)
                 .setAutoCancel(true)
                 .setContentText(text)
@@ -167,7 +167,8 @@ public class NotificationService extends Service {
                         active_notifications.add(notification_id);
                         notificationSend(notification_id,notification.getString("subject"),
                                 notification.getString("message"),
-                                prettifyChannelName(notification.getString("app")));
+                                prettifyChannelName(notification.getString("app")),
+                                notification.getString("app"));
                     }
                 }
                 NotificationManager mNotificationManager=
