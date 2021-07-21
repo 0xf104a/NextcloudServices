@@ -1,4 +1,10 @@
 # Nextcloud services
+[![Java CI with Gradle](https://github.com/Andrewerr/NextcloudServices/actions/workflows/gradle.yml/badge.svg)](https://github.com/Andrewerr/NextcloudServices/actions/workflows/gradle.yml)
+[![F-Droid build](https://img.shields.io/f-droid/v/com.polar.nextcloudservices.svg?logo=f-droid)](https://f-droid.org/wiki/page/com.polar.nextcloudservices/lastbuild)
+![Github tag](https://img.shields.io/github/v/tag/Andrewerr/NextcloudServices?logo=github)
+<br>
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75">](https://f-droid.org/en/packages/com.polar.nextcloudservices/)
+<br>
 Nextcloud services is a simple app to poll notifications from your Nextcloud server without using proprietary Google Play services. 
 ## Screenshots
 ![Screenshot 1](https://github.com/Andrewerr/NextcloudServices/raw/main/img/Screenshot_scaled.png)
