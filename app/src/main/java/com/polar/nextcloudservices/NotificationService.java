@@ -14,6 +14,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.app.Notification;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Network;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageInfo;
+import android.os.Binder;
 
 
 import androidx.annotation.RequiresApi;
@@ -35,41 +41,44 @@ import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.net.*;
+
 import android.util.Base64;
 
 
 import javax.net.ssl.HttpsURLConnection;
 
-class PollTask extends AsyncTask<NotificationService, Void, JSONObject>{
+class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     private final String TAG = "NotifcationService.PollTask";
-    private Exception exception;
-    private String getAuth(String user, String password){
+    private final String UA = "NextcloudServices/" + BuildConfig.VERSION_NAME;
+
+    private String getAuth(String user, String password) {
         //Log.d("NotificationService.PollTask",user+":"+password);
-        return Base64.encodeToString((user+":"+password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT).toString();
+        return Base64.encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT).toString();
     }
+
     @Override
-    protected JSONObject doInBackground(NotificationService... services){
+    protected JSONObject doInBackground(NotificationService... services) {
         try {
-            String endpoint="https://"+services[0].server+"/ocs/v2.php/apps/notifications/api/v2/notifications";
-            Log.d(TAG,endpoint);
+            String endpoint = "https://" + services[0].server + "/ocs/v2.php/apps/notifications/api/v2/notifications";
+            Log.d(TAG, endpoint);
             URL url = new URL(endpoint);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-            conn.setRequestProperty("Authorization", "Basic "+getAuth(services[0].username,services[0].password));
+            conn.setRequestProperty("Authorization", "Basic " + getAuth(services[0].username, services[0].password));
             conn.setRequestProperty("Host", services[0].server);
-            conn.setRequestProperty("User-agent","NextcloudServices/1.0a");
-            conn.setRequestProperty("Accept","application/json");
+            conn.setRequestProperty("User-agent", UA);
+            conn.setRequestProperty("Accept", "application/json");
             conn.setRequestMethod("GET");
             conn.setReadTimeout(60000);
             conn.setConnectTimeout(5000);
             //conn.setRequestMethod("GET");
-            Log.d("NotificationPoller.PollTask",conn.getRequestProperties().toString());
+            Log.d(TAG, conn.getRequestProperties().toString());
             //conn.setDoOutput(true);
             conn.setDoInput(true);
 
             //OutputStream os = conn.getOutputStream();
             //os.close();
             String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> https://"+services[0].server+"/ocs/v2.php/apps/notifications/api/v2/notifications -- "+responseCode);
+            Log.d(TAG, "--> https://" + services[0].server + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder buffer = new StringBuilder("");
@@ -78,56 +87,88 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject>{
                 buffer.append(line);
             }
             in.close();
-            Log.d(TAG,buffer.toString());
+            Log.d(TAG, buffer.toString());
             JSONObject response = new JSONObject(buffer.toString());
             services[0].onPollFinished(response);
             return response;
-        }catch (IOException e) {
-            Log.e(TAG,"Error while getting response");
-            e.printStackTrace();
-            return null;
-        }catch (JSONException e){
+        } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");
             e.printStackTrace();
+            services[0].status = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
             return null;
-        }catch (Exception e){
+        } catch (java.io.FileNotFoundException e){
             e.printStackTrace();
+            services[0].status = "Disconnected: File not found: check your credentials and Nextcloud instance.";
+            return null;
+        } catch (IOException e) {
+            Log.e(TAG, "Error while getting response");
+            e.printStackTrace();
+            services[0].status = "Disconnected: I/O error: "+e.getLocalizedMessage();
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            services[0].status = "Disconnected: "+e.getLocalizedMessage();
             return null;
         }
     }
 }
 
-public class NotificationService extends Service {
+public class  NotificationService extends Service {
     // constant
     public static final long NOTIFY_INTERVAL = 3 * 1000; // 3 seconds
-    public static final String TAG ="NotificationService";
-    public String server="";
-    public String username="";
-    public String password="";
+    public static final String TAG = "NotificationService";
+    public String server = "";
+    public String username = "";
+    public String password = "";
+    public String status = "Disconnected";
+    private Binder binder;
 
-    private final HashSet<Integer> active_notifications=new HashSet<>();
+    private final HashSet<Integer> active_notifications = new HashSet<>();
     // run on another Thread to avoid crash
     private Handler mHandler = new Handler();
     // timer handling
     private Timer mTimer = null;
 
-    public int iconByApp(String appName){
-        if(appName.equals("spreed")){
+    public String getStatus() {
+        return this.status;
+    }
+
+    public static boolean checkInternetConnection(Context context) {
+        ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivity == null) {
+            return false;
+        }  else {
+            Network[] networks = connectivity.getAllNetworks();
+            for (Network network : networks) {
+                NetworkInfo info = connectivity.getNetworkInfo(network);
+                if(info != null) {
+                    if (info.getState() == NetworkInfo.State.CONNECTED) {
+                        return true;
+                    }
+                }
+            }
+            final NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnected();
+        }
+    }
+
+    public int iconByApp(String appName) {
+        if (appName.equals("spreed")) {
             return R.drawable.ic_icon_foreground;
-        }else if(appName.equals("deck")){
+        } else if (appName.equals("deck")) {
             return R.drawable.ic_deck;
-        }else{
+        } else {
             return R.drawable.ic_logo;
         }
     }
 
-    private void notificationSend(int id,String title, String text, String app, String app_name){
+    private void notificationSend(int id, String title, String text, String app, String app_name) {
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (android.os.Build.VERSION.SDK_INT  >= android.os.Build.VERSION_CODES.O) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(app, app, NotificationManager.IMPORTANCE_HIGH);
             mNotificationManager.createNotificationChannel(channel);
         }
-        Notification notification = new NotificationCompat.Builder(getBaseContext(),app)
+        Notification notification = new NotificationCompat.Builder(getBaseContext(), app)
                 .setSmallIcon(iconByApp(app_name))
                 .setContentTitle(title)
                 .setAutoCancel(true)
@@ -135,59 +176,63 @@ public class NotificationService extends Service {
                 .build();
         mNotificationManager.notify(id, notification);
     }
-    public static String prettifyChannelName(String Name){
-        if(Name.equals("updatenotification")){
+
+    public static String prettifyChannelName(String Name) {
+        if (Name.equals("updatenotification")) {
             return "Update notifications";
         }
-        if(Name.equals("spreed")){
+        if (Name.equals("spreed")) {
             return "Nextcloud talk";
         }
         String[] parts = Name.split("_");
-        StringBuilder nice_name= new StringBuilder();
+        StringBuilder nice_name = new StringBuilder();
         for (String part : parts) {
             nice_name.append(part);
         }
-        String result=nice_name.toString();
-        result=Character.toUpperCase(result.charAt(0)) + result.substring(1);
+        String result = nice_name.toString();
+        result = Character.toUpperCase(result.charAt(0)) + result.substring(1);
         return result;
     }
-    public void onPollFinished(JSONObject response){
-        synchronized (active_notifications){
+
+    public void onPollFinished(JSONObject response) {
+        synchronized (active_notifications) {
             try {
-                HashSet<Integer> remove_notifications=new HashSet<>(active_notifications);
+                HashSet<Integer> remove_notifications = new HashSet<>(active_notifications);
                 int notification_id;
                 JSONArray notifications = response.getJSONObject("ocs").getJSONArray("data");
-                for(int i=0; i<notifications.length(); ++i){
+                for (int i = 0; i < notifications.length(); ++i) {
                     JSONObject notification = notifications.getJSONObject(i);
-                    notification_id=notification.getInt("notification_id");
+                    notification_id = notification.getInt("notification_id");
                     remove_notifications.remove(notification_id);
-                    if(!active_notifications.contains(notification_id)){
+                    if (!active_notifications.contains(notification_id)) {
                         //Handle notification
-                        Log.d(TAG,"Sending notification:"+notification_id);
+                        Log.d(TAG, "Sending notification:" + notification_id);
                         active_notifications.add(notification_id);
-                        notificationSend(notification_id,notification.getString("subject"),
+                        notificationSend(notification_id, notification.getString("subject"),
                                 notification.getString("message"),
                                 prettifyChannelName(notification.getString("app")),
                                 notification.getString("app"));
                     }
                 }
-                NotificationManager mNotificationManager=
-                        (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+                NotificationManager mNotificationManager =
+                        (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 for (int remove_id : remove_notifications) {
                     Log.d(TAG, "Removing notification " + Integer.valueOf(remove_id).toString());
                     mNotificationManager.cancel(remove_id);
                     active_notifications.remove(remove_id);
                 }
+                this.status = "Connected";
 
-
-            }catch (Exception e){
+            } catch (Exception e) {
+                this.status = "Disconnected: " + e.getLocalizedMessage();
                 e.printStackTrace();
             }
         }
     }
+
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return binder;
     }
 
     @Override
@@ -200,11 +245,11 @@ public class NotificationService extends Service {
             mTimer = new Timer();
         }
         // schedule task
-        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
+        mTimer.scheduleAtFixedRate(new PollTimerTask(), 0, NOTIFY_INTERVAL);
         //Create background service notifcation
-        String channelId="__internal_backgorund_polling";
-        NotificationManager mNotificationManager=
-                (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        String channelId = "__internal_backgorund_polling";
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelId, "Background polling", NotificationManager.IMPORTANCE_LOW);
             mNotificationManager.createNotificationChannel(channel);
@@ -225,14 +270,23 @@ public class NotificationService extends Service {
 
         //mNotificationManager.notify(1526756640,mNotification);
         startForeground(1, mNotification);
+        binder = new Binder();
 
     }
-    private String getPreference(String key){
+
+    private String getPreference(String key) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getString(key,"<none>");
+        return sharedPreferences.getString(key, "<none>");
     }
 
-    class TimeDisplayTimerTask extends TimerTask {
+
+    public class Binder extends android.os.Binder {
+        public String getServiceStatus() {
+            return getStatus();
+        }
+    }
+
+    class PollTimerTask extends TimerTask {
 
         @Override
         public void run() {
@@ -241,11 +295,14 @@ public class NotificationService extends Service {
 
                 @Override
                 public void run() {
-                    username=getPreference("login");
-                    password=getPreference("password");
-                    server=getPreference("server");
-                    Log.d(TAG,getDateTime());
-                    new PollTask().execute(NotificationService.this);
+                    username = getPreference("login");
+                    password = getPreference("password");
+                    server = getPreference("server");
+                    if(checkInternetConnection(getApplicationContext())) {
+                        new PollTask().execute(NotificationService.this);
+                    }else{
+                        status = "Disconnected: no network available";
+                    }
                 }
 
             });
@@ -256,6 +313,7 @@ public class NotificationService extends Service {
             SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
             return sdf.format(new Date());
         }
+
 
     }
 }

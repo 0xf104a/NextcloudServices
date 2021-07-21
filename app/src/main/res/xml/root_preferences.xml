@@ -12,7 +12,7 @@
             android:key="password"
             android:title="Password"
             android:summary="Your password"
-            android:inputType="textWebPassword"
+            android:inputType="textPassword|textWebPassword"
             android:password="true"
             />
         <EditTextPreference
@@ -23,4 +23,17 @@
             android:summary="Your username"
             android:title="Login" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Status">
+
+    </PreferenceCategory>
+    <EditTextPreference
+        android:defaultValue="Default value"
+        android:enabled="false"
+        android:key="status"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="Disconnected"
+        android:id="@+id/status"
+        android:title="Status"
+        app:enabled="false" />
 </PreferenceScreen>

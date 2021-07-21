@@ -1,0 +1,2 @@
+- Added status information to the app
+- Added connectivity check
