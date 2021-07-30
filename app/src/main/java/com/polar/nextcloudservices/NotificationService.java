@@ -59,12 +59,18 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
         try {
-            String endpoint = "https://" + services[0].server + "/ocs/v2.php/apps/notifications/api/v2/notifications";
+            String baseUrl = services[0].server;
+            if (baseUrl.startsWith("https://"))
+                baseUrl = baseUrl.substring(8);
+            if (baseUrl.startsWith("http://"))
+                baseUrl = baseUrl.substring(7);
+
+            String endpoint = "https://" + baseUrl + "/ocs/v2.php/apps/notifications/api/v2/notifications";
             Log.d(TAG, endpoint);
             URL url = new URL(endpoint);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setRequestProperty("Authorization", "Basic " + getAuth(services[0].username, services[0].password));
-            conn.setRequestProperty("Host", services[0].server);
+            conn.setRequestProperty("Host", url.getHost());
             conn.setRequestProperty("User-agent", UA);
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestMethod("GET");
@@ -78,7 +84,7 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
             //OutputStream os = conn.getOutputStream();
             //os.close();
             String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> https://" + services[0].server + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
+            Log.d(TAG, "--> https://" + baseUrl + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder buffer = new StringBuilder("");
