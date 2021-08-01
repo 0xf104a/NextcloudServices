@@ -24,3 +24,4 @@ You can build this app using android studio
 ## Credits
 * [Deck Android app](https://github.com/stefan-niedermann/nextcloud-deck) for deck logo
 * [Nextcloud app](https://github.com/nextcloud/android/) for Nextcloud logo and spreed(talk) logo
+* [@invissvenska](https://github.com/invissvenska) for [NumberPickerPreference](https://github.com/invissvenska/NumberPickerPreference/) (licensed under LGPL-3.0)
