@@ -1,0 +1,3 @@
+- Fixed back arrow in main activity
+- Added possibilty to use insecure connection
+- Added possibiliy to set polling interval
