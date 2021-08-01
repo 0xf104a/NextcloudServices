@@ -10,8 +10,8 @@ android {
         applicationId "com.polar.nextcloudservices"
         minSdkVersion 25
         targetSdkVersion 29
-        versionCode 7
-        versionName '1.0-beta7'
+        versionCode 8
+        versionName '1.0-beta8'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,4 +38,5 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation 'com.github.invissvenska:NumberPickerPreference:1.0.3'
 }

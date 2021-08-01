@@ -1,7 +1,6 @@
 
 package com.polar.nextcloudservices;
 
-import android.app.*;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.app.NotificationChannel;
@@ -17,12 +16,8 @@ import android.app.Notification;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Network;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageInfo;
-import android.os.Binder;
 
 
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 
@@ -37,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.net.*;
@@ -60,15 +54,20 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     protected JSONObject doInBackground(NotificationService... services) {
         try {
             String baseUrl = services[0].server;
-            if (baseUrl.startsWith("https://"))
-                baseUrl = baseUrl.substring(8);
-            if (baseUrl.startsWith("http://"))
-                baseUrl = baseUrl.substring(7);
+            String prefix = "https://";
+            if (services[0].useHttp) {
+                prefix = "http://";
+            }
 
-            String endpoint = "https://" + baseUrl + "/ocs/v2.php/apps/notifications/api/v2/notifications";
+            String endpoint = prefix + baseUrl + "/ocs/v2.php/apps/notifications/api/v2/notifications";
             Log.d(TAG, endpoint);
             URL url = new URL(endpoint);
-            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            HttpURLConnection conn;
+            if(services[0].useHttp) {
+                conn = (HttpURLConnection) url.openConnection();
+            }else{
+                conn = (HttpsURLConnection) url.openConnection();
+            }
             conn.setRequestProperty("Authorization", "Basic " + getAuth(services[0].username, services[0].password));
             conn.setRequestProperty("Host", url.getHost());
             conn.setRequestProperty("User-agent", UA);
@@ -102,32 +101,34 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
             e.printStackTrace();
             services[0].status = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
             return null;
-        } catch (java.io.FileNotFoundException e){
+        } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
             services[0].status = "Disconnected: File not found: check your credentials and Nextcloud instance.";
             return null;
         } catch (IOException e) {
             Log.e(TAG, "Error while getting response");
             e.printStackTrace();
-            services[0].status = "Disconnected: I/O error: "+e.getLocalizedMessage();
+            services[0].status = "Disconnected: I/O error: " + e.getLocalizedMessage();
             return null;
         } catch (Exception e) {
             e.printStackTrace();
-            services[0].status = "Disconnected: "+e.getLocalizedMessage();
+            services[0].status = "Disconnected: " + e.getLocalizedMessage();
             return null;
         }
     }
 }
 
-public class  NotificationService extends Service {
+public class NotificationService extends Service {
     // constant
-    public static final long NOTIFY_INTERVAL = 3 * 1000; // 3 seconds
+    public long pollingInterval = 3 * 1000; // 3 seconds
     public static final String TAG = "NotificationService";
     public String server = "";
     public String username = "";
     public String password = "";
     public String status = "Disconnected";
+    public boolean useHttp = false;
     private Binder binder;
+    private PollTimerTask task;
 
     private final HashSet<Integer> active_notifications = new HashSet<>();
     // run on another Thread to avoid crash
@@ -143,11 +144,11 @@ public class  NotificationService extends Service {
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity == null) {
             return false;
-        }  else {
+        } else {
             Network[] networks = connectivity.getAllNetworks();
             for (Network network : networks) {
                 NetworkInfo info = connectivity.getNetworkInfo(network);
-                if(info != null) {
+                if (info != null) {
                     if (info.getState() == NetworkInfo.State.CONNECTED) {
                         return true;
                     }
@@ -241,6 +242,14 @@ public class  NotificationService extends Service {
         return binder;
     }
 
+    public void updateTimer() {
+        task.cancel();
+        mTimer.purge();
+        mTimer = new Timer();
+        task = new PollTimerTask();
+        mTimer.scheduleAtFixedRate(task, 0, pollingInterval);
+    }
+
     @Override
     public void onCreate() {
         // cancel if already existed
@@ -251,7 +260,8 @@ public class  NotificationService extends Service {
             mTimer = new Timer();
         }
         // schedule task
-        mTimer.scheduleAtFixedRate(new PollTimerTask(), 0, NOTIFY_INTERVAL);
+        task = new PollTimerTask();
+        mTimer.scheduleAtFixedRate(task, 0, pollingInterval);
         //Create background service notifcation
         String channelId = "__internal_backgorund_polling";
         NotificationManager mNotificationManager =
@@ -285,6 +295,30 @@ public class  NotificationService extends Service {
         return sharedPreferences.getString(key, "<none>");
     }
 
+    private Integer getIntPreference(String key) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return sharedPreferences.getInt(key, Integer.MIN_VALUE);
+    }
+
+    private boolean getBoolPreference(String key, boolean fallback) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return sharedPreferences.getBoolean(key, fallback);
+    }
+
+    public void onPreferencesChange(){
+        int _pollingInterval = getIntPreference("polling_interval") * 1000;
+        if (_pollingInterval <= 0) {
+            Log.w(TAG, "Invalid polling interval! Setting to 3 seconds.");
+            _pollingInterval = 3 * 1000;
+        }
+
+        if (_pollingInterval != pollingInterval) {
+            Log.d(TAG,"Updating timer");
+            pollingInterval = _pollingInterval;
+            updateTimer();
+        }
+    }
+
 
     public class Binder extends android.os.Binder {
         public String getServiceStatus() {
@@ -304,9 +338,14 @@ public class  NotificationService extends Service {
                     username = getPreference("login");
                     password = getPreference("password");
                     server = getPreference("server");
-                    if(checkInternetConnection(getApplicationContext())) {
+                    useHttp = getBoolPreference("insecure_connection", false);
+
+                    //FIXME: Should call below method only when prefernces updated
+                    onPreferencesChange();
+
+                    if (checkInternetConnection(getApplicationContext())) {
                         new PollTask().execute(NotificationService.this);
-                    }else{
+                    } else {
                         status = "Disconnected: no network available";
                     }
                 }

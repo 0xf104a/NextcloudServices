@@ -17,9 +17,11 @@ import android.content.SharedPreferences;
 import android.content.Context;
 import android.app.ActivityManager;
 import android.widget.TabHost;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -33,19 +35,23 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreference;
 
+import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
+import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;
+
 
 class NotificationServiceConnection implements ServiceConnection {
     private final String TAG = "SettingsActivity.NotificationServiceConnection";
     private final SettingsActivity.SettingsFragment settings;
-    public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings){
+
+    public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings) {
         settings = _settings;
     }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        if(service instanceof NotificationService.Binder){
+        if (service instanceof NotificationService.Binder) {
             settings.setStatus(((NotificationService.Binder) service).getServiceStatus());
-        }else{
+        } else {
             Log.wtf(TAG, "Bad Binder type passed!");
             throw new RuntimeException("Expected NotificationService.Binder");
         }
@@ -56,25 +62,38 @@ class NotificationServiceConnection implements ServiceConnection {
         Log.w(TAG, "Service has disconnected.");
     }
 }
+
 public class SettingsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private final String TAG = "SettingsActivity";
     private final Handler mHandler = new Handler();
     private Timer mTimer = null;
 
-    class StatusUpdateTimerTask extends TimerTask{
+    //Exit from activity when back arrow is pressed
+    //https://stackoverflow.com/questions/34222591/navigate-back-from-settings-activity
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            super.onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    class StatusUpdateTimerTask extends TimerTask {
         private final SettingsFragment settings;
 
-        public StatusUpdateTimerTask(SettingsFragment _settings){
+        public StatusUpdateTimerTask(SettingsFragment _settings) {
             settings = _settings;
         }
+
         @Override
         public void run() {
             // run on another thread
             mHandler.post(() -> {
                 Log.d(TAG, "Entered run in timer task");
-                if(isNotificationServiceRunning()) {
+                if (isNotificationServiceRunning()) {
                     updateNotificationServiceStatus(settings);
-                }else{
+                } else {
                     (settings).setStatus("Disconnected: service is not running");
                 }
             });
@@ -84,25 +103,25 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     private void startNotificationService() {
         ///--------
         Log.d(TAG, "startService: ENTERING");
-        if(!isNotificationServiceRunning()) {
+        if (!isNotificationServiceRunning()) {
             Log.d(TAG, "Services is not running: creating intent to start it");
             startService(new Intent(getApplicationContext(), NotificationService.class));
         }
     }
 
-    private boolean isNotificationServiceRunning(){
+    private boolean isNotificationServiceRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<?> services = manager.getRunningServices(Integer.MAX_VALUE);
         return (services.size() > 0);
     }
 
-    private void updateNotificationServiceStatus(SettingsFragment settings){
+    private void updateNotificationServiceStatus(SettingsFragment settings) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningServiceInfo> services = manager.getRunningServices(Integer.MAX_VALUE);
-        if(services.size() == 0){
+        if (services.size() == 0) {
             Log.e(TAG, "Service is not running!");
             settings.setStatus("Disconnected: service is not running");
-        }else{
+        } else {
             ServiceConnection connection = new NotificationServiceConnection(settings);
             bindService(new Intent(getApplicationContext(), NotificationService.class), connection, 0);
         }
@@ -110,12 +129,14 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        Log.d(TAG,"key="+key);
+        Log.d(TAG, "onSharedPreferenceChanged");
+        Log.d(TAG, "key=" + key);
     }
 
-    public String getPreference(String key){
+
+    public String getPreference(String key) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getString(key,"");
+        return sharedPreferences.getString(key, "");
     }
 
     @Override
@@ -134,22 +155,24 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+
         startNotificationService();
     }
 
+
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         FragmentManager manager = getSupportFragmentManager();
         Fragment settings = manager.findFragmentById(R.id.settings);
-        if(!(settings instanceof SettingsFragment)) {
+        if (!(settings instanceof SettingsFragment)) {
             Log.wtf(TAG, "Programming error: settings fragment is not instance of SettingsFragment!");
             throw new RuntimeException("Programming error: settings fragment is not instance of SettingsFragment!");
-        }else{
+        } else {
             if (mTimer == null) {
                 mTimer = new Timer();
             }
-            Log.d(TAG,"Starting timer");
+            Log.d(TAG, "Starting timer");
             mTimer.scheduleAtFixedRate(new StatusUpdateTimerTask((SettingsFragment) settings), 0, 5000);
         }
     }
@@ -159,21 +182,54 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
+
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private final String TAG = "SettingsActivity.SettingsFragment";
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+
+            Preference myPref = (Preference) findPreference("oss_licenses");
+            myPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(getActivity(), OSSLicensesActivity.class);
+                    startActivity(intent);
+
+                    return true;
+                }
+            });
         }
 
-        public void setStatus(String _status){
-           EditTextPreference status =  (EditTextPreference) findPreference("status");
-           if(status == null){
-               Log.wtf(TAG,"Unexpected null result of findPreference");
-               throw new RuntimeException("Expected EditTextPrefernce, but got null!");
-           }else {
-               status.setSummary(_status);
-           }
+        public void setStatus(String _status) {
+            EditTextPreference status = (EditTextPreference) findPreference("status");
+            if (status == null) {
+                Log.wtf(TAG, "Unexpected null result of findPreference");
+                throw new RuntimeException("Expected EditTextPrefernce, but got null!");
+            } else {
+                status.setSummary(_status);
+            }
+        }
+
+
+        @Override
+        public void onDisplayPreferenceDialog(Preference preference) {
+
+            if (preference instanceof NumberDialogPreference) {
+                NumberDialogPreference dialogPreference = (NumberDialogPreference) preference;
+                DialogFragment dialogFragment = NumberPickerPreferenceDialogFragment
+                        .newInstance(
+                                dialogPreference.getKey(),
+                                dialogPreference.getMinValue(),
+                                dialogPreference.getMaxValue(),
+                                dialogPreference.getStepValue(),
+                                dialogPreference.getUnitText()
+                        );
+                dialogFragment.setTargetFragment(this, 0);
+                dialogFragment.show(getParentFragmentManager(), TAG + ".NumberPicker");
+            } else {
+                super.onDisplayPreferenceDialog(preference);
+            }
         }
     }
 
