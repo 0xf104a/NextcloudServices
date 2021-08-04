@@ -67,6 +67,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     private final String TAG = "SettingsActivity";
     private final Handler mHandler = new Handler();
     private Timer mTimer = null;
+    private StatusUpdateTimerTask mTask = null;
 
     //Exit from activity when back arrow is pressed
     //https://stackoverflow.com/questions/34222591/navigate-back-from-settings-activity
@@ -140,6 +141,17 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     }
 
     @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if (mTask != null){
+            mTask.cancel();
+            if(mTimer != null){
+                mTimer.purge();
+            }
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
@@ -172,8 +184,15 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             if (mTimer == null) {
                 mTimer = new Timer();
             }
+            if (mTask != null){
+                mTask.cancel();
+                if(mTimer != null){
+                    mTimer.purge();
+                }
+            }
             Log.d(TAG, "Starting timer");
-            mTimer.scheduleAtFixedRate(new StatusUpdateTimerTask((SettingsFragment) settings), 0, 5000);
+            mTask = new StatusUpdateTimerTask((SettingsFragment) settings);
+            mTimer.scheduleAtFixedRate( mTask, 0, 5000);
         }
     }
 
