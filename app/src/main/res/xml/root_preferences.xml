@@ -29,6 +29,16 @@
             android:key="insecure_connection"
             android:summary="Use http instead of https"
             android:title="Use insecure connection" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="allow_roaming"
+            android:summary="Allows checking for notifications when in roaming"
+            android:title="Allow roaming" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="allow_metered"
+            android:summary="Allows networks which are metered"
+            android:title="Allow metered networks" />
         <nl.invissvenska.numberpickerpreference.NumberDialogPreference
             android:key="polling_interval"
             android:title="Polling interval"
@@ -57,7 +67,12 @@
             android:id="@+id/oss_licenses"
             android:key="oss_licenses"
            />
-
+        <Preference
+        android:title="Donate"
+        android:summary="Buy me a coffee"
+        android:id="@+id/donate"
+        android:key="donate"
+           />
     </PreferenceCategory>
 
 </PreferenceScreen>

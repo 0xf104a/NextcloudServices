@@ -19,7 +19,12 @@ Currently login available only by putting credentials into app. So to login into
 **IMPORTANT:** Do **NOT** ommit first two steps - this may be risky for your security
 
 ## Building 
-You can build this app using android studio
+The app can be built using android studio or docker.
+
+## Donate
+If you like this app please donate:
+[![LiberaPay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/Andrewerr/donate)
+
 
 ## Credits
 * [Deck Android app](https://github.com/stefan-niedermann/nextcloud-deck) for deck logo

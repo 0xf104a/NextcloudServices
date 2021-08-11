@@ -127,6 +127,8 @@ public class NotificationService extends Service {
     public String password = "";
     public String status = "Disconnected";
     public boolean useHttp = false;
+    public boolean allowRoaming = false;
+    public boolean allowMetered = false;
     private Binder binder;
     private PollTimerTask task;
 
@@ -140,22 +142,30 @@ public class NotificationService extends Service {
         return this.status;
     }
 
-    public static boolean checkInternetConnection(Context context) {
+    public boolean checkInternetConnection(Context context) {
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity == null) {
             return false;
         } else {
-            Network[] networks = connectivity.getAllNetworks();
-            for (Network network : networks) {
-                NetworkInfo info = connectivity.getNetworkInfo(network);
-                if (info != null) {
-                    if (info.getState() == NetworkInfo.State.CONNECTED) {
+            //We need to check only active network state
+            final NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();
+
+            if(activeNetwork != null){
+                if(activeNetwork.isConnected()){
+                    if(activeNetwork.isRoaming()) {
+                        //Log.d(TAG, "Network is in roaming");
+                        return allowRoaming;
+                    }else if(connectivity.isActiveNetworkMetered()){
+                        //Log.d(TAG, "Network is metered");
+                        return allowMetered;
+                    }else{
+                        //Log.d(TAG, "Network is unmetered");
                         return true;
                     }
                 }
             }
-            final NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();
-            return activeNetwork != null && activeNetwork.isConnected();
+            //activeNetwork is null
+            return false;
         }
     }
 
@@ -339,6 +349,9 @@ public class NotificationService extends Service {
                     password = getPreference("password");
                     server = getPreference("server");
                     useHttp = getBoolPreference("insecure_connection", false);
+                    allowRoaming = getBoolPreference("allow_roaming", false);
+                    allowMetered = getBoolPreference("allow_metered", false);
+
 
                     //FIXME: Should call below method only when prefernces updated
                     onPreferencesChange();

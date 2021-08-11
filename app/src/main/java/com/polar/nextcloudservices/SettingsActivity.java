@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -18,6 +20,7 @@ import android.content.Context;
 import android.app.ActivityManager;
 import android.widget.TabHost;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -82,7 +85,6 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
     class StatusUpdateTimerTask extends TimerTask {
         private final SettingsFragment settings;
-
         public StatusUpdateTimerTask(SettingsFragment _settings) {
             settings = _settings;
         }
@@ -140,15 +142,28 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         return sharedPreferences.getString(key, "");
     }
 
+
+
     @Override
     public void onDestroy(){
-        super.onDestroy();
         if (mTask != null){
             mTask.cancel();
             if(mTimer != null){
                 mTimer.purge();
             }
         }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onStop() {
+        if (mTask != null){
+            mTask.cancel();
+            if(mTimer != null){
+                mTimer.purge();
+            }
+        }
+        super.onStop();
     }
 
     @Override
@@ -209,12 +224,22 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-            Preference myPref = (Preference) findPreference("oss_licenses");
-            myPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            Preference oss_licenses = (Preference) findPreference("oss_licenses");
+            oss_licenses.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     Intent intent = new Intent(getActivity(), OSSLicensesActivity.class);
                     startActivity(intent);
 
+                    return true;
+                }
+            });
+
+            Preference donate = (Preference) findPreference("donate");
+            donate.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://liberapay.com/Andrewerr/donate"));
+                    startActivity(browserIntent);
+                    Toast.makeText(getContext(),"Thank you! ❤️", Toast.LENGTH_SHORT).show();
                     return true;
                 }
             });
@@ -224,7 +249,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             EditTextPreference status = (EditTextPreference) findPreference("status");
             if (status == null) {
                 Log.wtf(TAG, "Unexpected null result of findPreference");
-                throw new RuntimeException("Expected EditTextPrefernce, but got null!");
+                throw new RuntimeException("Expected EditTextPreference, but got null!");
             } else {
                 status.setSummary(_status);
             }
