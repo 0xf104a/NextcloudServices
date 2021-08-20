@@ -1,0 +1,3 @@
+- Updated default preferences to make app less battery-consuming
+- Added possibility to enable/disable service
+- Added forgotten changelog for beta9

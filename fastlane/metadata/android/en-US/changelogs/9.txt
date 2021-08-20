@@ -1,0 +1,4 @@
+- Added possibility to disable polling in metered networks and roaming
+- Added possibility to donate
+- Fixed timer not being killed after activity exit
+

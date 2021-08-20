@@ -327,6 +327,10 @@ public class NotificationService extends Service {
             pollingInterval = _pollingInterval;
             updateTimer();
         }
+
+        if(!getBoolPreference("enable_polling",true)){
+
+        }
     }
 
 

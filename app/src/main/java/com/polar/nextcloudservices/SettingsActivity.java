@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.Activity;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.net.Uri;
@@ -13,12 +11,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Button;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.Context;
 import android.app.ActivityManager;
-import android.widget.TabHost;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -27,16 +23,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.SwitchPreference;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
 import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;
@@ -70,7 +60,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     private final String TAG = "SettingsActivity";
     private final Handler mHandler = new Handler();
     private Timer mTimer = null;
-    private StatusUpdateTimerTask mTask = null;
+    private PreferenceUpdateTimerTask mTask = null;
 
     //Exit from activity when back arrow is pressed
     //https://stackoverflow.com/questions/34222591/navigate-back-from-settings-activity
@@ -83,9 +73,9 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         return super.onOptionsItemSelected(item);
     }
 
-    class StatusUpdateTimerTask extends TimerTask {
+    class PreferenceUpdateTimerTask extends TimerTask {
         private final SettingsFragment settings;
-        public StatusUpdateTimerTask(SettingsFragment _settings) {
+        public PreferenceUpdateTimerTask(SettingsFragment _settings) {
             settings = _settings;
         }
 
@@ -93,7 +83,12 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         public void run() {
             // run on another thread
             mHandler.post(() -> {
-                Log.d(TAG, "Entered run in timer task");
+                Log.d(TAG, "Entered run in preference update timer task");
+                if(!getBoolPreference("enable_polling", true)){
+                    stopNotificationService();
+                } else {
+                    startNotificationService();
+                }
                 if (isNotificationServiceRunning()) {
                     updateNotificationServiceStatus(settings);
                 } else {
@@ -103,11 +98,17 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         }
     }
 
-    private void startNotificationService() {
+    public void stopNotificationService() {
+        if(isNotificationServiceRunning()) {
+            Context context = getApplicationContext();
+            context.stopService(new Intent(context, NotificationService.class));
+        }
+    }
+    public void startNotificationService() {
         ///--------
         Log.d(TAG, "startService: ENTERING");
-        if (!isNotificationServiceRunning()) {
-            Log.d(TAG, "Services is not running: creating intent to start it");
+        if (!isNotificationServiceRunning()&&getBoolPreference("enable_polling",true)) {
+            Log.d(TAG, "Service is not running: creating intent to start it");
             startService(new Intent(getApplicationContext(), NotificationService.class));
         }
     }
@@ -140,6 +141,11 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     public String getPreference(String key) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         return sharedPreferences.getString(key, "");
+    }
+
+    private boolean getBoolPreference(String key, boolean fallback) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return sharedPreferences.getBoolean(key, fallback);
     }
 
 
@@ -206,7 +212,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 }
             }
             Log.d(TAG, "Starting timer");
-            mTask = new StatusUpdateTimerTask((SettingsFragment) settings);
+            mTask = new PreferenceUpdateTimerTask((SettingsFragment) settings);
             mTimer.scheduleAtFixedRate( mTask, 0, 5000);
         }
     }
@@ -239,10 +245,11 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 public boolean onPreferenceClick(Preference preference) {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://liberapay.com/Andrewerr/donate"));
                     startActivity(browserIntent);
-                    Toast.makeText(getContext(),"Thank you! ❤️", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(),"Thank you!❤️", Toast.LENGTH_SHORT).show();
                     return true;
                 }
             });
+
         }
 
         public void setStatus(String _status) {
