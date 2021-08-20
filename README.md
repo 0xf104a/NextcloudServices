@@ -22,7 +22,7 @@ Currently login available only by putting credentials into app. So to login into
 The app can be built using android studio or docker.
 
 ## Donate
-If you like this app please donate:
+If you like this app please donate:<br>
 [![LiberaPay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/Andrewerr/donate)
 
 
