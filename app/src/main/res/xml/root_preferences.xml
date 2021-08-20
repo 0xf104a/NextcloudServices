@@ -22,6 +22,12 @@
             android:singleLine="true"
             android:summary="Your username"
             android:title="Login" />
+        <Preference
+            android:title="Log in via Nextcloud app"
+            android:summary="Use on-device Nextcloud account"
+            android:id="@+id/login_sso"
+            android:key="login_sso"
+            />
     </PreferenceCategory>
     <PreferenceCategory android:title="Connection">
         <SwitchPreference
@@ -49,7 +55,7 @@
             android:title="Polling interval"
             android:defaultValue="10"
             app:numberPickerPreference_minValue="1"
-            app:numberPickerPreference_maxValue="600"
+            app:numberPickerPreference_maxValue="899"
             app:numberPickerPreference_unitText=" seconds" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Status">
@@ -68,9 +74,9 @@
     <PreferenceCategory android:title="Others">
         <Preference
             android:title="Credits"
-            android:summary="See opensource libraries used in this app"
-            android:id="@+id/oss_licenses"
-            android:key="oss_licenses"
+            android:summary="See people who contributed to this project"
+            android:id="@+id/credits"
+            android:key="credits"
            />
         <Preference
         android:title="Donate"

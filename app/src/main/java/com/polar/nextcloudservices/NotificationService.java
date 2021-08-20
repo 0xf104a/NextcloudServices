@@ -39,82 +39,21 @@ import java.net.*;
 import android.util.Base64;
 
 
+import com.google.gson.GsonBuilder;
+import com.nextcloud.android.sso.api.NextcloudAPI;
+import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
+import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
+import com.nextcloud.android.sso.helper.SingleAccountHelper;
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
+
 import javax.net.ssl.HttpsURLConnection;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     private final String TAG = "NotifcationService.PollTask";
-    private final String UA = "NextcloudServices/" + BuildConfig.VERSION_NAME;
-
-    private String getAuth(String user, String password) {
-        //Log.d("NotificationService.PollTask",user+":"+password);
-        return Base64.encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT).toString();
-    }
 
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
-        try {
-            String baseUrl = services[0].server;
-            String prefix = "https://";
-            if (services[0].useHttp) {
-                prefix = "http://";
-            }
-
-            String endpoint = prefix + baseUrl + "/ocs/v2.php/apps/notifications/api/v2/notifications";
-            Log.d(TAG, endpoint);
-            URL url = new URL(endpoint);
-            HttpURLConnection conn;
-            if(services[0].useHttp) {
-                conn = (HttpURLConnection) url.openConnection();
-            }else{
-                conn = (HttpsURLConnection) url.openConnection();
-            }
-            conn.setRequestProperty("Authorization", "Basic " + getAuth(services[0].username, services[0].password));
-            conn.setRequestProperty("Host", url.getHost());
-            conn.setRequestProperty("User-agent", UA);
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestMethod("GET");
-            conn.setReadTimeout(60000);
-            conn.setConnectTimeout(5000);
-            //conn.setRequestMethod("GET");
-            Log.d(TAG, conn.getRequestProperties().toString());
-            //conn.setDoOutput(true);
-            conn.setDoInput(true);
-
-            //OutputStream os = conn.getOutputStream();
-            //os.close();
-            String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> https://" + baseUrl + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder buffer = new StringBuilder("");
-            String line = "";
-            while ((line = in.readLine()) != null) {
-                buffer.append(line);
-            }
-            in.close();
-            Log.d(TAG, buffer.toString());
-            JSONObject response = new JSONObject(buffer.toString());
-            services[0].onPollFinished(response);
-            return response;
-        } catch (JSONException e) {
-            Log.e(TAG, "Error parsing JSON");
-            e.printStackTrace();
-            services[0].status = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
-            return null;
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-            services[0].status = "Disconnected: File not found: check your credentials and Nextcloud instance.";
-            return null;
-        } catch (IOException e) {
-            Log.e(TAG, "Error while getting response");
-            e.printStackTrace();
-            services[0].status = "Disconnected: I/O error: " + e.getLocalizedMessage();
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            services[0].status = "Disconnected: " + e.getLocalizedMessage();
-            return null;
-        }
+        return services[0].API.getNotifications(services[0]);
     }
 }
 
@@ -131,6 +70,20 @@ public class NotificationService extends Service {
     public boolean allowMetered = false;
     private Binder binder;
     private PollTimerTask task;
+    public NextcloudAbstractAPI API;
+
+    private NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
+        @Override
+        public void onConnected() {
+            // ignore this one… see 5)
+        }
+
+        @Override
+        public void onError(Exception ex) {
+            status = "Disconnected: "+ex.getLocalizedMessage();
+            ex.printStackTrace();
+        }
+    };
 
     private final HashSet<Integer> active_notifications = new HashSet<>();
     // run on another Thread to avoid crash
@@ -292,9 +245,19 @@ public class NotificationService extends Service {
             mBuilder.setChannelId(channelId);
         }
 
-        Notification mNotification = mBuilder.build();
 
-        //mNotificationManager.notify(1526756640,mNotification);
+        Notification mNotification = mBuilder.build();
+        //Here we want to get Nextcloud account if it does exist
+        //Otherwise we will use basic NextcloudHttpAPI
+        try {
+            final SingleSignOnAccount ssoAccount = SingleAccountHelper.getCurrentSingleSignOnAccount(getApplicationContext());
+            NextcloudAPI mNextcloudAPI = new NextcloudAPI(this, ssoAccount, new GsonBuilder().create(), apiCallback);
+            API = new NextcloudSSOAPI(mNextcloudAPI);
+        } catch (NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
+            //We do not have an account -> use HTTP API
+            Log.i(TAG, "No nextcloud account was found.");
+            API = new NextcloudHttpAPI();
+        }
         startForeground(1, mNotification);
         binder = new Binder();
 
@@ -328,9 +291,13 @@ public class NotificationService extends Service {
             updateTimer();
         }
 
-        if(!getBoolPreference("enable_polling",true)){
+    }
 
-        }
+    @Override
+    public void onDestroy(){
+        Log.i(TAG, "Destroying service");
+        task.cancel();
+        mTimer.purge();
     }
 
 

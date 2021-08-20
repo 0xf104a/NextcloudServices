@@ -39,4 +39,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'com.github.invissvenska:NumberPickerPreference:1.0.3'
+    implementation "com.github.nextcloud:Android-SingleSignOn:0.5.6"
 }

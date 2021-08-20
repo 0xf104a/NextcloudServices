@@ -18,6 +18,7 @@ import android.app.ActivityManager;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
@@ -27,6 +28,15 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.Preference;
+
+import com.nextcloud.android.sso.AccountImporter;
+import com.nextcloud.android.sso.api.NextcloudAPI;
+import com.nextcloud.android.sso.exceptions.AccountImportCancelledException;
+import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGranted;
+import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
+import com.nextcloud.android.sso.helper.SingleAccountHelper;
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
+import com.nextcloud.android.sso.ui.UiExceptionManager;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
 import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;
@@ -83,7 +93,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         public void run() {
             // run on another thread
             mHandler.post(() -> {
-                Log.d(TAG, "Entered run in preference update timer task");
+                //Log.d(TAG, "Entered run in preference updater timer task");
                 if(!getBoolPreference("enable_polling", true)){
                     stopNotificationService();
                 } else {
@@ -223,14 +233,23 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     }
 
 
+
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private final String TAG = "SettingsActivity.SettingsFragment";
+
+        private void openAccountChooser() {
+            try {
+                AccountImporter.pickNewAccount(this);
+            } catch (NextcloudFilesAppNotInstalledException | AndroidGetAccountsPermissionNotGranted e) {
+                UiExceptionManager.showDialogForException(getContext(), e);
+            }
+        }
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-            Preference oss_licenses = (Preference) findPreference("oss_licenses");
+            Preference oss_licenses = (Preference) findPreference("credits");
             oss_licenses.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     Intent intent = new Intent(getActivity(), OSSLicensesActivity.class);
@@ -250,6 +269,14 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 }
             });
 
+            Preference login_sso = (Preference) findPreference("login_sso");
+            login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    Log.d(TAG, "Opening account chooser");
+                    openAccountChooser();
+                    return true;
+                }
+            });
         }
 
         public void setStatus(String _status) {
@@ -262,6 +289,43 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             }
         }
 
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+
+            try {
+                AccountImporter.onActivityResult(requestCode, resultCode, data, this, new AccountImporter.IAccountAccessGranted() {
+
+                    @Override
+                    public void accountAccessGranted(SingleSignOnAccount singleSignOnAccount) {
+                        Log.i(TAG, "Succesfully imported account");
+                    }
+
+                    NextcloudAPI.ApiConnectedListener callback = new NextcloudAPI.ApiConnectedListener() {
+                        @Override
+                        public void onConnected() {
+                            // ignore this one… see 5)
+                        }
+
+                        @Override
+                        public void onError(Exception ex) {
+                            ex.printStackTrace();
+                            Toast.makeText(getContext(), ex.getLocalizedMessage(), 1).show();
+                        }
+                    };
+
+                });
+            } catch (AccountImportCancelledException e) {
+                e.printStackTrace();
+            }
+        }
+        @Override
+        public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            Log.d(TAG, "Succesfully got Nextcloud permissions");
+            AccountImporter.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+        }
 
         @Override
         public void onDisplayPreferenceDialog(Preference preference) {
