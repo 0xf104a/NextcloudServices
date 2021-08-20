@@ -311,7 +311,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                         @Override
                         public void onError(Exception ex) {
                             ex.printStackTrace();
-                            Toast.makeText(getContext(), ex.getLocalizedMessage(), 1).show();
+                            Toast.makeText(getContext(), ex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                         }
                     };
 
