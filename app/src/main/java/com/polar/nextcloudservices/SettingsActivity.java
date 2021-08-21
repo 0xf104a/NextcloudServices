@@ -34,7 +34,6 @@ import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.exceptions.AccountImportCancelledException;
 import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGranted;
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
-import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
 
@@ -252,7 +251,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             Preference oss_licenses = (Preference) findPreference("credits");
             oss_licenses.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
-                    Intent intent = new Intent(getActivity(), OSSLicensesActivity.class);
+                    Intent intent = new Intent(getActivity(), CreditsActivity.class);
                     startActivity(intent);
 
                     return true;

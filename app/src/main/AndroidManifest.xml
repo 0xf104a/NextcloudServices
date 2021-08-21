@@ -16,7 +16,7 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.NextcloudServices">
 
-        <activity android:name=".OSSLicensesActivity"></activity>
+        <activity android:name=".CreditsActivity"></activity>
 
         <service
             android:name=".NotificationService"

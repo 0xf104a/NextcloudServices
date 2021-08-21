@@ -11,16 +11,16 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
 
-public class OSSLicensesActivity extends AppCompatActivity {
+public class CreditsActivity extends AppCompatActivity {
 
-    private final String TAG = "OSSLicensesActivity";
+    private final String TAG = "CreditsActivity";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle("Credits");
-        setContentView(R.layout.activity_o_s_s_licenses);
+        setContentView(R.layout.activity_credits);
 
         final String[] licenses = getResources().getStringArray(R.array.oss_libs);
         final String[] urls = getResources().getStringArray(R.array.oss_libs_links);
