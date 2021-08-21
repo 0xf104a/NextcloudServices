@@ -157,6 +157,15 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         return sharedPreferences.getBoolean(key, fallback);
     }
 
+    private void enableSSO(SingleSignOnAccount account){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("sso_enabled", true);
+        editor.putString("sso_name", account.name);
+        editor.putString("sso_server", account.url);
+        editor.putString("sso_type", account.type);
+    }
+
 
 
     @Override

@@ -302,8 +302,13 @@ public class NotificationService extends Service {
 
 
     public class Binder extends android.os.Binder {
+        // Returns current status string of a service
         public String getServiceStatus() {
             return getStatus();
+        }
+        //Runs re-check of preferences, can be called from activities
+        public void onPreferencesChanged() {
+            onPreferencesChange();
         }
     }
 
