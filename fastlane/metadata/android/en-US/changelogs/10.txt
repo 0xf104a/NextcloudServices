@@ -1,3 +1,5 @@
 - Updated default preferences to make app less battery-consuming
 - Added possibility to enable/disable service
 - Added forgotten changelog for beta9
+- Added icon(thanks to @Dunnnno)
+- Added possibility to log in using Nextcloud SingleSignOn

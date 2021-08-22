@@ -44,7 +44,7 @@ import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragme
 class NotificationServiceConnection implements ServiceConnection {
     private final String TAG = "SettingsActivity.NotificationServiceConnection";
     private final SettingsActivity.SettingsFragment settings;
-    private IBinder mService;
+    private NotificationService.Binder mService;
     public boolean isConnected = false;
 
     public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings) {
@@ -54,7 +54,7 @@ class NotificationServiceConnection implements ServiceConnection {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         if (service instanceof NotificationService.Binder) {
-            mService = service;
+            mService = (NotificationService.Binder) service;
             settings.setStatus(((NotificationService.Binder) service).getServiceStatus());
             isConnected = true;
         } else {
@@ -68,8 +68,13 @@ class NotificationServiceConnection implements ServiceConnection {
             Log.w(TAG, "Service has already disconnected");
             settings.setStatus("Disconnected: service is not running");
         } else {
-            settings.setStatus(((NotificationService.Binder) mService).getServiceStatus());
+            settings.setStatus(mService.getServiceStatus());
         }
+    }
+
+    public void tellAccountChanged(){
+        Log.d(TAG, "Telling service that account has cahnged");
+        mService.onAccountChanged();
     }
 
     @Override
@@ -255,6 +260,20 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private final String TAG = "SettingsActivity.SettingsFragment";
 
+        private boolean getBoolPreference(String key, boolean fallback) {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            return sharedPreferences.getBoolean(key, fallback);
+        }
+
+        private void notifyService(){
+            SettingsActivity activity = (SettingsActivity) getActivity();
+            if(activity == null){
+                Log.wtf(TAG, "Activity can not be null!");
+                throw new NullPointerException();
+            }
+            activity.mServiceConnection.tellAccountChanged();
+        }
+
         private void enableSSO(@NonNull SingleSignOnAccount account){
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -265,6 +284,17 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             editor.putString("sso_token", account.token);
             editor.putString("sso_userid", account.userId);
             editor.apply();
+            setSSOPreferencesState();
+            notifyService();
+        }
+
+        private void disableSSO(){
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("sso_enabled", false);
+            editor.apply();
+            setSSOPreferencesState();
+            notifyService();
         }
 
         private void openAccountChooser() {
@@ -272,6 +302,44 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 AccountImporter.pickNewAccount(this);
             } catch (NextcloudFilesAppNotInstalledException | AndroidGetAccountsPermissionNotGranted e) {
                 UiExceptionManager.showDialogForException(getContext(), e);
+            }
+        }
+
+
+        private void setSSOPreferencesState(){
+            Preference login_sso = findPreference("login_sso");
+            if(login_sso == null){
+                Log.wtf(TAG, "login_sso preference is null!");
+                throw new NullPointerException();
+            }
+            if(getBoolPreference("sso_enabled",false)){
+                findPreference("server").setEnabled(false);
+                findPreference("password").setEnabled(false);
+                findPreference("login").setEnabled(false);
+                findPreference("insecure_connection").setEnabled(false);
+                login_sso.setSummary("Stop using Nextcloud app for authentication");
+                login_sso.setTitle("Log out from Nexcloud");
+                login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        Log.d(TAG, "Disabling SSO");
+                        disableSSO();
+                        return true;
+                    }
+                });
+            } else {
+                findPreference("server").setEnabled(true);
+                findPreference("password").setEnabled(true);
+                findPreference("login").setEnabled(true);
+                findPreference("insecure_connection").setEnabled(true);
+                login_sso.setSummary("Use on-device Nextcloud account");
+                login_sso.setTitle("Log in via Nextcloud app");
+                login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        Log.d(TAG, "Opening account chooser");
+                        openAccountChooser();
+                        return true;
+                    }
+                });
             }
         }
 
@@ -299,6 +367,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 }
             });
 
+            /*
             Preference login_sso = (Preference) findPreference("login_sso");
             login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
@@ -307,6 +376,9 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                     return true;
                 }
             });
+             */
+
+            setSSOPreferencesState();
         }
 
         public void setStatus(String _status) {

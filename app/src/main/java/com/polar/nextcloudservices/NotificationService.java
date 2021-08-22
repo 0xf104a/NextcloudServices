@@ -80,7 +80,7 @@ public class NotificationService extends Service {
 
         @Override
         public void onError(Exception ex) {
-            status = "Disconnected: "+ex.getLocalizedMessage();
+            status = "Disconnected: " + ex.getLocalizedMessage();
             ex.printStackTrace();
         }
     };
@@ -103,15 +103,15 @@ public class NotificationService extends Service {
             //We need to check only active network state
             final NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();
 
-            if(activeNetwork != null){
-                if(activeNetwork.isConnected()){
-                    if(activeNetwork.isRoaming()) {
+            if (activeNetwork != null) {
+                if (activeNetwork.isConnected()) {
+                    if (activeNetwork.isRoaming()) {
                         //Log.d(TAG, "Network is in roaming");
                         return allowRoaming;
-                    }else if(connectivity.isActiveNetworkMetered()){
+                    } else if (connectivity.isActiveNetworkMetered()) {
                         //Log.d(TAG, "Network is metered");
                         return allowMetered;
-                    }else{
+                    } else {
                         //Log.d(TAG, "Network is unmetered");
                         return true;
                     }
@@ -249,7 +249,14 @@ public class NotificationService extends Service {
         Notification mNotification = mBuilder.build();
         //Here we want to get Nextcloud account if it does exist
         //Otherwise we will use basic NextcloudHttpAPI
-        if(getBoolPreference("sso_enabled",false)){
+        updateAccounts();
+        startForeground(1, mNotification);
+        binder = new Binder();
+
+    }
+
+    private void updateAccounts() {
+        if (getBoolPreference("sso_enabled", false)) {
             final String name = getPreference("sso_name");
             final String server = getPreference("sso_server");
             final String type = getPreference("sso_type");
@@ -264,9 +271,6 @@ public class NotificationService extends Service {
             Log.i(TAG, "No Nextcloud account was found.");
             API = new NextcloudHttpAPI();
         }
-        startForeground(1, mNotification);
-        binder = new Binder();
-
     }
 
     private String getPreference(String key) {
@@ -284,7 +288,7 @@ public class NotificationService extends Service {
         return sharedPreferences.getBoolean(key, fallback);
     }
 
-    public void onPreferencesChange(){
+    public void onPreferencesChange() {
         int _pollingInterval = getIntPreference("polling_interval") * 1000;
         if (_pollingInterval <= 0) {
             Log.w(TAG, "Invalid polling interval! Setting to 3 seconds.");
@@ -292,7 +296,7 @@ public class NotificationService extends Service {
         }
 
         if (_pollingInterval != pollingInterval) {
-            Log.d(TAG,"Updating timer");
+            Log.d(TAG, "Updating timer");
             pollingInterval = _pollingInterval;
             updateTimer();
         }
@@ -300,7 +304,7 @@ public class NotificationService extends Service {
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         Log.i(TAG, "Destroying service");
         task.cancel();
         mTimer.purge();
@@ -312,9 +316,15 @@ public class NotificationService extends Service {
         public String getServiceStatus() {
             return getStatus();
         }
-        //Runs re-check of preferences, can be called from activities
+
+        // Runs re-check of preferences, can be called from activities
         public void onPreferencesChanged() {
             onPreferencesChange();
+        }
+
+        // Update API class when accounts state change
+        public void onAccountChanged() {
+            updateAccounts();
         }
     }
 
