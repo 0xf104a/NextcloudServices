@@ -249,13 +249,19 @@ public class NotificationService extends Service {
         Notification mNotification = mBuilder.build();
         //Here we want to get Nextcloud account if it does exist
         //Otherwise we will use basic NextcloudHttpAPI
-        try {
-            final SingleSignOnAccount ssoAccount = SingleAccountHelper.getCurrentSingleSignOnAccount(getApplicationContext());
+        if(getBoolPreference("sso_enabled",false)){
+            final String name = getPreference("sso_name");
+            final String server = getPreference("sso_server");
+            final String type = getPreference("sso_type");
+            final String token = getPreference("sso_token");
+            final String userId = getPreference("sso_userid");
+            final SingleSignOnAccount ssoAccount = new SingleSignOnAccount(name, userId, token, server, type);
             NextcloudAPI mNextcloudAPI = new NextcloudAPI(this, ssoAccount, new GsonBuilder().create(), apiCallback);
             API = new NextcloudSSOAPI(mNextcloudAPI);
-        } catch (NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
+            Log.i(TAG, "Succesfully added Nextcloud account to service");
+        } else {
             //We do not have an account -> use HTTP API
-            Log.i(TAG, "No nextcloud account was found.");
+            Log.i(TAG, "No Nextcloud account was found.");
             API = new NextcloudHttpAPI();
         }
         startForeground(1, mNotification);

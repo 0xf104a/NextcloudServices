@@ -15,10 +15,14 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     private NextcloudAPI API;
-    final private String TAG="NextcloudSSOAPI";
+    final private String TAG = "NextcloudSSOAPI";
 
     public NextcloudSSOAPI(NextcloudAPI mNextcloudAPI) {
         API = mNextcloudAPI;
@@ -26,8 +30,14 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
 
     @Override
     public JSONObject getNotifications(NotificationService service) {
+        Map<String, List<String>> header = new HashMap<>();
+        LinkedList<String> values = new LinkedList<String>();
+        values.add("application/json");
+        header.put("Accept", values);
+
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
                 .setUrl(Uri.encode("/ocs/v2.php/apps/notifications/api/v2/notifications", "/"))
+                .setHeader(header)
                 .build();
         StringBuilder buffer = new StringBuilder("");
         try {
@@ -38,13 +48,13 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 buffer.append(line);
             }
             in.close();
-        }catch(Exception e){
-            service.status = "Disconnected: "+e.getLocalizedMessage();
+        } catch (Exception e) {
+            service.status = "Disconnected: " + e.getLocalizedMessage();
             e.printStackTrace();
             return null;
         }
 
-        try{
+        try {
             JSONObject response = new JSONObject(buffer.toString());
             service.onPollFinished(response);
             return response;

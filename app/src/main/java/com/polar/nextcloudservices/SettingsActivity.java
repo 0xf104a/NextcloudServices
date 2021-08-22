@@ -44,6 +44,8 @@ import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragme
 class NotificationServiceConnection implements ServiceConnection {
     private final String TAG = "SettingsActivity.NotificationServiceConnection";
     private final SettingsActivity.SettingsFragment settings;
+    private IBinder mService;
+    public boolean isConnected = false;
 
     public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings) {
         settings = _settings;
@@ -52,16 +54,28 @@ class NotificationServiceConnection implements ServiceConnection {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         if (service instanceof NotificationService.Binder) {
+            mService = service;
             settings.setStatus(((NotificationService.Binder) service).getServiceStatus());
+            isConnected = true;
         } else {
             Log.wtf(TAG, "Bad Binder type passed!");
             throw new RuntimeException("Expected NotificationService.Binder");
         }
     }
 
+    public void updateStatus(){
+        if(!isConnected){
+            Log.w(TAG, "Service has already disconnected");
+            settings.setStatus("Disconnected: service is not running");
+        } else {
+            settings.setStatus(((NotificationService.Binder) mService).getServiceStatus());
+        }
+    }
+
     @Override
     public void onServiceDisconnected(ComponentName name) {
         Log.w(TAG, "Service has disconnected.");
+        isConnected = false;
     }
 }
 
@@ -70,6 +84,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     private final Handler mHandler = new Handler();
     private Timer mTimer = null;
     private PreferenceUpdateTimerTask mTask = null;
+    private NotificationServiceConnection mServiceConnection = null;
 
     //Exit from activity when back arrow is pressed
     //https://stackoverflow.com/questions/34222591/navigate-back-from-settings-activity
@@ -95,7 +110,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 //Log.d(TAG, "Entered run in preference updater timer task");
                 if(!getBoolPreference("enable_polling", true)){
                     stopNotificationService();
-                } else {
+                } else if(!isNotificationServiceRunning()) {
                     startNotificationService();
                 }
                 if (isNotificationServiceRunning()) {
@@ -109,13 +124,14 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
     public void stopNotificationService() {
         if(isNotificationServiceRunning()) {
+            Log.i(TAG, "Stopping service");
             Context context = getApplicationContext();
             context.stopService(new Intent(context, NotificationService.class));
         }
     }
     public void startNotificationService() {
         ///--------
-        Log.d(TAG, "startService: ENTERING");
+        //Log.d(TAG, "startService: ENTERING");
         if (!isNotificationServiceRunning()&&getBoolPreference("enable_polling",true)) {
             Log.d(TAG, "Service is not running: creating intent to start it");
             startService(new Intent(getApplicationContext(), NotificationService.class));
@@ -134,9 +150,11 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         if (services.size() == 0) {
             Log.e(TAG, "Service is not running!");
             settings.setStatus("Disconnected: service is not running");
+        } else if(mServiceConnection==null){
+            mServiceConnection = new NotificationServiceConnection(settings);
+            bindService(new Intent(getApplicationContext(), NotificationService.class), mServiceConnection, 0);
         } else {
-            ServiceConnection connection = new NotificationServiceConnection(settings);
-            bindService(new Intent(getApplicationContext(), NotificationService.class), connection, 0);
+            mServiceConnection.updateStatus();
         }
     }
 
@@ -157,14 +175,6 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         return sharedPreferences.getBoolean(key, fallback);
     }
 
-    private void enableSSO(SingleSignOnAccount account){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("sso_enabled", true);
-        editor.putString("sso_name", account.name);
-        editor.putString("sso_server", account.url);
-        editor.putString("sso_type", account.type);
-    }
 
 
 
@@ -245,6 +255,18 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private final String TAG = "SettingsActivity.SettingsFragment";
 
+        private void enableSSO(@NonNull SingleSignOnAccount account){
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("sso_enabled", true);
+            editor.putString("sso_name", account.name);
+            editor.putString("sso_server", account.url);
+            editor.putString("sso_type", account.type);
+            editor.putString("sso_token", account.token);
+            editor.putString("sso_userid", account.userId);
+            editor.apply();
+        }
+
         private void openAccountChooser() {
             try {
                 AccountImporter.pickNewAccount(this);
@@ -307,6 +329,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
                     @Override
                     public void accountAccessGranted(SingleSignOnAccount singleSignOnAccount) {
+                        enableSSO(singleSignOnAccount);
                         Log.i(TAG, "Succesfully imported account");
                     }
 
