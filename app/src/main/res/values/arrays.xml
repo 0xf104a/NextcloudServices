@@ -11,7 +11,19 @@
     </string-array>
 
     <string-array name="oss_libs">
-        <item>NumberPickerPreference by invissvenska(LGPL-3.0)</item>
+        <item>Contribution: NumberPickerPreference</item>
+    </string-array>
+
+    <string-array name="oss_libs_owner_Img">
+        <item>https://avatars.githubusercontent.com/u/404166?v=4</item>
+    </string-array>
+
+    <string-array name="oss_libs_owner_name">
+        <item>Sven van den Tweel</item>
+    </string-array>
+
+    <string-array name="oss_libs_owner_github_name">
+        <item>invissvenska</item>
     </string-array>
 
     <string-array name="oss_libs_links">
