@@ -11,22 +11,37 @@
     </string-array>
 
     <string-array name="oss_libs">
-        <item>Contribution: NumberPickerPreference</item>
+        <item>Contribution: NumberPickerPreference\nLicense: LGPL-3.0</item>
+        <item>Contribution: App icon</item>
+        <item>Contribution: Bug fixes, ideas</item>
+        <item>Contribution: Credits activity improvements</item>
     </string-array>
 
     <string-array name="oss_libs_owner_Img">
         <item>https://avatars.githubusercontent.com/u/404166?v=4</item>
+        <item>https://avatars.githubusercontent.com/u/31142286?v=4</item>
+        <item>https://avatars.githubusercontent.com/u/6894017?v=4</item>
+        <item>https://avatars.githubusercontent.com/u/89275109?v=4</item>
     </string-array>
 
     <string-array name="oss_libs_owner_name">
         <item>Sven van den Tweel</item>
+        <item>Donno</item>
+        <item>Daniele Verducci</item>
+        <item>Devansh-gaur-1611</item>
     </string-array>
 
     <string-array name="oss_libs_owner_github_name">
         <item>invissvenska</item>
+        <item>Donnnno</item>
+        <item>penguin86</item>
+        <item>Devansh-gaur-1611</item>
     </string-array>
 
     <string-array name="oss_libs_links">
         <item>https://github.com/invissvenska/NumberPickerPreference/blob/master/LICENSE</item>
+        <item>https://github.com/Donnnno</item>
+        <item>https://github.com/penguin86</item>
+        <item>https://github.com/Devansh-gaur-1611</item>
     </string-array>
 </resources>

@@ -12,17 +12,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.annotation.GlideModule;
 import com.polar.nextcloudservices.R;
-import com.polar.nextcloudservices.contributor_details;
+import com.polar.nextcloudservices.ContributorDetails;
 
 import java.util.List;
 
-
-public class Credits_Adapter extends ArrayAdapter<contributor_details> {
+public class CreditsAdapter extends ArrayAdapter<ContributorDetails> {
     Context context;
-    List<contributor_details> details;
+    List<ContributorDetails> details;
 
-    public Credits_Adapter(@NonNull Context context, int resource, @NonNull List<contributor_details> objects) {
+    public CreditsAdapter(@NonNull Context context, int resource, @NonNull List<ContributorDetails> objects) {
         super(context, resource, objects);
         this.context = context;
         this.details = objects;
@@ -30,7 +30,7 @@ public class Credits_Adapter extends ArrayAdapter<contributor_details> {
 
     @Nullable
     @Override
-    public contributor_details getItem(int position) {
+    public ContributorDetails getItem(int position) {
         return details.get(position);
     }
 

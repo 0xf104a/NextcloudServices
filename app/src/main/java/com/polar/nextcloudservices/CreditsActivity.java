@@ -10,7 +10,7 @@ import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.polar.nextcloudservices.Adapters.Credits_Adapter;
+import com.polar.nextcloudservices.Adapters.CreditsAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 public class CreditsActivity extends AppCompatActivity {
 
     private final String TAG = "CreditsActivity";
-    List<contributor_details> details = new ArrayList<>();
+    List<ContributorDetails> details = new ArrayList<>();
     String[] licenses;
     String[] urls;
     String[] owner_Name;
@@ -42,7 +42,7 @@ public class CreditsActivity extends AppCompatActivity {
             Log.wtf(TAG, "ListView is null!");
             throw new RuntimeException("ListView should not be null!");
         }
-        Credits_Adapter aAdapter = new Credits_Adapter(this, R.layout.credits_contributer, details);
+        CreditsAdapter aAdapter = new CreditsAdapter(this, R.layout.credits_contributer, details);
         mListView.setAdapter(aAdapter);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -55,7 +55,9 @@ public class CreditsActivity extends AppCompatActivity {
 
     //    A function to add the contributor details in details(Arraylist) which is to be shown in credits activity
     public void details_add() {
-        details.add(new contributor_details(owner_Name[0], licenses[0], owner_github_image[0], owner_github_Name[0]));
+        for (int i = 0; i < owner_Name.length; ++i) {
+            details.add(new ContributorDetails(owner_Name[i], licenses[i], owner_github_image[i], owner_github_Name[i]));
+        }
     }
 
 }
