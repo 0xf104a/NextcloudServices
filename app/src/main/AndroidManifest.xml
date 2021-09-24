@@ -29,6 +29,11 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        
+        <queries>
+            <package android:name="com.nextcloud.client" />
+            <package android:name="com.nextcloud.android.beta" />
+        </queries>
 
         <activity
             android:name=".SettingsActivity"
