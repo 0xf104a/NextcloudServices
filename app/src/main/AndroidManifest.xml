@@ -6,7 +6,18 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Permissions for old android versions -->
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
 
+    <queries>
+        <package android:name="com.nextcloud.client" />
+        <package android:name="com.nextcloud.android.beta" />
+    </queries>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -17,12 +28,12 @@
         android:theme="@style/Theme.NextcloudServices">
 
         <activity android:name=".CreditsActivity"
-            android:parentActivityName=".SettingsActivity"></activity>
+            android:parentActivityName=".SettingsActivity" />
 
         <service
             android:name=".NotificationService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <receiver android:name=".BootReceiver">
             <intent-filter>
@@ -30,10 +41,7 @@
             </intent-filter>
         </receiver>
         
-        <queries>
-            <package android:name="com.nextcloud.client" />
-            <package android:name="com.nextcloud.android.beta" />
-        </queries>
+
 
         <activity
             android:name=".SettingsActivity"
