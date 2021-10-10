@@ -18,6 +18,7 @@
         <package android:name="com.nextcloud.client" />
         <package android:name="com.nextcloud.android.beta" />
     </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -40,8 +41,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        
-
 
         <activity
             android:name=".SettingsActivity"

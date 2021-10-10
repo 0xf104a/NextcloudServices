@@ -122,48 +122,6 @@ public class NotificationService extends Service {
         }
     }
 
-    public int iconByApp(String appName) {
-        if (appName.equals("spreed")) {
-            return R.drawable.ic_icon_foreground;
-        } else if (appName.equals("deck")) {
-            return R.drawable.ic_deck;
-        } else {
-            return R.drawable.ic_logo;
-        }
-    }
-
-    private void notificationSend(int id, String title, String text, String app, String app_name) {
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(app, app, NotificationManager.IMPORTANCE_HIGH);
-            mNotificationManager.createNotificationChannel(channel);
-        }
-        Notification notification = new NotificationCompat.Builder(getBaseContext(), app)
-                .setSmallIcon(iconByApp(app_name))
-                .setContentTitle(title)
-                .setAutoCancel(true)
-                .setContentText(text)
-                .build();
-        mNotificationManager.notify(id, notification);
-    }
-
-    public static String prettifyChannelName(String Name) {
-        if (Name.equals("updatenotification")) {
-            return "Update notifications";
-        }
-        if (Name.equals("spreed")) {
-            return "Nextcloud talk";
-        }
-        String[] parts = Name.split("_");
-        StringBuilder nice_name = new StringBuilder();
-        for (String part : parts) {
-            nice_name.append(part);
-        }
-        String result = nice_name.toString();
-        result = Character.toUpperCase(result.charAt(0)) + result.substring(1);
-        return result;
-    }
-
     public void onPollFinished(JSONObject response) {
         synchronized (active_notifications) {
             try {
@@ -178,10 +136,9 @@ public class NotificationService extends Service {
                         //Handle notification
                         Log.d(TAG, "Sending notification:" + notification_id);
                         active_notifications.add(notification_id);
-                        notificationSend(notification_id, notification.getString("subject"),
-                                notification.getString("message"),
-                                prettifyChannelName(notification.getString("app")),
-                                notification.getString("app"));
+                        try {
+
+                        }
                     }
                 }
                 NotificationManager mNotificationManager =
