@@ -77,7 +77,7 @@ public class NotificationService extends Service {
 
     private void registerNotificationProcessors(){
         if(mNotificationBuilder==null){
-            throw new RuntimeException("registerNotificationProcessors called too early: mNotificatioBuilder is null!");
+            throw new RuntimeException("registerNotificationProcessors called too early: mNotificationBuilder is null!");
         }
         //Register your notification processors here
         mNotificationBuilder.addProcessor(new BasicNotificationProcessor());
@@ -139,6 +139,8 @@ public class NotificationService extends Service {
                 HashSet<Integer> remove_notifications = new HashSet<>(active_notifications);
                 int notification_id;
                 JSONArray notifications = response.getJSONObject("ocs").getJSONArray("data");
+                NotificationManager mNotificationManager =
+                        (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 for (int i = 0; i < notifications.length(); ++i) {
                     JSONObject notification = notifications.getJSONObject(i);
                     notification_id = notification.getInt("notification_id");
@@ -148,14 +150,14 @@ public class NotificationService extends Service {
                         Log.d(TAG, "Sending notification:" + notification_id);
                         active_notifications.add(notification_id);
                         try {
-                            mNotificationBuilder.buildNotification(notification_id, notification, getBaseContext());
+                            Notification mNotification = mNotificationBuilder.buildNotification(notification_id,
+                                    notification, getBaseContext());
+                            mNotificationManager.notify(notification_id, mNotification);
                         } catch (JSONException e){
                             Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id"));
                         }
                     }
                 }
-                NotificationManager mNotificationManager =
-                        (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 for (int remove_id : remove_notifications) {
                     Log.d(TAG, "Removing notification " + Integer.valueOf(remove_id).toString());
                     mNotificationManager.cancel(remove_id);
@@ -224,6 +226,7 @@ public class NotificationService extends Service {
         binder = new Binder();
         //Create NotificationBuilder
         mNotificationBuilder = new NotificationBuilder();
+        registerNotificationProcessors();
     }
 
     private void updateAccounts() {
