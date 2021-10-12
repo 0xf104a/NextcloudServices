@@ -45,6 +45,8 @@ import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundExce
 import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
 import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
+import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
+import com.polar.nextcloudservices.NotificationProcessors.NotificationBuilder;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -71,6 +73,15 @@ public class NotificationService extends Service {
     private Binder binder;
     private PollTimerTask task;
     public NextcloudAbstractAPI API;
+    private NotificationBuilder mNotificationBuilder;
+
+    private void registerNotificationProcessors(){
+        if(mNotificationBuilder==null){
+            throw new RuntimeException("registerNotificationProcessors called too early: mNotificatioBuilder is null!");
+        }
+        //Register your notification processors here
+        mNotificationBuilder.addProcessor(new BasicNotificationProcessor());
+    }
 
     private NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
         @Override
@@ -137,7 +148,9 @@ public class NotificationService extends Service {
                         Log.d(TAG, "Sending notification:" + notification_id);
                         active_notifications.add(notification_id);
                         try {
-
+                            mNotificationBuilder.buildNotification(notification_id, notification, getBaseContext());
+                        } catch (JSONException e){
+                            Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id"));
                         }
                     }
                 }
@@ -209,7 +222,8 @@ public class NotificationService extends Service {
         updateAccounts();
         startForeground(1, mNotification);
         binder = new Binder();
-
+        //Create NotificationBuilder
+        mNotificationBuilder = new NotificationBuilder();
     }
 
     private void updateAccounts() {
