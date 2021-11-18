@@ -3,6 +3,7 @@ package com.polar.nextcloudservices.NotificationProcessors;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
@@ -13,6 +14,8 @@ import org.json.JSONObject;
 
 public class BasicNotificationProcessor implements AbstractNotificationProcessor {
     public final int priority = 0;
+    private final static String TAG = "BasicNotificationProcessor";
+
     public int iconByApp(String appName) {
         if (appName.equals("spreed")) {
             return R.drawable.ic_icon_foreground;
@@ -47,12 +50,14 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         final String text = rawNotification.getString("message");
         final String app_name = rawNotification.getString("app");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(app, app, NotificationManager.IMPORTANCE_HIGH);
+            NotificationChannel channel = new NotificationChannel(app_name, app, NotificationManager.IMPORTANCE_HIGH);
+            Log.d(TAG, "Creating channel");
             manager.createNotificationChannel(channel);
         }
-        return   builder.setSmallIcon(iconByApp(app_name))
+        return builder.setSmallIcon(iconByApp(app_name))
                 .setContentTitle(title)
                 .setAutoCancel(true)
-                .setContentText(text);
+                .setContentText(text)
+                .setChannelId(app_name);
     }
 }
