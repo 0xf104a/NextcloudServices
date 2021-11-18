@@ -15,7 +15,6 @@ import android.util.Log;
 import android.app.Notification;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Network;
 
 
 import androidx.core.app.NotificationCompat;
@@ -25,30 +24,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.net.*;
-
-import android.util.Base64;
 
 
 import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.api.NextcloudAPI;
-import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
-import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
-import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
-import com.polar.nextcloudservices.NotificationProcessors.NotificationBuilder;
-
-import javax.net.ssl.HttpsURLConnection;
+import com.polar.nextcloudservices.NotificationProcessors.OpenBrowserProcessor;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     private final String TAG = "NotifcationService.PollTask";
@@ -81,6 +68,7 @@ public class NotificationService extends Service {
         }
         //Register your notification processors here
         mNotificationBuilder.addProcessor(new BasicNotificationProcessor());
+        mNotificationBuilder.addProcessor(new OpenBrowserProcessor());
     }
 
     private NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {

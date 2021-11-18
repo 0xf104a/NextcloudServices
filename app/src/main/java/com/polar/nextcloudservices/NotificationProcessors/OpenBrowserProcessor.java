@@ -1,0 +1,35 @@
+package com.polar.nextcloudservices.NotificationProcessors;
+
+// This processor is default processor for user click event
+// It is used to open web page and has priority 1
+// So it is executed first and can be overriden by per-app processors
+
+
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+
+import androidx.core.app.NotificationCompat;
+
+import com.polar.nextcloudservices.AbstractNotificationProcessor;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class OpenBrowserProcessor implements AbstractNotificationProcessor {
+    public final int priority = 1;
+    @Override
+    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
+                                                         NotificationManager manager,
+                                                         JSONObject rawNotification,
+                                                         Context context) throws JSONException {
+        String link = rawNotification.getString("link");
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent = intent.setData(Uri.parse((link)));
+        PendingIntent pending_intent = PendingIntent.getActivity(context,0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        return builder.setContentIntent(pending_intent);
+    }
+}

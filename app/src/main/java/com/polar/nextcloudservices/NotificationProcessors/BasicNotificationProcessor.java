@@ -1,12 +1,13 @@
 package com.polar.nextcloudservices.NotificationProcessors;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.polar.nextcloudservices.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.R;
 
 import org.json.JSONException;
@@ -44,7 +45,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
     }
 
     @Override
-    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder, NotificationManager manager, JSONObject rawNotification) throws JSONException {
+    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder, NotificationManager manager, JSONObject rawNotification, Context context) throws JSONException {
         final String app = prettifyChannelName(rawNotification.getString("app"));
         final String title = rawNotification.getString("subject");
         final String text = rawNotification.getString("message");
