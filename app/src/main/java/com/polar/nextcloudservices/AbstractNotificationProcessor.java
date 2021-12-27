@@ -14,4 +14,6 @@ public interface AbstractNotificationProcessor {
                                                          NotificationManager manager,
                                                          JSONObject rawNotification,
                                                          Context context) throws JSONException;
+
+    int getPriority();
 }

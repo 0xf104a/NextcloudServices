@@ -35,7 +35,7 @@ public class NotificationBuilder {
     public void addProcessor(AbstractNotificationProcessor processor){
         int place=0;
         for(;place<processors.size(); ++place){
-            if(processors.get(place).priority>=processor.priority){
+            if(processors.get(place).getPriority()>=processor.getPriority()){
                break;
             }
         }

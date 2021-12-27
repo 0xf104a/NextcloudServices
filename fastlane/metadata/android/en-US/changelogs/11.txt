@@ -1,3 +1,3 @@
 * Added credits(thanks to @Devansh-gaur-1611)
 * Added app queries for Nextcloud SSO authentication
-* Now app notifcation opens browser when clicked
+* Now app opens browser when notification is clicked

@@ -61,4 +61,9 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
                 .setContentText(text)
                 .setChannelId(app_name);
     }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
 }

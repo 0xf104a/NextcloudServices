@@ -35,6 +35,7 @@ import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
+import com.polar.nextcloudservices.NotificationProcessors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.OpenBrowserProcessor;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
@@ -69,6 +70,7 @@ public class NotificationService extends Service {
         //Register your notification processors here
         mNotificationBuilder.addProcessor(new BasicNotificationProcessor());
         mNotificationBuilder.addProcessor(new OpenBrowserProcessor());
+        mNotificationBuilder.addProcessor(new NextcloudTalkProcessor());
     }
 
     private NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
