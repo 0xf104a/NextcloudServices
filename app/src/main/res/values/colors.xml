@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="nextcloud_primary">#0082c9</color>
+    <color name="appbar" />
 </resources>

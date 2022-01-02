@@ -29,4 +29,6 @@
     <string name="menu_credits">Credits</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_donations">Donations</string>
+    <string name="manage_accounts">Manage Accounts</string>
+    <string name="search_in_all">Search</string>
 </resources>

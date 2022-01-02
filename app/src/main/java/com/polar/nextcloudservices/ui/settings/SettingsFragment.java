@@ -21,8 +21,6 @@ import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledExcepti
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
 import com.polar.nextcloudservices.R;
-import com.polar.nextcloudservices.SettingsActivity;
-import com.polar.nextcloudservices.databinding.FragmentSettingsBinding;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
 import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;
@@ -41,36 +39,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
-
-        /*
-        Preference oss_licenses = findPreference("credits");
-        oss_licenses.setOnPreferenceClickListener(preference -> {
-            // Todo: Switch fragment to credits or remove this button
-            // Intent intent = new Intent(getActivity(), CreditsActivity.class);
-            // startActivity(intent);
-            return true;
-        });
-
-        Preference donate = (Preference) findPreference("donate");
-        donate.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://liberapay.com/Andrewerr/donate"));
-                startActivity(browserIntent);
-                Toast.makeText(getContext(), "Thank you!❤️", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-
-        /*
-        Preference login_sso = (Preference) findPreference("login_sso");
-        login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                Log.d(TAG, "Opening account chooser");
-                openAccountChooser();
-                return true;
-            }
-        });
-         */
 
         setSSOPreferencesState();
     }
@@ -140,12 +108,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     private void notifyService() {
-        SettingsActivity activity = (SettingsActivity) getActivity();
-        if (activity == null) {
-            Log.wtf(TAG, "Activity can not be null!");
-            throw new NullPointerException();
-        }
-
         // todo: add mServiceConnection
         //activity.mServiceConnection.tellAccountChanged();
     }
