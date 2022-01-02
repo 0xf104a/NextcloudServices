@@ -9,12 +9,11 @@
             android:summary="Address of your nextcloud server(without http(s)://)"
             android:title="Nextcloud address" />
         <EditTextPreference
-            android:key="password"
-            android:title="Password"
-            android:summary="Your password"
             android:inputType="text|textPassword"
+            android:key="password"
             android:password="true"
-            />
+            android:summary="Your password"
+            android:title="Password" />
         <EditTextPreference
             android:defaultValue=""
             android:key="login"
@@ -23,11 +22,10 @@
             android:summary="Your username"
             android:title="Login" />
         <Preference
-            android:title="Log in via Nextcloud app"
-            android:summary="Use on-device Nextcloud account"
             android:id="@+id/login_sso"
             android:key="login_sso"
-            />
+            android:summary="Use on-device Nextcloud account"
+            android:title="Log in via Nextcloud app" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Connection">
         <SwitchPreference
@@ -51,39 +49,55 @@
             android:summary="Enables polling notifications"
             android:title="Enable service" />
         <nl.invissvenska.numberpickerpreference.NumberDialogPreference
+            android:defaultValue="10"
             android:key="polling_interval"
             android:title="Polling interval"
-            android:defaultValue="10"
-            app:numberPickerPreference_minValue="1"
             app:numberPickerPreference_maxValue="899"
+            app:numberPickerPreference_minValue="1"
             app:numberPickerPreference_unitText=" seconds" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Status">
         <EditTextPreference
+            android:id="@+id/status"
             android:defaultValue="Default value"
             android:enabled="false"
             android:key="status"
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:summary="Disconnected"
-            android:id="@+id/status"
             android:title="Status"
             app:enabled="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Others">
-        <Preference
-            android:title="Credits"
-            android:summary="See people who contributed to this project"
-            android:id="@+id/credits"
-            android:key="credits"
-           />
-        <Preference
-        android:title="Donate"
-        android:summary="Buy me a coffee"
-        android:id="@+id/donate"
-        android:key="donate"
-           />
+    <PreferenceCategory app:title="@string/messages_header">
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/signature_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="reply"
+            app:entries="@array/reply_entries"
+            app:entryValues="@array/reply_values"
+            app:key="reply"
+            app:title="@string/reply_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+    <PreferenceCategory app:title="@string/sync_header">
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_title" />
+
+        <SwitchPreferenceCompat
+            app:dependency="sync"
+            app:key="attachment"
+            app:summaryOff="@string/attachment_summary_off"
+            app:summaryOn="@string/attachment_summary_on"
+            app:title="@string/attachment_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
