@@ -37,6 +37,7 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.OpenBrowserProcessor;
+import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     private final String TAG = "NotifcationService.PollTask";
@@ -220,12 +221,12 @@ public class NotificationService extends Service {
     }
 
     private void updateAccounts() {
-        if (getBoolPreference("sso_enabled", false)) {
-            final String name = getPreference("sso_name");
-            final String server = getPreference("sso_server");
-            final String type = getPreference("sso_type");
-            final String token = getPreference("sso_token");
-            final String userId = getPreference("sso_userid");
+        if (PreferencesUtils.getBoolPreference(this, "sso_enabled", false)) {
+            final String name = PreferencesUtils.getPreference(this, "sso_name");
+            final String server = PreferencesUtils.getPreference(this, "sso_server");
+            final String type = PreferencesUtils.getPreference(this, "sso_type");
+            final String token = PreferencesUtils.getPreference(this, "sso_token");
+            final String userId = PreferencesUtils.getPreference(this, "sso_userid");
             final SingleSignOnAccount ssoAccount = new SingleSignOnAccount(name, userId, token, server, type);
             NextcloudAPI mNextcloudAPI = new NextcloudAPI(this, ssoAccount, new GsonBuilder().create(), apiCallback);
             API = new NextcloudSSOAPI(mNextcloudAPI);
@@ -237,23 +238,8 @@ public class NotificationService extends Service {
         }
     }
 
-    private String getPreference(String key) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getString(key, "<none>");
-    }
-
-    private Integer getIntPreference(String key) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getInt(key, Integer.MIN_VALUE);
-    }
-
-    private boolean getBoolPreference(String key, boolean fallback) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getBoolean(key, fallback);
-    }
-
     public void onPreferencesChange() {
-        int _pollingInterval = getIntPreference("polling_interval") * 1000;
+        int _pollingInterval = PreferencesUtils.getIntPreference(this, "polling_interval") * 1000;
         if (_pollingInterval <= 0) {
             Log.w(TAG, "Invalid polling interval! Setting to 3 seconds.");
             _pollingInterval = 3 * 1000;
@@ -301,12 +287,12 @@ public class NotificationService extends Service {
 
                 @Override
                 public void run() {
-                    username = getPreference("login");
-                    password = getPreference("password");
-                    server = getPreference("server");
-                    useHttp = getBoolPreference("insecure_connection", false);
-                    allowRoaming = getBoolPreference("allow_roaming", false);
-                    allowMetered = getBoolPreference("allow_metered", false);
+                    username = PreferencesUtils.getPreference(getApplicationContext(), "login");
+                    password = PreferencesUtils.getPreference(getApplicationContext(), "password");
+                    server = PreferencesUtils.getPreference(getApplicationContext(), "server");
+                    useHttp = PreferencesUtils.getBoolPreference(getApplicationContext(), "insecure_connection", false);
+                    allowRoaming = PreferencesUtils.getBoolPreference(getApplicationContext(), "allow_roaming", false);
+                    allowMetered = PreferencesUtils.getBoolPreference(getApplicationContext(), "allow_metered", false);
 
 
                     //FIXME: Should call below method only when prefernces updated

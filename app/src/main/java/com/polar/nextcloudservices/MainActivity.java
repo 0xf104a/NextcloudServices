@@ -16,6 +16,9 @@ import android.view.Menu;
 import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -28,6 +31,15 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.gson.GsonBuilder;
+import com.nextcloud.android.sso.AccountImporter;
+import com.nextcloud.android.sso.aidl.NextcloudRequest;
+import com.nextcloud.android.sso.api.NextcloudAPI;
+import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
+import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
+import com.nextcloud.android.sso.helper.SingleAccountHelper;
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
+import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 import com.polar.nextcloudservices.databinding.ActivityMainBinding;
 import com.polar.nextcloudservices.settings.NotificationServiceConnection;
 import com.polar.nextcloudservices.ui.settings.SettingsFragment;
@@ -130,7 +142,11 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupToolbars() {
         setSupportActionBar(binding.appBarMain.toolbar);
-        //updateCurrentAccountAvatar();
+        try {
+            updateProfileImage();
+        } catch (NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
+            e.printStackTrace();
+        }
         binding.appBarMain.homeToolbar.setOnClickListener((v) -> {
             if (binding.appBarMain.toolbar.getVisibility() == GONE) {
                 //updateToolbars(false);
@@ -161,5 +177,24 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private void updateProfileImage() throws NextcloudFilesAppAccountNotFoundException, NoCurrentAccountSelectedException {
+        // If you stored the "default" account using setCurrentAccount(…) you can get the account by using the following line:
+        SingleSignOnAccount ssoAccount = AccountImporter.getSingleSignOnAccount(this, PreferencesUtils.getPreference(this, "sso_name"));
+
+        GlideUrl url = new GlideUrl(ssoAccount.url+"/index.php/avatar/" + ssoAccount.userId + "/64");
+
+        Log.e(TAG, "TEST");
+        Log.e(TAG, url.toString());
+        Log.e(TAG, url.toStringUrl());
+
+        Glide.with(this)
+                .load(url)
+                .placeholder(R.drawable.ic_account_circle_grey_24dp)
+                .error(R.drawable.ic_account_circle_grey_24dp)
+                .apply(RequestOptions.circleCropTransform())
+                .into(binding.appBarMain.launchAccountSwitcher);
+
     }
 }
