@@ -183,6 +183,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateProfileImage() throws NextcloudFilesAppAccountNotFoundException, NoCurrentAccountSelectedException {
+        if (!PreferencesUtils.getBoolPreference(this, "sso_enabled", false)) {
+            return;
+        }
         // If you stored the "default" account using setCurrentAccount(…) you can get the account by using the following line:
         SingleSignOnAccount ssoAccount = AccountImporter.getSingleSignOnAccount(this, PreferencesUtils.getPreference(this, "sso_name"));
 
