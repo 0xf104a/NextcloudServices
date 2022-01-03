@@ -6,23 +6,21 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.polar.nextcloudservices.NotificationService;
+import com.polar.nextcloudservices.R;
+import com.polar.nextcloudservices.databinding.ActivityMainBinding;
 import com.polar.nextcloudservices.ui.settings.SettingsFragment;
 
 public class NotificationServiceConnection implements ServiceConnection {
     private final String TAG = "SettingsActivity.NotificationServiceConnection";
-    private final SettingsFragment settings;
     private NotificationService.Binder mService;
     public boolean isConnected = false;
 
-    public NotificationServiceConnection(SettingsFragment _settings) {
-        settings = _settings;
-    }
+    public NotificationServiceConnection() {}
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         if (service instanceof NotificationService.Binder) {
             mService = (NotificationService.Binder) service;
-            settings.setStatus(((NotificationService.Binder) service).getServiceStatus());
             isConnected = true;
         } else {
             Log.wtf(TAG, "Bad Binder type passed!");
@@ -33,11 +31,20 @@ public class NotificationServiceConnection implements ServiceConnection {
     public void updateStatus() {
         if (!isConnected) {
             Log.w(TAG, "Service has already disconnected");
-            settings.setStatus("Disconnected: service is not running");
         } else {
-            settings.setStatus(mService.getServiceStatus());
+            Log.w(TAG, "Service: "+mService.getServiceStatus());
         }
     }
+
+    public void updateConnectionStateIndicator(ActivityMainBinding binding){
+        updateStatus();
+        if(isConnected){
+            binding.appBarMain.connectionState.setImageResource(R.drawable.ic_baseline_cloud_24);
+        } else {
+            binding.appBarMain.connectionState.setImageResource(R.drawable.ic_baseline_cloud_off_24);
+        }
+    }
+
 
     public void tellAccountChanged() {
         Log.d(TAG, "Telling service that account has cahnged");

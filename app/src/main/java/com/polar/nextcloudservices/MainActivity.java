@@ -83,8 +83,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        setupToolbars();
         startNotificationService();
+        setupToolbars();
+        updateNotificationServiceStatus();
     }
 
     @Override
@@ -124,17 +125,16 @@ public class MainActivity extends AppCompatActivity {
         return (services.size() > 0);
     }
 
-    private void updateNotificationServiceStatus(SettingsFragment settings) {
+    private void updateNotificationServiceStatus() {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningServiceInfo> services = manager.getRunningServices(Integer.MAX_VALUE);
         if (services.size() == 0) {
             Log.e(TAG, "Service is not running!");
-            settings.setStatus("Disconnected: service is not running");
         } else if(mServiceConnection==null){
-            mServiceConnection = new NotificationServiceConnection(settings);
+            mServiceConnection = new NotificationServiceConnection();
             bindService(new Intent(getApplicationContext(), NotificationService.class), mServiceConnection, 0);
         } else {
-            mServiceConnection.updateStatus();
+            mServiceConnection.updateConnectionStateIndicator(binding);
         }
     }
 
@@ -152,34 +152,23 @@ public class MainActivity extends AppCompatActivity {
         }
         binding.appBarMain.homeToolbar.setOnClickListener((v) -> {
             if (binding.appBarMain.toolbar.getVisibility() == GONE) {
-                //updateToolbars(false);
+                mServiceConnection.updateConnectionStateIndicator(binding);
             }
         });
 
         binding.appBarMain.launchAccountSwitcher.setOnClickListener((v) -> openAccountChooser());
         binding.appBarMain.menuButton.setOnClickListener((v) -> binding.drawerLayout.openDrawer(GravityCompat.START));
 
-        final LinearLayout searchEditFrame = binding.appBarMain.searchView.findViewById(R.id.search_edit_frame);
 
         binding.appBarMain.searchView.setOnCloseListener(() -> {
             if (binding.appBarMain.toolbar.getVisibility() == VISIBLE && TextUtils.isEmpty(binding.appBarMain.searchView.getQuery())) {
-                //updateToolbars(true);
+                mServiceConnection.updateConnectionStateIndicator(binding);
                 return true;
             }
             return false;
         });
-        binding.appBarMain.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
+        binding.appBarMain.connectionState.setOnClickListener((v) -> mServiceConnection.updateConnectionStateIndicator(binding));
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                //refreshLists();
-                return true;
-            }
-        });
     }
 
     private void updateProfileImage() throws NextcloudFilesAppAccountNotFoundException, NoCurrentAccountSelectedException {
@@ -190,10 +179,6 @@ public class MainActivity extends AppCompatActivity {
         SingleSignOnAccount ssoAccount = AccountImporter.getSingleSignOnAccount(this, PreferencesUtils.getPreference(this, "sso_name"));
 
         GlideUrl url = new GlideUrl(ssoAccount.url+"/index.php/avatar/" + ssoAccount.userId + "/64");
-
-        Log.e(TAG, "TEST");
-        Log.e(TAG, url.toString());
-        Log.e(TAG, url.toStringUrl());
 
         Glide.with(this)
                 .load(url)
@@ -207,6 +192,11 @@ public class MainActivity extends AppCompatActivity {
     private void openAccountChooser() {
         try {
             AccountImporter.pickNewAccount(this);
+            try {
+                updateProfileImage();
+            } catch (NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
+                e.printStackTrace();
+            }
         } catch (NextcloudFilesAppNotInstalledException | AndroidGetAccountsPermissionNotGranted e) {
             UiExceptionManager.showDialogForException(getApplicationContext(), e);
         }

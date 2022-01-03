@@ -73,7 +73,7 @@
                     tools:text="@string/search_in_all" />
 
                 <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/sorting_method"
+                    android:id="@+id/connection_state"
                     android:layout_width="?attr/actionBarSize"
                     android:layout_height="?attr/actionBarSize"
                     android:layout_gravity="center_vertical|end"
@@ -82,7 +82,7 @@
                     android:padding="@dimen/spacer_2x"
                     android:tint="?attr/colorAccent"
                     android:translationX="@dimen/spacer_1x"
-                    app:srcCompat="@drawable/ic_deck" />
+                    app:srcCompat="@drawable/ic_baseline_cloud_off_24" />
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/launchAccountSwitcher"

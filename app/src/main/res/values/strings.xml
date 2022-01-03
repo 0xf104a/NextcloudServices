@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Nextcloud Services</string>
+    <string name="app_name">Notifications</string>
     <!-- Settings Activity Title -->
     <string name="title_activity_settings">Settings</string>
 
