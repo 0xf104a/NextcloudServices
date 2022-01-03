@@ -1,5 +1,6 @@
 package com.polar.nextcloudservices.ui.settings;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGrant
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
+import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 import com.polar.nextcloudservices.R;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
@@ -46,13 +48,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        Context currentContext = getContext();
         try {
             AccountImporter.onActivityResult(requestCode, resultCode, data, this, new AccountImporter.IAccountAccessGranted() {
 
                 @Override
                 public void accountAccessGranted(SingleSignOnAccount singleSignOnAccount) {
-                    enableSSO(singleSignOnAccount);
+                    PreferencesUtils.setSSOPreferences(currentContext, singleSignOnAccount);
+                    setSSOPreferencesState();
+                    notifyService();
                     Log.i(TAG, "Succesfully imported account");
                 }
 
@@ -112,20 +116,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         //activity.mServiceConnection.tellAccountChanged();
     }
 
-    private void enableSSO(@NonNull SingleSignOnAccount account) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("sso_enabled", true);
-        editor.putString("sso_name", account.name);
-        editor.putString("sso_server", account.url);
-        editor.putString("sso_type", account.type);
-        editor.putString("sso_token", account.token);
-        editor.putString("sso_userid", account.userId);
-        editor.apply();
-        setSSOPreferencesState();
-        notifyService();
-    }
-
     private void disableSSO() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -135,6 +125,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         notifyService();
     }
 
+    // Todo: merge with one in MainActivity
     private void openAccountChooser() {
         try {
             AccountImporter.pickNewAccount(this);

@@ -35,10 +35,13 @@ import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.AccountImporter;
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
+import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGranted;
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
+import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
 import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
 import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
+import com.nextcloud.android.sso.ui.UiExceptionManager;
 import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 import com.polar.nextcloudservices.databinding.ActivityMainBinding;
 import com.polar.nextcloudservices.settings.NotificationServiceConnection;
@@ -153,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //binding.appBarMain.launchAccountSwitcher.setOnClickListener((v) -> askForNewAccount(this));
+        binding.appBarMain.launchAccountSwitcher.setOnClickListener((v) -> openAccountChooser());
         binding.appBarMain.menuButton.setOnClickListener((v) -> binding.drawerLayout.openDrawer(GravityCompat.START));
 
         final LinearLayout searchEditFrame = binding.appBarMain.searchView.findViewById(R.id.search_edit_frame);
@@ -196,5 +199,13 @@ public class MainActivity extends AppCompatActivity {
                 .apply(RequestOptions.circleCropTransform())
                 .into(binding.appBarMain.launchAccountSwitcher);
 
+    }
+
+    private void openAccountChooser() {
+        try {
+            AccountImporter.pickNewAccount(this);
+        } catch (NextcloudFilesAppNotInstalledException | AndroidGetAccountsPermissionNotGranted e) {
+            UiExceptionManager.showDialogForException(getApplicationContext(), e);
+        }
     }
 }
