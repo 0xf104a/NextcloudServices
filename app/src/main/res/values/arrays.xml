@@ -11,31 +11,39 @@
     </string-array>
 
     <string-array name="oss_libs">
+        <item>Original App-Creator</item>
         <item>Contribution: NumberPickerPreference\nLicense: LGPL-3.0</item>
         <item>Contribution: App icon</item>
         <item>Contribution: Bug fixes, ideas</item>
         <item>Contribution: Credits activity improvements</item>
+        <item>Contribution: Userinterface Overhaul</item>
     </string-array>
 
     <string-array name="oss_libs_owner_Img">
+        <item>https://avatars.githubusercontent.com/u/15843766?v=4</item>
         <item>https://avatars.githubusercontent.com/u/404166?v=4</item>
         <item>https://avatars.githubusercontent.com/u/31142286?v=4</item>
         <item>https://avatars.githubusercontent.com/u/6894017?v=4</item>
         <item>https://avatars.githubusercontent.com/u/89275109?v=4</item>
+        <item>https://avatars.githubusercontent.com/u/25279821?v=4</item>
     </string-array>
 
     <string-array name="oss_libs_owner_name">
+        <item></item>
         <item>Sven van den Tweel</item>
         <item>Donno</item>
         <item>Daniele Verducci</item>
         <item>Devansh-gaur-1611</item>
+        <item>Felix Nüsse</item>
     </string-array>
 
     <string-array name="oss_libs_owner_github_name">
+        <item>Andrewerr</item>
         <item>invissvenska</item>
         <item>Donnnno</item>
         <item>penguin86</item>
         <item>Devansh-gaur-1611</item>
+        <item>Newhinton</item>
     </string-array>
 
     <string-array name="oss_libs_links">
