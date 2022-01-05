@@ -19,6 +19,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -28,10 +29,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.nextcloud.android.sso.AccountImporter;
+import com.nextcloud.android.sso.exceptions.AccountImportCancelledException;
 import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGranted;
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
 import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
+import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
 import com.polar.nextcloudservices.Preferences.PreferencesUtils;
@@ -54,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setSupportActionBar(binding.appBarMain.toolbar);
         binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -71,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
         startNotificationService();
@@ -91,6 +92,28 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Context context = getApplicationContext();
+
+        try {
+            AccountImporter.onActivityResult(requestCode, resultCode, data, this, account -> {
+                SingleAccountHelper.setCurrentAccount(context, account.name);
+                PreferencesUtils.setSSOPreferences(context, account);
+            });
+            updateProfileImage();
+        } catch (AccountImportCancelledException | NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        AccountImporter.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
 
@@ -135,29 +158,24 @@ public class MainActivity extends AppCompatActivity {
      *
      */
     private void setupToolbars() {
-        setSupportActionBar(binding.appBarMain.toolbar);
         try {
             updateProfileImage();
         } catch (NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
             e.printStackTrace();
         }
-        binding.appBarMain.homeToolbar.setOnClickListener((v) -> {
-            if (binding.appBarMain.toolbar.getVisibility() == GONE) {
-                mServiceConnection.updateConnectionStateIndicator(binding);
-            }
-        });
+
 
         binding.appBarMain.launchAccountSwitcher.setOnClickListener((v) -> openAccountChooser());
         binding.appBarMain.menuButton.setOnClickListener((v) -> binding.drawerLayout.openDrawer(GravityCompat.START));
 
 
-        binding.appBarMain.searchView.setOnCloseListener(() -> {
+        /*binding.appBarMain.searchView.setOnCloseListener(() -> {
             if (binding.appBarMain.toolbar.getVisibility() == VISIBLE && TextUtils.isEmpty(binding.appBarMain.searchView.getQuery())) {
                 mServiceConnection.updateConnectionStateIndicator(binding);
                 return true;
             }
             return false;
-        });
+        });*/
         binding.appBarMain.connectionState.setOnClickListener((v) -> mServiceConnection.updateConnectionStateIndicator(binding));
 
     }
@@ -177,17 +195,11 @@ public class MainActivity extends AppCompatActivity {
                 .error(R.drawable.ic_account_circle_grey_24dp)
                 .apply(RequestOptions.circleCropTransform())
                 .into(binding.appBarMain.launchAccountSwitcher);
-
     }
 
     private void openAccountChooser() {
         try {
             AccountImporter.pickNewAccount(this);
-            try {
-                updateProfileImage();
-            } catch (NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
-                e.printStackTrace();
-            }
         } catch (NextcloudFilesAppNotInstalledException | AndroidGetAccountsPermissionNotGranted e) {
             UiExceptionManager.showDialogForException(getApplicationContext(), e);
         }

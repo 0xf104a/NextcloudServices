@@ -10,9 +10,11 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 public class PreferencesUtils {
 
+    public static String NONE_RESULT = "<none>";
+
     public static String getPreference(Context context, String key) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPreferences.getString(key, "<none>");
+        return sharedPreferences.getString(key, NONE_RESULT);
     }
 
     public static Integer getIntPreference(Context context, String key) {

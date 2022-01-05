@@ -1,5 +1,7 @@
 package com.polar.nextcloudservices;
 
+import static com.polar.nextcloudservices.Preferences.PreferencesUtils.NONE_RESULT;
+
 import android.util.Base64;
 import android.util.Log;
 
@@ -27,6 +29,9 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     public JSONObject getNotifications(NotificationService service) {
         try {
             String baseUrl = service.server;
+            if(baseUrl.equals(NONE_RESULT)){
+                throw new Exception("The serveradresss "+baseUrl+" is not valid!");
+            }
             String prefix = "https://";
             if (service.useHttp) {
                 prefix = "http://";
