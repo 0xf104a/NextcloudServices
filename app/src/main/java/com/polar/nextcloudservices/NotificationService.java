@@ -1,6 +1,7 @@
 
 package com.polar.nextcloudservices;
 
+import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 import static com.polar.nextcloudservices.Preferences.PreferencesUtils.NONE_RESULT;
 import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SSO_ENABLED_PREFERENCE;
 
@@ -226,8 +227,10 @@ public class NotificationService extends Service {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            //todo: add translations
-            NotificationChannel channel = new NotificationChannel(BACKGROUND_NOTIFICATION_CHANNEL, "Background polling", NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel channel = new NotificationChannel(
+                    BACKGROUND_NOTIFICATION_CHANNEL,
+                    getString(R.string.notification_persistent_title),
+                    NotificationManager.IMPORTANCE_LOW);
             mNotificationManager.createNotificationChannel(channel);
         }
         //Build notification
@@ -235,11 +238,9 @@ public class NotificationService extends Service {
                 new NotificationCompat.Builder(this, BACKGROUND_NOTIFICATION_CHANNEL)
                         .setSmallIcon(R.drawable.ic_logo)
                         .setContentTitle(getString(R.string.app_name))
-                        //todo: use proper priority
-                        .setPriority(-2)
+                        .setPriority(PRIORITY_MIN)
                         .setOnlyAlertOnce(true)
-                        //todo: add translations
-                        .setContentText("Background connection notification");
+                        .setContentText(getString(R.string.notification_persistent_content));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mBuilder.setChannelId(BACKGROUND_NOTIFICATION_CHANNEL);
         }

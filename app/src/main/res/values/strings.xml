@@ -35,4 +35,6 @@
     <string name="serverconfig_notification_channel_name">Serverconfiguration</string>
     <string name="serverconfig_notification_wrong_config">Wrong Configuration</string>
     <string name="serverconfig_notification_wrong_config_long">The Serverconfiguration was not correct. Please change it!</string>
+    <string name="notification_persistent_title">Background polling</string>
+    <string name="notification_persistent_content">Background connection notification</string>
 </resources>
