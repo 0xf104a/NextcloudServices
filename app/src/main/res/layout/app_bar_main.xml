@@ -10,7 +10,7 @@
         android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"
+        android:background="@android:color/transparent"
         app:elevation="0dp">
 
         <com.google.android.material.card.MaterialCardView
