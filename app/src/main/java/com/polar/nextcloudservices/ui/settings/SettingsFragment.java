@@ -59,6 +59,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         if (key.equals(SSO_ENABLED_PREFERENCE)) {
             setSSOPreferencesState();
         }
+        if (key.equals(ENABLE_SERVICE_PREFERENCE)) {
+            notifyParent();
+        }
     }
 
     @Override
