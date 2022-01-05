@@ -24,8 +24,8 @@
         <Preference
             android:id="@+id/login_sso"
             android:key="login_sso"
-            android:summary="Use on-device Nextcloud account"
-            android:title="Log in via Nextcloud app" />
+            android:summary="Stop using Nextcloud app for authentication"
+            android:title="Log out from Nexcloud" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Connection">
         <SwitchPreference

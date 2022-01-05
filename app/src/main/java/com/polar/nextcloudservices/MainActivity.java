@@ -1,14 +1,15 @@
 package com.polar.nextcloudservices;
 
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
 import static com.polar.nextcloudservices.settings.SettingsUtils.getBoolPreference;
+import static com.polar.nextcloudservices.ui.settings.SettingsFragment.ENABLE_SERVICE_PREFERENCE;
+import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SSO_ENABLED_PREFERENCE;
+import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SSO_NAME_PREFERENCE;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
@@ -75,8 +76,18 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        startNotificationService();
+
+        handleNotificationService();
         setupToolbars();
+        // run after short while, so that the service can start up
+        new Handler().postDelayed(this::updateNotificationServiceStatus, 2000L);
+
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        handleNotificationService();
         updateNotificationServiceStatus();
     }
 
@@ -116,6 +127,27 @@ public class MainActivity extends AppCompatActivity {
         AccountImporter.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
+    public void stopService(){
+        stopNotificationService();
+        updateNotificationServiceStatus();
+    }
+    public void notifyServiceChange(){
+        handleNotificationService();
+        updateNotificationServiceStatus();
+        try {
+            updateProfileImage();
+        } catch (NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleNotificationService() {
+        if(getBoolPreference(this, ENABLE_SERVICE_PREFERENCE,true)){
+            startNotificationService();
+        } else {
+            stopNotificationService();
+        }
+    }
 
     public void stopNotificationService() {
         if(isNotificationServiceRunning()) {
@@ -124,10 +156,11 @@ public class MainActivity extends AppCompatActivity {
             context.stopService(new Intent(context, NotificationService.class));
         }
     }
+
     public void startNotificationService() {
         ///--------
-        //Log.d(TAG, "startService: ENTERING");
-        if (!isNotificationServiceRunning() && getBoolPreference(this, "enable_polling",true)) {
+        //Log.e(TAG, "startService: ENTERING");
+        if (!isNotificationServiceRunning()) {
             Log.d(TAG, "Service is not running: creating intent to start it");
             startService(new Intent(getApplicationContext(), NotificationService.class));
         }
@@ -144,10 +177,11 @@ public class MainActivity extends AppCompatActivity {
         List<ActivityManager.RunningServiceInfo> services = manager.getRunningServices(Integer.MAX_VALUE);
         if (services.size() == 0) {
             Log.e(TAG, "Service is not running!");
-        } else if(mServiceConnection==null){
-            mServiceConnection = new NotificationServiceConnection();
-            bindService(new Intent(getApplicationContext(), NotificationService.class), mServiceConnection, 0);
-        } else {
+        }  else {
+            if(mServiceConnection==null){
+                mServiceConnection = new NotificationServiceConnection();
+                bindService(new Intent(getApplicationContext(), NotificationService.class), mServiceConnection, 0);
+            }
             mServiceConnection.updateConnectionStateIndicator(binding);
         }
     }
@@ -164,28 +198,21 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
         binding.appBarMain.launchAccountSwitcher.setOnClickListener((v) -> openAccountChooser());
         binding.appBarMain.menuButton.setOnClickListener((v) -> binding.drawerLayout.openDrawer(GravityCompat.START));
 
-
-        /*binding.appBarMain.searchView.setOnCloseListener(() -> {
-            if (binding.appBarMain.toolbar.getVisibility() == VISIBLE && TextUtils.isEmpty(binding.appBarMain.searchView.getQuery())) {
-                mServiceConnection.updateConnectionStateIndicator(binding);
-                return true;
-            }
-            return false;
-        });*/
-        binding.appBarMain.connectionState.setOnClickListener((v) -> mServiceConnection.updateConnectionStateIndicator(binding));
-
+        if(mServiceConnection != null){
+            binding.appBarMain.connectionState.setOnClickListener((v) -> mServiceConnection.updateConnectionStateIndicator(binding));
+        }
     }
 
     private void updateProfileImage() throws NextcloudFilesAppAccountNotFoundException, NoCurrentAccountSelectedException {
-        if (!PreferencesUtils.getBoolPreference(this, "sso_enabled", false)) {
+        if (!PreferencesUtils.getBoolPreference(this, SSO_ENABLED_PREFERENCE, false)) {
+            binding.appBarMain.launchAccountSwitcher.setImageResource(R.drawable.ic_account_circle_grey_24dp);
             return;
         }
         // If you stored the "default" account using setCurrentAccount(…) you can get the account by using the following line:
-        SingleSignOnAccount ssoAccount = AccountImporter.getSingleSignOnAccount(this, PreferencesUtils.getPreference(this, "sso_name"));
+        SingleSignOnAccount ssoAccount = AccountImporter.getSingleSignOnAccount(this, PreferencesUtils.getPreference(this, SSO_NAME_PREFERENCE));
 
         GlideUrl url = new GlideUrl(ssoAccount.url+"/index.php/avatar/" + ssoAccount.userId + "/64");
 

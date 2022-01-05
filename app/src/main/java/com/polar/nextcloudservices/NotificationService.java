@@ -1,7 +1,9 @@
 
 package com.polar.nextcloudservices;
 
-import android.content.SharedPreferences;
+import static com.polar.nextcloudservices.Preferences.PreferencesUtils.NONE_RESULT;
+import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SSO_ENABLED_PREFERENCE;
+
 import android.os.Build;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,7 +20,7 @@ import android.net.NetworkInfo;
 
 
 import androidx.core.app.NotificationCompat;
-import androidx.preference.PreferenceManager;
+import androidx.core.app.NotificationManagerCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,10 +54,16 @@ public class NotificationService extends Service {
     // constant
     public long pollingInterval = 3 * 1000; // 3 seconds
     public static final String TAG = "NotificationService";
+
+    private static final String BACKGROUND_NOTIFICATION_CHANNEL = "__internal_backgorund_polling";
+    private static final String SERVERCONFIG_NOTIFICATION_CHANNEL = "SERVERCONFIG_NOTIFICATION_CHANNEL";
+
+    private static final int SERVERCONFIG_NOTIFICATION_CHANNEL_ID = 5456161;
+
+
     public String server = "";
     public String username = "";
     public String password = "";
-    public String status = "Disconnected";
     public boolean useHttp = false;
     public boolean allowRoaming = false;
     public boolean allowMetered = false;
@@ -63,6 +71,16 @@ public class NotificationService extends Service {
     private PollTimerTask task;
     public NextcloudAbstractAPI API;
     private NotificationBuilder mNotificationBuilder;
+
+    private String mStatusReason = "Disconnected";
+    private STATE mStatus = STATE.DISCONNECTED;
+
+    public enum STATE {
+        CONNECTED,
+        DISCONNECTED,
+        DISABLED
+    }
+
 
     private void registerNotificationProcessors(){
         if(mNotificationBuilder==null){
@@ -82,7 +100,7 @@ public class NotificationService extends Service {
 
         @Override
         public void onError(Exception ex) {
-            status = "Disconnected: " + ex.getLocalizedMessage();
+            setStatus(STATE.DISCONNECTED, ex.getLocalizedMessage());
             ex.printStackTrace();
         }
     };
@@ -93,8 +111,17 @@ public class NotificationService extends Service {
     // timer handling
     private Timer mTimer = null;
 
-    public String getStatus() {
-        return this.status;
+    public STATE getStatus() {
+        return this.mStatus;
+    }
+
+    public String getStatusReason() {
+        return this.mStatusReason;
+    }
+
+    public void setStatus(STATE stat, String reason){
+        mStatus = stat;
+        mStatusReason =  reason;
     }
 
     public boolean checkInternetConnection(Context context) {
@@ -154,10 +181,10 @@ public class NotificationService extends Service {
                     mNotificationManager.cancel(remove_id);
                     active_notifications.remove(remove_id);
                 }
-                this.status = "Connected";
+                setStatus(STATE.CONNECTED, "Unknown");
 
             } catch (Exception e) {
-                this.status = "Disconnected: " + e.getLocalizedMessage();
+                setStatus(STATE.DISCONNECTED, e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }
@@ -178,6 +205,13 @@ public class NotificationService extends Service {
 
     @Override
     public void onCreate() {
+
+        if(!verifyValidPreferences(server)){
+            Log.e(TAG, "The Serverconfiguration is invalid!");
+            createInvalidConfigNotification();
+            return;
+        }
+
         // cancel if already existed
         if (mTimer != null) {
             mTimer.cancel();
@@ -189,23 +223,25 @@ public class NotificationService extends Service {
         task = new PollTimerTask();
         mTimer.scheduleAtFixedRate(task, 0, pollingInterval);
         //Create background service notifcation
-        String channelId = "__internal_backgorund_polling";
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId, "Background polling", NotificationManager.IMPORTANCE_LOW);
+            //todo: add translations
+            NotificationChannel channel = new NotificationChannel(BACKGROUND_NOTIFICATION_CHANNEL, "Background polling", NotificationManager.IMPORTANCE_LOW);
             mNotificationManager.createNotificationChannel(channel);
         }
         //Build notification
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this, channelId)
+                new NotificationCompat.Builder(this, BACKGROUND_NOTIFICATION_CHANNEL)
                         .setSmallIcon(R.drawable.ic_logo)
                         .setContentTitle(getString(R.string.app_name))
+                        //todo: use proper priority
                         .setPriority(-2)
                         .setOnlyAlertOnce(true)
+                        //todo: add translations
                         .setContentText("Background connection notification");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mBuilder.setChannelId(channelId);
+            mBuilder.setChannelId(BACKGROUND_NOTIFICATION_CHANNEL);
         }
 
 
@@ -220,8 +256,19 @@ public class NotificationService extends Service {
         registerNotificationProcessors();
     }
 
+    private boolean verifyValidPreferences(String URL) {
+        if(PreferencesUtils.getBoolPreference(this, SSO_ENABLED_PREFERENCE, false)){
+            return true;
+        }
+        if(URL.equals(NONE_RESULT)){
+            return false;
+        }
+        return true;
+    }
+
     private void updateAccounts() {
-        if (PreferencesUtils.getBoolPreference(this, "sso_enabled", false)) {
+        if (PreferencesUtils.getBoolPreference(this, SSO_ENABLED_PREFERENCE, false)) {
+            //todo: move keys to constants
             final String name = PreferencesUtils.getPreference(this, "sso_name");
             final String server = PreferencesUtils.getPreference(this, "sso_server");
             final String type = PreferencesUtils.getPreference(this, "sso_type");
@@ -260,13 +307,36 @@ public class NotificationService extends Service {
         mTimer.purge();
     }
 
+    private void createInvalidConfigNotification(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(SERVERCONFIG_NOTIFICATION_CHANNEL, getString(R.string.serverconfig_notification_channel_name), importance);
+            channel.setDescription(getString(R.string.notification_channel_invalid_config_description));
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, SERVERCONFIG_NOTIFICATION_CHANNEL)
+                .setSmallIcon(R.drawable.ic_logo)
+                .setContentTitle(getString(R.string.serverconfig_notification_wrong_config))
+                .setContentText(getString(R.string.serverconfig_notification_wrong_config_long))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(SERVERCONFIG_NOTIFICATION_CHANNEL_ID, builder.build());
+    }
 
     public class Binder extends android.os.Binder {
         // Returns current status string of a service
-        public String getServiceStatus() {
+        public STATE getServiceStatus() {
             return getStatus();
         }
 
+        public String getStatusReason(){
+            return getStatusReason();
+        }
         // Runs re-check of preferences, can be called from activities
         public void onPreferencesChanged() {
             onPreferencesChange();
@@ -301,7 +371,8 @@ public class NotificationService extends Service {
                     if (checkInternetConnection(getApplicationContext())) {
                         new PollTask().execute(NotificationService.this);
                     } else {
-                        status = "Disconnected: no network available";
+                        // Todo: translate
+                        setStatus(STATE.DISCONNECTED, "No network available");
                     }
                 }
 

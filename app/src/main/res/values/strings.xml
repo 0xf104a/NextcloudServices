@@ -31,4 +31,8 @@
     <string name="menu_donations">Donations</string>
     <string name="manage_accounts">Manage Accounts</string>
     <string name="search_in_all">Search</string>
+    <string name="notification_channel_invalid_config_description">Invalid Serverconfiguration</string>
+    <string name="serverconfig_notification_channel_name">Serverconfiguration</string>
+    <string name="serverconfig_notification_wrong_config">Wrong Configuration</string>
+    <string name="serverconfig_notification_wrong_config_long">The Serverconfiguration was not correct. Please change it!</string>
 </resources>

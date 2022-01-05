@@ -1,36 +1,33 @@
 package com.polar.nextcloudservices.ui.settings;
 
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
-import com.nextcloud.android.sso.AccountImporter;
-import com.nextcloud.android.sso.api.NextcloudAPI;
-import com.nextcloud.android.sso.exceptions.AccountImportCancelledException;
-import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGranted;
-import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
-import com.nextcloud.android.sso.model.SingleSignOnAccount;
-import com.nextcloud.android.sso.ui.UiExceptionManager;
-import com.polar.nextcloudservices.Preferences.PreferencesUtils;
+import com.polar.nextcloudservices.MainActivity;
 import com.polar.nextcloudservices.R;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
 import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;
 
-public class SettingsFragment extends PreferenceFragmentCompat {
+public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
 
-    private final String TAG = "SettingsActivity.SettingsFragment";
+    private final String TAG = this.getClass().toString();
+    public static final String SSO_ENABLED_PREFERENCE = "sso_enabled";
+    public static final String SSO_NAME_PREFERENCE = "sso_name";
+    public static final String SSO_INUSE_PREFERENCE = "login_sso";
+    public static final String SERVER_ADRESS_PREFERENCE = "server";
+    public static final String SERVER_PASSWORD_PREFERENCE = "password";
+    public static final String SERVER_LOGIN_PREFERENCE = "login";
+    public static final String SERVER_INSECURE_PREFERENCE = "insecure_connection";
+    public static final String ENABLE_SERVICE_PREFERENCE = "enable_polling";
+
+
 
     @Override
     public void onDestroyView() {
@@ -39,51 +36,29 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
-
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         setSSOPreferencesState();
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Context currentContext = getContext();
-        try {
-            AccountImporter.onActivityResult(requestCode, resultCode, data, this, new AccountImporter.IAccountAccessGranted() {
+    public void onResume() {
+        super.onResume();
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
-                @Override
-                public void accountAccessGranted(SingleSignOnAccount singleSignOnAccount) {
-                    PreferencesUtils.setSSOPreferences(currentContext, singleSignOnAccount);
-                    setSSOPreferencesState();
-                    notifyService();
-                    Log.i(TAG, "Succesfully imported account");
-                }
-
-                NextcloudAPI.ApiConnectedListener callback = new NextcloudAPI.ApiConnectedListener() {
-                    @Override
-                    public void onConnected() {
-                        // ignore this one… see 5)
-                    }
-
-                    @Override
-                    public void onError(Exception ex) {
-                        ex.printStackTrace();
-                        Toast.makeText(getContext(), ex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                    }
-                };
-
-            });
-        } catch (AccountImportCancelledException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.d(TAG, "Succesfully got Nextcloud permissions");
-        AccountImporter.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    public void onPause() {
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(SSO_ENABLED_PREFERENCE)) {
+            setSSOPreferencesState();
+        }
     }
 
     @Override
@@ -111,73 +86,51 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         return sharedPreferences.getBoolean(key, fallback);
     }
 
-    private void notifyService() {
-        // todo: add mServiceConnection
-        //activity.mServiceConnection.tellAccountChanged();
+    private void notifyParent() {
+        MainActivity main = ((MainActivity) this.getActivity());
+        if(main != null){
+            main.notifyServiceChange();
+        }
     }
+
 
     private void disableSSO() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("sso_enabled", false);
+        editor.putBoolean(SSO_ENABLED_PREFERENCE, false);
         editor.apply();
         setSSOPreferencesState();
-        notifyService();
-    }
-
-    // Todo: merge with one in MainActivity
-    private void openAccountChooser() {
-        try {
-            AccountImporter.pickNewAccount(this);
-        } catch (NextcloudFilesAppNotInstalledException | AndroidGetAccountsPermissionNotGranted e) {
-            UiExceptionManager.showDialogForException(getContext(), e);
+        notifyParent();
+        MainActivity main = ((MainActivity) this.getActivity());
+        if(main != null){
+            main.stopService();
         }
     }
 
     private void setSSOPreferencesState() {
-        Preference login_sso = findPreference("login_sso");
+        Preference login_sso = findPreference(SSO_INUSE_PREFERENCE);
         if (login_sso == null) {
             Log.wtf(TAG, "login_sso preference is null!");
             throw new NullPointerException();
         }
-        if (getBoolPreference("sso_enabled", false)) {
-            findPreference("server").setEnabled(false);
-            findPreference("password").setEnabled(false);
-            findPreference("login").setEnabled(false);
-            findPreference("insecure_connection").setEnabled(false);
-            login_sso.setSummary("Stop using Nextcloud app for authentication");
-            login_sso.setTitle("Log out from Nexcloud");
-            login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    Log.d(TAG, "Disabling SSO");
-                    disableSSO();
-                    return true;
-                }
-            });
-        } else {
-            findPreference("server").setEnabled(true);
-            findPreference("password").setEnabled(true);
-            findPreference("login").setEnabled(true);
-            findPreference("insecure_connection").setEnabled(true);
-            login_sso.setSummary("Use on-device Nextcloud account");
-            login_sso.setTitle("Log in via Nextcloud app");
-            login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    Log.d(TAG, "Opening account chooser");
-                    openAccountChooser();
-                    return true;
-                }
-            });
-        }
-    }
+        if (getBoolPreference(SSO_ENABLED_PREFERENCE, false)) {
+            findPreference(SSO_INUSE_PREFERENCE).setEnabled(true);
+            findPreference(SERVER_ADRESS_PREFERENCE).setEnabled(false);
+            findPreference(SERVER_PASSWORD_PREFERENCE).setEnabled(false);
+            findPreference(SERVER_LOGIN_PREFERENCE).setEnabled(false);
+            findPreference(SERVER_INSECURE_PREFERENCE).setEnabled(false);
 
-    public void setStatus(String _status) {
-        EditTextPreference status = (EditTextPreference) findPreference("status");
-        if (status == null) {
-            Log.wtf(TAG, "Unexpected null result of findPreference");
-            throw new RuntimeException("Expected EditTextPreference, but got null!");
+            login_sso.setOnPreferenceClickListener(preference -> {
+                Log.d(TAG, "Disabling SSO");
+                disableSSO();
+                return true;
+            });
         } else {
-            status.setSummary(_status);
+            findPreference(SERVER_ADRESS_PREFERENCE).setEnabled(true);
+            findPreference(SERVER_PASSWORD_PREFERENCE).setEnabled(true);
+            findPreference(SERVER_LOGIN_PREFERENCE).setEnabled(true);
+            findPreference(SERVER_INSECURE_PREFERENCE).setEnabled(true);
+            findPreference(SSO_INUSE_PREFERENCE).setEnabled(false);
         }
     }
 }

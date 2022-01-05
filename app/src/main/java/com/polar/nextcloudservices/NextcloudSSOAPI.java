@@ -49,7 +49,8 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
             }
             in.close();
         } catch (Exception e) {
-            service.status = "Disconnected: " + e.getLocalizedMessage();
+            //Todo: Translate message
+            service.setStatus(NotificationService.STATE.DISCONNECTED, e.getLocalizedMessage());
             e.printStackTrace();
             return null;
         }
@@ -61,7 +62,8 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");
             e.printStackTrace();
-            service.status = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
+            //Todo: Translate message
+            service.setStatus(NotificationService.STATE.DISCONNECTED, "server has sent bad response: " + e.getLocalizedMessage());
             return null;
         }
     }

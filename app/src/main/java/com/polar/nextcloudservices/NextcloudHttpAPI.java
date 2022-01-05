@@ -77,20 +77,24 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");
             e.printStackTrace();
-            service.status = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
+            //Todo: Translate message
+            service.setStatus(NotificationService.STATE.DISCONNECTED, "Server has sent bad response: " + e.getLocalizedMessage());
             return null;
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
-            service.status = "Disconnected: File not found: check your credentials and Nextcloud instance.";
+            //Todo: Translate message
+            service.setStatus(NotificationService.STATE.DISCONNECTED, "File not found: check your credentials and Nextcloud instance.");
             return null;
         } catch (IOException e) {
             Log.e(TAG, "Error while getting response");
             e.printStackTrace();
-            service.status = "Disconnected: I/O error: " + e.getLocalizedMessage();
+            //Todo: Translate message
+            service.setStatus(NotificationService.STATE.DISCONNECTED, "I/O error: " + e.getLocalizedMessage());
             return null;
         } catch (Exception e) {
             e.printStackTrace();
-            service.status = "Disconnected: " + e.getLocalizedMessage();
+            //Todo: Translate message
+            service.setStatus(NotificationService.STATE.DISCONNECTED, e.getLocalizedMessage());
             return null;
         }
     }

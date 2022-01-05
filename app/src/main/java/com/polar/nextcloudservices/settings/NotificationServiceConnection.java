@@ -21,7 +21,7 @@ public class NotificationServiceConnection implements ServiceConnection {
     public void onServiceConnected(ComponentName name, IBinder service) {
         if (service instanceof NotificationService.Binder) {
             mService = (NotificationService.Binder) service;
-            isConnected = true;
+            isConnected = mService.getServiceStatus() == NotificationService.STATE.CONNECTED;
         } else {
             Log.wtf(TAG, "Bad Binder type passed!");
             throw new RuntimeException("Expected NotificationService.Binder");
@@ -29,6 +29,12 @@ public class NotificationServiceConnection implements ServiceConnection {
     }
 
     public void updateStatus() {
+        if(mService == null){
+            isConnected = false;
+            Log.w(TAG, "No service instantiated.");
+            return;
+        }
+        isConnected = mService.getServiceStatus() == NotificationService.STATE.CONNECTED;
         if (!isConnected) {
             Log.w(TAG, "Service has already disconnected");
         } else {
@@ -43,12 +49,6 @@ public class NotificationServiceConnection implements ServiceConnection {
         } else {
             binding.appBarMain.connectionState.setImageResource(R.drawable.ic_baseline_cloud_off_24);
         }
-    }
-
-
-    public void tellAccountChanged() {
-        Log.d(TAG, "Telling service that account has cahnged");
-        mService.onAccountChanged();
     }
 
     @Override
