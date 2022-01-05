@@ -1,5 +1,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="Service">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="enable_polling"
+            android:summary="Enables polling notifications"
+            android:title="Enable service" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="Login">
         <EditTextPreference
             android:hint="cloud.example.com"
@@ -43,11 +51,6 @@
             android:key="allow_metered"
             android:summary="Allows networks which are metered"
             android:title="Allow metered networks" />
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="enable_polling"
-            android:summary="Enables polling notifications"
-            android:title="Enable service" />
         <nl.invissvenska.numberpickerpreference.NumberDialogPreference
             android:defaultValue="10"
             android:key="polling_interval"
