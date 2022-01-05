@@ -18,8 +18,10 @@
         android:layout_marginTop="@dimen/spacer_2x"
         android:layout_marginEnd="@dimen/spacer_2x"
         android:layout_marginBottom="@dimen/spacer_2x"
+        android:adjustViewBounds="true"
         android:contentDescription="@string/nav_header_desc"
         android:gravity="center"
+        android:scaleType="center"
         app:srcCompat="@mipmap/ic_launcher_foreground" />
 
     <TextView
