@@ -1,5 +1,7 @@
 package com.polar.nextcloudservices;
 
+import android.content.Context;
+
 import org.json.JSONObject;
 
 /*
@@ -9,5 +11,5 @@ import org.json.JSONObject;
  * The inheritors of this interface should be passed to NotificationService.
  */
 public interface NextcloudAbstractAPI {
-    public JSONObject getNotifications(NotificationService service);
+    public JSONObject getNotifications(NotificationService service, Context context);
 }

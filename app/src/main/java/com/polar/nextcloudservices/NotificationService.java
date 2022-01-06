@@ -44,10 +44,14 @@ import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     private final String TAG = "NotifcationService.PollTask";
+    private Context mContext;
 
+    public PollTask (Context context){
+        mContext = context;
+    }
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
-        return services[0].API.getNotifications(services[0]);
+        return services[0].API.getNotifications(services[0], mContext);
     }
 }
 
@@ -370,10 +374,9 @@ public class NotificationService extends Service {
                     onPreferencesChange();
 
                     if (checkInternetConnection(getApplicationContext())) {
-                        new PollTask().execute(NotificationService.this);
+                        new PollTask(getApplicationContext()).execute(NotificationService.this);
                     } else {
-                        // Todo: translate
-                        setStatus(STATE.DISCONNECTED, "No network available");
+                        setStatus(STATE.DISCONNECTED, getString(R.string.state_noconnection));
                     }
                 }
 

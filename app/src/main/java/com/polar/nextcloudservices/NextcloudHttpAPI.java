@@ -2,6 +2,7 @@ package com.polar.nextcloudservices;
 
 import static com.polar.nextcloudservices.Preferences.PreferencesUtils.NONE_RESULT;
 
+import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 
@@ -26,7 +27,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         return Base64.encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT).toString();
     }
     @Override
-    public JSONObject getNotifications(NotificationService service) {
+    public JSONObject getNotifications(NotificationService service, Context context) {
         try {
             String baseUrl = service.server;
             if(baseUrl.equals(NONE_RESULT)){
@@ -77,23 +78,19 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");
             e.printStackTrace();
-            //Todo: Translate message
-            service.setStatus(NotificationService.STATE.DISCONNECTED, "Server has sent bad response: " + e.getLocalizedMessage());
+            service.setStatus(NotificationService.STATE.DISCONNECTED, context.getString(R.string.servererror_badmessage) + e.getLocalizedMessage());
             return null;
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
-            //Todo: Translate message
-            service.setStatus(NotificationService.STATE.DISCONNECTED, "File not found: check your credentials and Nextcloud instance.");
+            service.setStatus(NotificationService.STATE.DISCONNECTED, context.getString(R.string.servererror_filenotfound));
             return null;
         } catch (IOException e) {
             Log.e(TAG, "Error while getting response");
             e.printStackTrace();
-            //Todo: Translate message
-            service.setStatus(NotificationService.STATE.DISCONNECTED, "I/O error: " + e.getLocalizedMessage());
+            service.setStatus(NotificationService.STATE.DISCONNECTED, context.getString(R.string.servererror_io) + e.getLocalizedMessage());
             return null;
         } catch (Exception e) {
             e.printStackTrace();
-            //Todo: Translate message
             service.setStatus(NotificationService.STATE.DISCONNECTED, e.getLocalizedMessage());
             return null;
         }
