@@ -24,7 +24,8 @@
         tools:layout="@layout/fragment_credits" />
 
     <fragment
-        android:id="@+id/nav_donations"
-        android:label="@string/menu_donations"
-        android:name="com.polar.nextcloudservices.ui.donate.DonateFragment"/>
+        android:id="@+id/nav_contribute"
+        android:label="@string/menu_contribute"
+        android:name="com.polar.nextcloudservices.ui.contribute.ContributeFragment"
+        tools:layout="@layout/fragment_contribute"/>
 </navigation>

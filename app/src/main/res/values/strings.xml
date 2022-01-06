@@ -1,23 +1,8 @@
 <resources>
     <string name="app_name">Notifications</string>
     <!-- Settings Activity Title -->
-    <string name="title_activity_settings">Settings</string>
+    <string name="settings">Settings</string>
 
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="action_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -28,7 +13,7 @@
     <string name="menu_home">Home</string>
     <string name="menu_credits">Credits</string>
     <string name="menu_settings">Settings</string>
-    <string name="menu_donations">Donations</string>
+    <string name="menu_contribute">Help Out!</string>
     <string name="manage_accounts">Manage Accounts</string>
     <string name="search_in_all">Search</string>
     <string name="notification_channel_invalid_config_description">Invalid Serverconfiguration</string>
@@ -62,4 +47,9 @@
     <string name="servererror_filenotfound">File not found: check your credentials and Nextcloud instance.</string>
     <string name="servererror_io">I/O error: </string>
     <string name="state_noconnection">No network available</string>
+    <string name="external_translations">Translations</string>
+    <string name="external_github">Code</string>
+    <string name="external_donate">Donate</string>
+    <string name="license_label">This app is released under a GPL 3.0 License</string>
+    <string name="label_contribute">If you want to contribute, you can check out the code, help with translations or donate to the project!</string>
 </resources>

@@ -17,8 +17,8 @@
             android:icon="@drawable/ic_info"
             android:title="@string/menu_credits" />
         <item
-            android:id="@+id/nav_donations"
+            android:id="@+id/nav_contribute"
             android:icon="@drawable/ic_info"
-            android:title="@string/menu_donations" />
+            android:title="@string/menu_contribute" />
     </group>
 </menu>
