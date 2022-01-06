@@ -59,48 +59,5 @@
             app:numberPickerPreference_minValue="1"
             app:numberPickerPreference_unitText=" seconds" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Status">
-        <EditTextPreference
-            android:id="@+id/status"
-            android:defaultValue="Default value"
-            android:enabled="false"
-            android:key="status"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:summary="Disconnected"
-            android:title="Status"
-            app:enabled="false" />
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/messages_header">
-
-        <EditTextPreference
-            app:key="signature"
-            app:title="@string/signature_title"
-            app:useSimpleSummaryProvider="true" />
-
-        <ListPreference
-            app:defaultValue="reply"
-            app:entries="@array/reply_entries"
-            app:entryValues="@array/reply_values"
-            app:key="reply"
-            app:title="@string/reply_title"
-            app:useSimpleSummaryProvider="true" />
-
-    </PreferenceCategory>
-    <PreferenceCategory app:title="@string/sync_header">
-
-        <SwitchPreferenceCompat
-            app:key="sync"
-            app:title="@string/sync_title" />
-
-        <SwitchPreferenceCompat
-            app:dependency="sync"
-            app:key="attachment"
-            app:summaryOff="@string/attachment_summary_off"
-            app:summaryOn="@string/attachment_summary_on"
-            app:title="@string/attachment_title" />
-
-    </PreferenceCategory>
 
 </PreferenceScreen>
