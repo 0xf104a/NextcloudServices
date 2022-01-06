@@ -249,7 +249,6 @@ public class NotificationService extends Service {
             mBuilder.setChannelId(BACKGROUND_NOTIFICATION_CHANNEL);
         }
 
-
         Notification mNotification = mBuilder.build();
         //Here we want to get Nextcloud account if it does exist
         //Otherwise we will use basic NextcloudHttpAPI
@@ -302,7 +301,6 @@ public class NotificationService extends Service {
             pollingInterval = _pollingInterval;
             updateTimer();
         }
-
     }
 
     @Override
@@ -338,19 +336,6 @@ public class NotificationService extends Service {
         public STATE getServiceStatus() {
             return getStatus();
         }
-
-        public String getStatusReason(){
-            return getStatusReason();
-        }
-        // Runs re-check of preferences, can be called from activities
-        public void onPreferencesChanged() {
-            onPreferencesChange();
-        }
-
-        // Update API class when accounts state change
-        public void onAccountChanged() {
-            updateAccounts();
-        }
     }
 
     class PollTimerTask extends TimerTask {
@@ -358,37 +343,23 @@ public class NotificationService extends Service {
         @Override
         public void run() {
             // run on another thread
-            mHandler.post(new Runnable() {
+            mHandler.post(() -> {
+                username = PreferencesUtils.getPreference(getApplicationContext(), "login");
+                password = PreferencesUtils.getPreference(getApplicationContext(), "password");
+                server = PreferencesUtils.getPreference(getApplicationContext(), "server");
+                useHttp = PreferencesUtils.getBoolPreference(getApplicationContext(), "insecure_connection", false);
+                allowRoaming = PreferencesUtils.getBoolPreference(getApplicationContext(), "allow_roaming", false);
+                allowMetered = PreferencesUtils.getBoolPreference(getApplicationContext(), "allow_metered", false);
 
-                @Override
-                public void run() {
-                    username = PreferencesUtils.getPreference(getApplicationContext(), "login");
-                    password = PreferencesUtils.getPreference(getApplicationContext(), "password");
-                    server = PreferencesUtils.getPreference(getApplicationContext(), "server");
-                    useHttp = PreferencesUtils.getBoolPreference(getApplicationContext(), "insecure_connection", false);
-                    allowRoaming = PreferencesUtils.getBoolPreference(getApplicationContext(), "allow_roaming", false);
-                    allowMetered = PreferencesUtils.getBoolPreference(getApplicationContext(), "allow_metered", false);
+                //FIXME: Should call below method only when prefernces updated
+                onPreferencesChange();
 
-
-                    //FIXME: Should call below method only when prefernces updated
-                    onPreferencesChange();
-
-                    if (checkInternetConnection(getApplicationContext())) {
-                        new PollTask(getApplicationContext()).execute(NotificationService.this);
-                    } else {
-                        setStatus(STATE.DISCONNECTED, getString(R.string.state_noconnection));
-                    }
+                if (checkInternetConnection(getApplicationContext())) {
+                    new PollTask(getApplicationContext()).execute(NotificationService.this);
+                } else {
+                    setStatus(STATE.DISCONNECTED, getString(R.string.state_noconnection));
                 }
-
             });
         }
-
-        private String getDateTime() {
-            // get date time in custom format
-            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
-            return sdf.format(new Date());
-        }
-
-
     }
 }
