@@ -23,10 +23,10 @@ public class ContributeFragment extends Fragment {
             openUrl("https://github.com/Andrewerr/NextcloudServices");
         });
         binding.buttonTranslations.setOnClickListener((View v) -> {
-            openUrl("");
+            openUrl("https://github.com/Andrewerr/NextcloudServices/blob/main/app/src/main/res/values/strings.xml");
         });
         binding.buttonDonate.setOnClickListener((View v) -> {
-            openUrl("");
+            openUrl("https://liberapay.com/Andrewerr/donate");
         });
         binding.labelLicense.setOnClickListener((View v) -> {
             openUrl("https://github.com/Andrewerr/NextcloudServices/blob/main/LICENSE");
