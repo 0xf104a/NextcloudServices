@@ -4,6 +4,7 @@ package com.polar.nextcloudservices;
  * Implements API for accounts imported from nextcloud.
  */
 
+import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
@@ -29,7 +30,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public JSONObject getNotifications(NotificationService service) {
+    public JSONObject getNotifications(NotificationService service, Context context) {
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<String>();
         values.add("application/json");
@@ -49,7 +50,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
             }
             in.close();
         } catch (Exception e) {
-            service.status = "Disconnected: " + e.getLocalizedMessage();
+            service.setStatus(NotificationService.STATE.DISCONNECTED, e.getLocalizedMessage());
             e.printStackTrace();
             return null;
         }
@@ -61,7 +62,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");
             e.printStackTrace();
-            service.status = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
+            service.setStatus(NotificationService.STATE.DISCONNECTED, context.getString(R.string.servererror_badmessage) + e.getLocalizedMessage());
             return null;
         }
     }
