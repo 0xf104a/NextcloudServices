@@ -8,16 +8,14 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.polar.nextcloudservices.Adapters.AppListAdapter;
 import com.polar.nextcloudservices.Preferences.AppPreferences;
 import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.databinding.FragmentAppsBinding;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 

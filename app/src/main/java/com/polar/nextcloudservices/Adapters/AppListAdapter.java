@@ -1,15 +1,15 @@
-package com.polar.nextcloudservices.ui.apps;
+package com.polar.nextcloudservices.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.polar.nextcloudservices.Notifications.NotificationUtils;
 import com.polar.nextcloudservices.Preferences.AppPreferences;
 import com.polar.nextcloudservices.R;
 
@@ -52,7 +52,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.AppViewH
         }
 
         public void bindApp(String app) {
-            mEnabledSwitch.setText(app);
+            mEnabledSwitch.setText(NotificationUtils.getTranslation(mContext, app));
             mEnabledSwitch.setChecked(AppPreferences.isAppEnabled(mContext, app));
             mEnabledSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> AppPreferences.setEnabled(mContext, app, isChecked));
         }

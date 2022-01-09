@@ -58,4 +58,7 @@
     <string name="pref_app_custom">Custom Apps</string>
     <string name="filterlist_autofill_description">This List will automatically fill in apps when you recieve a notification. Then you can disable them.</string>
     <string name="filterlist_autofill_title">Application List</string>
+    <string name="applist_dav">Calendar/Contacts</string>
+    <string name="applist_updates">Updates</string>
+    <string name="applist_talk">Nextcloud Talk</string>
 </resources>

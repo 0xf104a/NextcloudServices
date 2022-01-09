@@ -96,7 +96,7 @@ public class NotificationService extends Service {
             throw new RuntimeException("registerNotificationProcessors called too early: mNotificationBuilder is null!");
         }
         //Register your notification processors here
-        mNotificationBuilder.addProcessor(new BasicNotificationProcessor());
+        mNotificationBuilder.addProcessor(new BasicNotificationProcessor(this.getBaseContext()));
         mNotificationBuilder.addProcessor(new OpenBrowserProcessor());
         mNotificationBuilder.addProcessor(new NextcloudTalkProcessor());
     }
