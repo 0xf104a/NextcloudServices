@@ -52,7 +52,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
     @Override
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder, NotificationManager manager, JSONObject rawNotification, Context context) throws JSONException {
         final String app = prettifyChannelName(rawNotification.getString("app"));
-        final String title = rawNotification.getString("subject");
+        String title = rawNotification.getString("subject");
         String text = rawNotification.getString("message");
         final String app_name = rawNotification.getString("app");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -63,6 +63,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
 
         if(text.isEmpty()){
             text = title;
+            title = app;
         }
 
         return builder.setSmallIcon(iconByApp(app_name))
