@@ -43,6 +43,7 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.OpenBrowserProcessor;
+import com.polar.nextcloudservices.Preferences.AppPreferences;
 import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
@@ -82,8 +83,6 @@ public class NotificationService extends Service {
 
     private String mStatusReason = "Disconnected";
     private STATE mStatus = STATE.DISCONNECTED;
-
-    private List<String> mDenyList = Arrays.asList("dav");
 
     public enum STATE {
         CONNECTED,
@@ -172,7 +171,7 @@ public class NotificationService extends Service {
                 for (int i = 0; i < notifications.length(); ++i) {
                     JSONObject notification = notifications.getJSONObject(i);
                     Log.e(TAG, notification.toString());
-                    if(!mDenyList.contains(notification.getString("app"))){
+                    if(AppPreferences.isAppEnabled(this, notification.getString("app"))){
                         notification_id = notification.getInt("notification_id");
                         remove_notifications.remove(notification_id);
                         if (!active_notifications.contains(notification_id)) {
