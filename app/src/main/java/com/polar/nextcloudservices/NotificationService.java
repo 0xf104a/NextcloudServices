@@ -28,8 +28,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -79,6 +82,8 @@ public class NotificationService extends Service {
 
     private String mStatusReason = "Disconnected";
     private STATE mStatus = STATE.DISCONNECTED;
+
+    private List<String> mDenyList = Arrays.asList("dav");
 
     public enum STATE {
         CONNECTED,
@@ -166,20 +171,28 @@ public class NotificationService extends Service {
                         (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 for (int i = 0; i < notifications.length(); ++i) {
                     JSONObject notification = notifications.getJSONObject(i);
-                    notification_id = notification.getInt("notification_id");
-                    remove_notifications.remove(notification_id);
-                    if (!active_notifications.contains(notification_id)) {
-                        //Handle notification
-                        Log.d(TAG, "Sending notification:" + notification_id);
-                        active_notifications.add(notification_id);
-                        try {
-                            Notification mNotification = mNotificationBuilder.buildNotification(notification_id,
-                                    notification, getBaseContext());
-                            mNotificationManager.notify(notification_id, mNotification);
-                        } catch (JSONException e){
-                            Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id"));
+                    Log.e(TAG, notification.toString());
+                    if(!mDenyList.contains(notification.getString("app"))){
+                        notification_id = notification.getInt("notification_id");
+                        remove_notifications.remove(notification_id);
+                        if (!active_notifications.contains(notification_id)) {
+                            //Handle notification
+                            Log.d(TAG, "Sending notification:" + notification_id);
+                            active_notifications.add(notification_id);
+                            try {
+                                Notification mNotification = mNotificationBuilder.buildNotification(notification_id,
+                                        notification, getBaseContext());
+                                mNotificationManager.notify(notification_id, mNotification);
+                            } catch (JSONException e){
+                                Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id"));
+                            }
                         }
+                    } else {
+                        Log.d(TAG, "Block notification: " + notification.getInt("notification_id"));
+                        Log.d(TAG, "                    " + notification.getString("app"));
+                        Log.d(TAG, "                    " + notification.getString("subject"));
                     }
+
                 }
                 for (int remove_id : remove_notifications) {
                     Log.d(TAG, "Removing notification " + Integer.valueOf(remove_id).toString());
