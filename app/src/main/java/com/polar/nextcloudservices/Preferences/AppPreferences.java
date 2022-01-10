@@ -55,4 +55,10 @@ public class AppPreferences {
         PreferencesUtils.setStringPreference(context, PREFERENCE_LIST, array.toString());
     }
 
+    public static void prepareExistingApps(Context context) {
+        AppPreferences.addApplist(context, "spreed");
+        AppPreferences.addApplist(context, "dav");
+        AppPreferences.addApplist(context, "updatenotification");
+    }
+
 }
