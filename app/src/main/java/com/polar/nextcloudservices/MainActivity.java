@@ -38,6 +38,7 @@ import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
 import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
+import com.polar.nextcloudservices.Preferences.AppPreferences;
 import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 import com.polar.nextcloudservices.databinding.ActivityMainBinding;
 import com.polar.nextcloudservices.settings.NotificationServiceConnection;
@@ -63,13 +64,18 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_mainview, R.id.nav_credits, R.id.nav_connection_settings)
+                R.id.nav_mainview,
+                R.id.nav_apps,
+                R.id.nav_connection_settings,
+                R.id.nav_credits,
+                R.id.nav_contribute
+        )
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-
+        AppPreferences.prepareExistingApps(this.getBaseContext());
         handleNotificationService();
         setupToolbars();
         // run after short while, so that the service can start up

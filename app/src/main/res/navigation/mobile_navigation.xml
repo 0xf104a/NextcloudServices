@@ -12,6 +12,12 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
+        android:id="@+id/nav_apps"
+        android:name="com.polar.nextcloudservices.ui.apps.AppFragment"
+        android:label="@string/menu_apps"
+        tools:layout="@layout/fragment_apps" />
+
+    <fragment
         android:id="@+id/nav_connection_settings"
         android:name="com.polar.nextcloudservices.ui.settings.SettingsFragment"
         android:label="@string/menu_settings"

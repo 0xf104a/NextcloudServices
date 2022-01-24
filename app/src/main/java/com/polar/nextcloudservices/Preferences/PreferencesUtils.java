@@ -27,6 +27,11 @@ public class PreferencesUtils {
         return sharedPreferences.getBoolean(key, fallback);
     }
 
+    public static boolean isPreferenceSet(Context context, String key) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPreferences.contains(key);
+    }
+
     public static void setSSOPreferences(Context context, @NonNull SingleSignOnAccount account) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -39,4 +44,17 @@ public class PreferencesUtils {
         editor.apply();
     }
 
+    public static void setStringPreference(Context context, String key, String value) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
+
+    public static void setBoolPreference(Context context, String key, Boolean value) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(key, value);
+        editor.apply();
+    }
 }
