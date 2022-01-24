@@ -2,6 +2,7 @@ package com.polar.nextcloudservices.Preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -11,6 +12,7 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 public class PreferencesUtils {
 
     public static String NONE_RESULT = "<none>";
+    private static String TAG = "PreferencesUtils";
 
     public static String getPreference(Context context, String key) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -41,6 +43,7 @@ public class PreferencesUtils {
         editor.putString("sso_type", account.type);
         editor.putString("sso_token", account.token);
         editor.putString("sso_userid", account.userId);
+        Log.d(TAG, "Setted SSO preferences");
         editor.apply();
     }
 
