@@ -6,6 +6,9 @@ android {
     compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
+    lintOptions {
+      abortOnError false
+    }
     defaultConfig {
         applicationId "com.polar.nextcloudservices"
         minSdkVersion 25
