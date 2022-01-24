@@ -1,4 +1,4 @@
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.Interfaces;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -9,8 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public interface AbstractNotificationProcessor {
-    public int priority=0;
-    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
+    NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
                                                          JSONObject rawNotification,
                                                          Context context) throws JSONException;

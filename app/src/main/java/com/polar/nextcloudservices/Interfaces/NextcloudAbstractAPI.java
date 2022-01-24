@@ -1,6 +1,8 @@
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.Interfaces;
 
 import android.content.Context;
+
+import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONObject;
 

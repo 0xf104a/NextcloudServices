@@ -28,13 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-
 import java.util.HashSet;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,6 +37,7 @@ import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.Database.DatabaseHandler;
+import com.polar.nextcloudservices.Interfaces.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.OpenBrowserProcessor;

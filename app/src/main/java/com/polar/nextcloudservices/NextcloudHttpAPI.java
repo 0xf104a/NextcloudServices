@@ -6,6 +6,8 @@ import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 
+import com.polar.nextcloudservices.Interfaces.NextcloudAbstractAPI;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
