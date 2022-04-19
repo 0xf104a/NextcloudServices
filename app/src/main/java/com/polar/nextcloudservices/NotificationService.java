@@ -27,6 +27,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,7 +37,6 @@ import java.util.TimerTask;
 import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
-import com.polar.nextcloudservices.Database.DatabaseHandler;
 import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.OpenBrowserProcessor;
@@ -157,7 +158,6 @@ public class NotificationService extends Service {
 
     public void onPollFinished(JSONObject response) {
         synchronized (active_notifications) {
-            DatabaseHandler db = new DatabaseHandler(this);
             try {
                 HashSet<Integer> remove_notifications = new HashSet<>(active_notifications);
                 int notification_id;
@@ -166,7 +166,6 @@ public class NotificationService extends Service {
                         (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 for (int i = 0; i < notifications.length(); ++i) {
                     JSONObject notification = notifications.getJSONObject(i);
-                    db.createNotificationEntry(notification.toString());
                     notification_id = notification.getInt("notification_id");
                     remove_notifications.remove(notification_id);
                     if (!active_notifications.contains(notification_id)) {
