@@ -9,11 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.polar.nextcloudservices.Database.DatabaseHandler
 import com.polar.nextcloudservices.Database.NotificationDatabaseentry
 import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor
-import com.polar.nextcloudservices.Util
-import com.polar.nextcloudservices.Util.prettifyChannelName
 import com.polar.nextcloudservices.databinding.AdapterNotificationListBinding
 import org.json.JSONObject
-import java.security.AccessController.getContext
 
 class NotificationListAdapter (private var mDataset: ArrayList<NotificationDatabaseentry>, private var mContext: Context) : RecyclerView.Adapter<NotificationListAdapter.NotificationViewHolder>() {
 
@@ -34,7 +31,8 @@ class NotificationListAdapter (private var mDataset: ArrayList<NotificationDatab
             //binding.executePendingBindings()
 
             var json = JSONObject(entry.content)
-            val app = Util.prettifyChannelName(context, json.getString("app"))
+
+            val app = BasicNotificationProcessor.prettifyChannelName(json.getString("app"))
             val subject: String = json.getString("subject")
             val message: String = json.getString("message")
             binding.appName.text = app

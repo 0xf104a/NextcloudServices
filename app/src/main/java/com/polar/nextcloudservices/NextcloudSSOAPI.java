@@ -10,7 +10,6 @@ import android.util.Log;
 
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
-import com.polar.nextcloudservices.Interfaces.NextcloudAbstractAPI;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -14,7 +14,7 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.polar.nextcloudservices.Interfaces.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.AbstractNotificationProcessor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
