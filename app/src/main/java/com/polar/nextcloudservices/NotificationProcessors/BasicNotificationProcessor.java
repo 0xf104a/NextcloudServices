@@ -8,7 +8,6 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.AbstractNotificationProcessor;
-import com.polar.nextcloudservices.Notifications.NotificationUtils;
 import com.polar.nextcloudservices.R;
 
 import org.json.JSONException;
@@ -17,11 +16,6 @@ import org.json.JSONObject;
 public class BasicNotificationProcessor implements AbstractNotificationProcessor {
     public final int priority = 0;
     private final static String TAG = "BasicNotificationProcessor";
-    private Context mContext;
-
-    public BasicNotificationProcessor(Context context){
-        mContext = context;
-    }
 
     public int iconByApp(String appName) {
         if (appName.equals("spreed")) {
@@ -33,12 +27,13 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         }
     }
 
-    public String prettifyChannelName(String Name) {
-        String prettyname = NotificationUtils.getTranslation(mContext, Name);
-        if(!prettyname.equals(Name)){
-           return prettyname;
+    public static String prettifyChannelName(String Name) {
+        if (Name.equals("updatenotification")) {
+            return "Update notifications";
         }
-
+        if (Name.equals("spreed")) {
+            return "Nextcloud talk";
+        }
         String[] parts = Name.split("_");
         StringBuilder nice_name = new StringBuilder();
         for (String part : parts) {
@@ -52,27 +47,18 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
     @Override
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder, NotificationManager manager, JSONObject rawNotification, Context context) throws JSONException {
         final String app = prettifyChannelName(rawNotification.getString("app"));
-        String title = rawNotification.getString("subject");
-        String text = rawNotification.getString("message");
+        final String title = rawNotification.getString("subject");
+        final String text = rawNotification.getString("message");
         final String app_name = rawNotification.getString("app");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(app_name, app, NotificationManager.IMPORTANCE_HIGH);
             Log.d(TAG, "Creating channel");
             manager.createNotificationChannel(channel);
         }
-
-        if(text.isEmpty()){
-            text = title;
-            title = app;
-        }
-
         return builder.setSmallIcon(iconByApp(app_name))
                 .setContentTitle(title)
                 .setAutoCancel(true)
                 .setContentText(text)
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(text))
-
                 .setChannelId(app_name);
     }
 

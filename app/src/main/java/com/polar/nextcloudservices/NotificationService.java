@@ -27,14 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-
 import java.util.HashSet;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,7 +39,6 @@ import com.polar.nextcloudservices.Database.DatabaseHandler;
 import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.NotificationProcessors.OpenBrowserProcessor;
-import com.polar.nextcloudservices.Preferences.AppPreferences;
 import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
@@ -99,7 +91,7 @@ public class NotificationService extends Service {
             throw new RuntimeException("registerNotificationProcessors called too early: mNotificationBuilder is null!");
         }
         //Register your notification processors here
-        mNotificationBuilder.addProcessor(new BasicNotificationProcessor(this.getBaseContext()));
+        mNotificationBuilder.addProcessor(new BasicNotificationProcessor());
         mNotificationBuilder.addProcessor(new OpenBrowserProcessor());
         mNotificationBuilder.addProcessor(new NextcloudTalkProcessor());
     }
@@ -174,28 +166,21 @@ public class NotificationService extends Service {
                         (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 for (int i = 0; i < notifications.length(); ++i) {
                     JSONObject notification = notifications.getJSONObject(i);
-                    Log.e(TAG, notification.toString());
-                    if(AppPreferences.isAppEnabled(this, notification.getString("app"))){
-                        notification_id = notification.getInt("notification_id");
-                        remove_notifications.remove(notification_id);
-                        if (!active_notifications.contains(notification_id)) {
-                            //Handle notification
-                            Log.d(TAG, "Sending notification:" + notification_id);
-                            active_notifications.add(notification_id);
-                            try {
-                                Notification mNotification = mNotificationBuilder.buildNotification(notification_id,
-                                        notification, getBaseContext());
-                                mNotificationManager.notify(notification_id, mNotification);
-                            } catch (JSONException e){
-                                Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id"));
-                            }
+                    db.createNotificationEntry(notification.toString());
+                    notification_id = notification.getInt("notification_id");
+                    remove_notifications.remove(notification_id);
+                    if (!active_notifications.contains(notification_id)) {
+                        //Handle notification
+                        Log.d(TAG, "Sending notification:" + notification_id);
+                        active_notifications.add(notification_id);
+                        try {
+                            Notification mNotification = mNotificationBuilder.buildNotification(notification_id,
+                                    notification, getBaseContext());
+                            mNotificationManager.notify(notification_id, mNotification);
+                        } catch (JSONException e){
+                            Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id"));
                         }
-                    } else {
-                        Log.d(TAG, "Block notification: " + notification.getInt("notification_id"));
-                        Log.d(TAG, "                    " + notification.getString("app"));
-                        Log.d(TAG, "                    " + notification.getString("subject"));
                     }
-
                 }
                 for (int remove_id : remove_notifications) {
                     Log.d(TAG, "Removing notification " + Integer.valueOf(remove_id).toString());

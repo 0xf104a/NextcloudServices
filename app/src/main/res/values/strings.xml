@@ -52,13 +52,4 @@
     <string name="external_donate">Donate</string>
     <string name="license_label">This app is released under a GPL 3.0 License</string>
     <string name="label_contribute">If you want to contribute, you can check out the code, help with translations or donate to the project!</string>
-    <string name="menu_apps">Apps</string>
-    <string name="pref_app_apps">Apps</string>
-    <string name="pref_app_dav">Calendar/Contacts</string>
-    <string name="pref_app_custom">Custom Apps</string>
-    <string name="filterlist_autofill_description">This List will automatically fill in apps when you recieve a notification. Then you can disable them.</string>
-    <string name="filterlist_autofill_title">Application List</string>
-    <string name="applist_dav">Calendar/Contacts</string>
-    <string name="applist_updates">Updates</string>
-    <string name="applist_talk">Nextcloud Talk</string>
 </resources>
