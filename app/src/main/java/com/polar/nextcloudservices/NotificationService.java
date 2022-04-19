@@ -169,7 +169,7 @@ public class NotificationService extends Service {
                         (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 for (int i = 0; i < notifications.length(); ++i) {
                     JSONObject notification = notifications.getJSONObject(i);
-                    //Log.e(TAG, notification.toString());
+                    Log.e(TAG, notification.toString());
                     if(AppPreferences.isAppEnabled(this, notification.getString("app"))){
                         notification_id = notification.getInt("notification_id");
                         remove_notifications.remove(notification_id);

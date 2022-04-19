@@ -9,16 +9,17 @@
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
+
     <string name="menu_home">Home</string>
     <string name="menu_credits">Credits</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_contribute">Help Out!</string>
     <string name="manage_accounts">Manage Accounts</string>
     <string name="search_in_all">Search</string>
-    <string name="notification_channel_invalid_config_description">Invalid Server configuration</string>
-    <string name="serverconfig_notification_channel_name">Server configuration</string>
+    <string name="notification_channel_invalid_config_description">Invalid Serverconfiguration</string>
+    <string name="serverconfig_notification_channel_name">Serverconfiguration</string>
     <string name="serverconfig_notification_wrong_config">Wrong Configuration</string>
-    <string name="serverconfig_notification_wrong_config_long">The Server configuration was not correct. Please change it!</string>
+    <string name="serverconfig_notification_wrong_config_long">The Serverconfiguration was not correct. Please change it!</string>
     <string name="notification_persistent_title">Background polling</string>
     <string name="notification_persistent_content">Background connection notification</string>
     <string name="pref_polling_interval">Polling interval</string>
@@ -31,8 +32,6 @@
     <string name="pref_group_connection">Connection</string>
     <string name="pref_sso_logout_title">Log out from Nexcloud</string>
     <string name="pref_sso_logout_description">Stop using Nextcloud app for authentication</string>
-    <string name="pref_sso_login_title">Log in via Nextcloud app</string>
-    <string name="pref_sso_login_description">Use on-device Nextcloud account</string>
     <string name="pref_server_login_title">Login</string>
     <string name="pref_server_login_description">Your username</string>
     <string name="pref_server_login_hint">username</string>

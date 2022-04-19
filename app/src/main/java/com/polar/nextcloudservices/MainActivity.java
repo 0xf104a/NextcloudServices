@@ -2,29 +2,26 @@ package com.polar.nextcloudservices;
 
 import static com.polar.nextcloudservices.settings.SettingsUtils.getBoolPreference;
 import static com.polar.nextcloudservices.ui.settings.SettingsFragment.ENABLE_SERVICE_PREFERENCE;
-import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SERVER_ADDRESS_PREFERENCE;
-import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SERVER_INSECURE_PREFERENCE;
-import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SERVER_LOGIN_PREFERENCE;
 import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SSO_ENABLED_PREFERENCE;
 import static com.polar.nextcloudservices.ui.settings.SettingsFragment.SSO_NAME_PREFERENCE;
 
-import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.view.Menu;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
-import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -45,7 +42,6 @@ import com.polar.nextcloudservices.Preferences.AppPreferences;
 import com.polar.nextcloudservices.Preferences.PreferencesUtils;
 import com.polar.nextcloudservices.databinding.ActivityMainBinding;
 import com.polar.nextcloudservices.settings.NotificationServiceConnection;
-import com.polar.nextcloudservices.ui.settings.SettingsFragment;
 
 import java.util.List;
 
@@ -56,28 +52,12 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private NotificationServiceConnection mServiceConnection = null;
 
-    private void updateFragment(){
-        //Get Settings fragment, so we would be able to call onSSOEnabled
-        FragmentManager mFragmentManger = this.getSupportFragmentManager();
-        //FIXME: find id of settings fragment
-        SettingsFragment mSettingsFragment = (SettingsFragment) mFragmentManger.findFragmentById(R.id.fragment_settings);
-        if(mSettingsFragment == null){
-            Log.wtf(TAG, "Failed to get SettingFragment");
-            return ;
-        }
-        if(mSettingsFragment.isHidden()){
-            //Do nothing: will be updated automatically
-            return ;
-        }
-        mSettingsFragment.onSSOEnabled();
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
 
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
@@ -133,9 +113,6 @@ public class MainActivity extends AppCompatActivity {
             AccountImporter.onActivityResult(requestCode, resultCode, data, this, account -> {
                 SingleAccountHelper.setCurrentAccount(context, account.name);
                 PreferencesUtils.setSSOPreferences(context, account);
-                stopNotificationService();
-                startNotificationService();
-                updateFragment();
             });
             updateProfileImage();
         } catch (AccountImportCancelledException | NextcloudFilesAppAccountNotFoundException | NoCurrentAccountSelectedException e) {
@@ -246,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
                 .into(binding.appBarMain.launchAccountSwitcher);
     }
 
-    public void openAccountChooser() {
+    private void openAccountChooser() {
         try {
             AccountImporter.pickNewAccount(this);
         } catch (NextcloudFilesAppNotInstalledException | AndroidGetAccountsPermissionNotGranted e) {
