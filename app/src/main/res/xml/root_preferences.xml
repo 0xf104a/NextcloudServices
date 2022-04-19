@@ -1,63 +1,89 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <PreferenceCategory android:title="@string/pref_group_service">
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="enable_polling"
-            android:summary="@string/pref_service_description"
-            android:title="@string/pref_service_title" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_group_login">
+    <PreferenceCategory android:title="Login">
         <EditTextPreference
-            android:hint="cloud.example.com"
+            android:defaultValue="cloud.example.com"
             android:key="server"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="@string/pref_server_url_description"
-            android:title="@string/pref_server_url_title" />
+            android:summary="Address of your nextcloud server(without http(s)://)"
+            android:title="Nextcloud address" />
         <EditTextPreference
-            android:inputType="text|textPassword"
             android:key="password"
+            android:title="Password"
+            android:summary="Your password"
+            android:inputType="text|textPassword"
             android:password="true"
-            android:summary="@string/pref_server_password_summary"
-            android:title="@string/pref_server_password_title" />
+            />
         <EditTextPreference
-            android:hint="@string/pref_server_login_hint"
+            android:defaultValue=""
             android:key="login"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="@string/pref_server_login_description"
-            android:title="@string/pref_server_login_title" />
+            android:summary="Your username"
+            android:title="Login" />
         <Preference
+            android:title="Log in via Nextcloud app"
+            android:summary="Use on-device Nextcloud account"
             android:id="@+id/login_sso"
             android:key="login_sso"
-            android:summary="@string/pref_sso_logout_description"
-            android:title="@string/pref_sso_logout_title" />
+            />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_group_connection">
+    <PreferenceCategory android:title="Connection">
         <SwitchPreference
             android:defaultValue="false"
             android:key="insecure_connection"
-            android:summary="@string/pref_connectioninsecure_description"
-            android:title="@string/pref_connectioninsecure_title" />
+            android:summary="Use http instead of https"
+            android:title="Use insecure connection" />
         <SwitchPreference
             android:defaultValue="false"
             android:key="allow_roaming"
-            android:summary="@string/pref_roaming_description"
-            android:title="@string/pref_roaming_title" />
+            android:summary="Allows checking for notifications when in roaming"
+            android:title="Allow roaming" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="allow_metered"
-            android:summary="@string/pref_meterednetwork_description"
-            android:title="@string/pref_meterednetwork_title" />
+            android:summary="Allows networks which are metered"
+            android:title="Allow metered networks" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="enable_polling"
+            android:summary="Enables polling notifications"
+            android:title="Enable service" />
         <nl.invissvenska.numberpickerpreference.NumberDialogPreference
-            android:defaultValue="10"
             android:key="polling_interval"
-            android:title="@string/pref_polling_interval"
-            app:numberPickerPreference_maxValue="899"
+            android:title="Polling interval"
+            android:defaultValue="10"
             app:numberPickerPreference_minValue="1"
+            app:numberPickerPreference_maxValue="899"
             app:numberPickerPreference_unitText=" seconds" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Status">
+        <EditTextPreference
+            android:defaultValue="Default value"
+            android:enabled="false"
+            android:key="status"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="Disconnected"
+            android:id="@+id/status"
+            android:title="Status"
+            app:enabled="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Others">
+        <Preference
+            android:title="Credits"
+            android:summary="See people who contributed to this project"
+            android:id="@+id/credits"
+            android:key="credits"
+           />
+        <Preference
+        android:title="Donate"
+        android:summary="Buy me a coffee"
+        android:id="@+id/donate"
+        android:key="donate"
+           />
     </PreferenceCategory>
 
 </PreferenceScreen>

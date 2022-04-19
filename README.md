@@ -33,4 +33,3 @@ If you like this app please donate:<br>
 * [@Donnnno](https://github.com/Donnnno) for creating app icon
 * [@invissvenska](https://github.com/invissvenska) for [NumberPickerPreference](https://github.com/invissvenska/NumberPickerPreference/) (licensed under LGPL-3.0)
 * [@Devansh-Gaur-1611](https://github.com/Devansh-Gaur-1611) for creating credits activity in the app
-* [Notes Android app](https://github.com/stefan-niedermann/nextcloud-notes) for the appbar
