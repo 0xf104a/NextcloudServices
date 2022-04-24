@@ -1,10 +1,13 @@
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.Notification;
 
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 
 import androidx.core.app.NotificationCompat;
+
+import com.polar.nextcloudservices.Notification.NotificationEvent;
+import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;

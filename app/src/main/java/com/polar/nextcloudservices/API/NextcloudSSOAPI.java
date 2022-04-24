@@ -1,4 +1,4 @@
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.API;
 
 /*
  * Implements API for accounts imported from nextcloud.
@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
+import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,4 +1,4 @@
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.Notification;
 
 public enum NotificationEvent {
     NOTIFICATION_EVENT_UNKNOWN(0),

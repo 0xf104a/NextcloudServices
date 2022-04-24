@@ -1,7 +1,11 @@
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.API;
 
 import android.util.Base64;
 import android.util.Log;
+
+import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.BuildConfig;
+import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,7 +14,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 

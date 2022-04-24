@@ -1,4 +1,6 @@
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.API;
+
+import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONObject;
 

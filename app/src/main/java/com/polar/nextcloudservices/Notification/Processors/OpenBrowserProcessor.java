@@ -1,4 +1,4 @@
-package com.polar.nextcloudservices.NotificationProcessors;
+package com.polar.nextcloudservices.Notification.Processors;
 
 // This processor is default processor for user click event
 // It is used to open web page and has priority 1
@@ -14,8 +14,8 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.polar.nextcloudservices.AbstractNotificationProcessor;
-import com.polar.nextcloudservices.NotificationEvent;
+import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONException;

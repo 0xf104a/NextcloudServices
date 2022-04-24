@@ -1,9 +1,11 @@
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.Notification;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+
+import com.polar.nextcloudservices.NotificationService;
 
 public class NotificationBroadcastReceiver extends BroadcastReceiver {
     private final NotificationService mService;

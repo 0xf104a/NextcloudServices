@@ -1,6 +1,6 @@
-package com.polar.nextcloudservices.NotificationProcessors;
+package com.polar.nextcloudservices.Notification.Processors;
 
-import static com.polar.nextcloudservices.NotificationEvent.NOTIFICATION_EVENT_DELETE;
+import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_DELETE;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,9 +11,9 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.polar.nextcloudservices.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Config;
-import com.polar.nextcloudservices.NotificationEvent;
+import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.NotificationService;
 import com.polar.nextcloudservices.R;
 

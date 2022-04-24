@@ -35,9 +35,15 @@ import java.util.TimerTask;
 import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
-import com.polar.nextcloudservices.NotificationProcessors.BasicNotificationProcessor;
-import com.polar.nextcloudservices.NotificationProcessors.NextcloudTalkProcessor;
-import com.polar.nextcloudservices.NotificationProcessors.OpenBrowserProcessor;
+import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.API.NextcloudHttpAPI;
+import com.polar.nextcloudservices.API.NextcloudSSOAPI;
+import com.polar.nextcloudservices.Notification.NotificationBroadcastReceiver;
+import com.polar.nextcloudservices.Notification.NotificationBuilder;
+import com.polar.nextcloudservices.Notification.NotificationEvent;
+import com.polar.nextcloudservices.Notification.Processors.BasicNotificationProcessor;
+import com.polar.nextcloudservices.Notification.Processors.NextcloudTalkProcessor;
+import com.polar.nextcloudservices.Notification.Processors.OpenBrowserProcessor;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     private final String TAG = "NotifcationService.PollTask";
