@@ -11,6 +11,8 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.NotificationEvent;
+import com.polar.nextcloudservices.NotificationService;
 import com.polar.nextcloudservices.Util;
 
 import org.json.JSONException;
@@ -24,7 +26,8 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
                                                          JSONObject rawNotification,
-                                                         Context context) throws JSONException {
+                                                         Context context, NotificationService service) throws JSONException {
+
         if (!rawNotification.getString("app").equals("spreed")) {
             return builder;
         }
@@ -42,6 +45,11 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         PendingIntent pending_intent = PendingIntent.getActivity(context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         return builder.setContentIntent(pending_intent);
+    }
+
+    @Override
+    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
+
     }
 
     @Override

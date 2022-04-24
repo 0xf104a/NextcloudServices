@@ -1,6 +1,7 @@
 
 package com.polar.nextcloudservices;
 
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.app.NotificationChannel;
@@ -141,10 +142,11 @@ public class NotificationService extends Service {
                         active_notifications.add(notification_id);
                         try {
                             Notification mNotification = mNotificationBuilder.buildNotification(notification_id,
-                                    notification, getBaseContext());
+                                    notification, getBaseContext(), this);
                             mNotificationManager.notify(notification_id, mNotification);
                         } catch (JSONException e){
-                            Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id"));
+                            Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id")+": "+e.getMessage());
+                            Log.e(TAG, e.toString());
                         }
                     }
                 }
@@ -216,6 +218,8 @@ public class NotificationService extends Service {
         binder = new Binder();
         //Create NotificationBuilder
         mNotificationBuilder = new NotificationBuilder();
+        getApplicationContext().registerReceiver(new NotificationBroadcastReceiver(this),
+                new IntentFilter(Config.NotificationEventAction));
         registerNotificationProcessors();
     }
 
@@ -237,17 +241,17 @@ public class NotificationService extends Service {
         }
     }
 
-    private String getPreference(String key) {
+    public String getPreference(String key) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         return sharedPreferences.getString(key, "<none>");
     }
 
-    private Integer getIntPreference(String key) {
+    public Integer getIntPreference(String key) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         return sharedPreferences.getInt(key, Integer.MIN_VALUE);
     }
 
-    private boolean getBoolPreference(String key, boolean fallback) {
+    public boolean getBoolPreference(String key, boolean fallback) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         return sharedPreferences.getBoolean(key, fallback);
     }
@@ -265,6 +269,10 @@ public class NotificationService extends Service {
             updateTimer();
         }
 
+    }
+
+    public void onNotificationEvent(NotificationEvent event, Intent intent){
+        mNotificationBuilder.onNotificationEvent(event, intent, this);
     }
 
     @Override

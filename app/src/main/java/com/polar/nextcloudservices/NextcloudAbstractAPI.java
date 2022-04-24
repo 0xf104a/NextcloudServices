@@ -10,4 +10,5 @@ import org.json.JSONObject;
  */
 public interface NextcloudAbstractAPI {
     public JSONObject getNotifications(NotificationService service);
+    public void removeNotification(NotificationService service, int id);
 }

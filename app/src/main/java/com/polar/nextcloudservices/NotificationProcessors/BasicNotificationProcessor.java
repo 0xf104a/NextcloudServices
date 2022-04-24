@@ -1,13 +1,20 @@
 package com.polar.nextcloudservices.NotificationProcessors;
 
+import static com.polar.nextcloudservices.NotificationEvent.NOTIFICATION_EVENT_DELETE;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Config;
+import com.polar.nextcloudservices.NotificationEvent;
+import com.polar.nextcloudservices.NotificationService;
 import com.polar.nextcloudservices.R;
 
 import org.json.JSONException;
@@ -15,7 +22,7 @@ import org.json.JSONObject;
 
 public class BasicNotificationProcessor implements AbstractNotificationProcessor {
     public final int priority = 0;
-    private final static String TAG = "BasicNotificationProcessor";
+    private final static String TAG = "NotificationProcessors.BasicNotificationProcessor";
 
     public int iconByApp(String appName) {
         if (appName.equals("spreed")) {
@@ -44,8 +51,25 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         return result;
     }
 
+    private PendingIntent createNotificationDeleteIntent(Context context, int id) {
+        Intent intent = new Intent();
+        intent.setAction(Config.NotificationEventAction);
+        intent.putExtra("notification_id", id);
+        intent.putExtra("notification_event", NOTIFICATION_EVENT_DELETE.value);
+        return PendingIntent.getBroadcast(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_ONE_SHOT
+        );
+    }
+
     @Override
-    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder, NotificationManager manager, JSONObject rawNotification, Context context) throws JSONException {
+    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
+                                                         NotificationManager manager,
+                                                         JSONObject rawNotification,
+                                                         Context context, NotificationService service) throws JSONException {
+        final boolean removeOnDismiss = service.getBoolPreference("remove_on_dismiss", false);
         final String app = prettifyChannelName(rawNotification.getString("app"));
         final String title = rawNotification.getString("subject");
         final String text = rawNotification.getString("message");
@@ -55,11 +79,31 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
             Log.d(TAG, "Creating channel");
             manager.createNotificationChannel(channel);
         }
-        return builder.setSmallIcon(iconByApp(app_name))
+        builder = builder.setSmallIcon(iconByApp(app_name))
                 .setContentTitle(title)
                 .setAutoCancel(true)
                 .setContentText(text)
                 .setChannelId(app_name);
+        if(removeOnDismiss){
+            Log.d(TAG, "Adding intent for delete notification event");
+            builder = builder.setDeleteIntent(createNotificationDeleteIntent(context, rawNotification.getInt("notification_id")));
+        }
+        return builder;
+    }
+
+    @Override
+    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
+        if(event != NOTIFICATION_EVENT_DELETE){
+            return;
+        }
+        int id = intent.getIntExtra("notification_id", -1);
+        if(id < 0){
+            Log.wtf(TAG, "Notification delete event has not provided an id of notification deleted!");
+        }
+        Thread thread = new Thread(() -> {
+            service.API.removeNotification(service, id);
+        });
+        thread.start();
     }
 
     @Override

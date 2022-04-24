@@ -3,6 +3,7 @@ package com.polar.nextcloudservices;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -22,13 +23,13 @@ public class NotificationBuilder {
         processors = new Vector<>();
     }
 
-    public Notification buildNotification(int id, JSONObject rawNotification, Context context) throws JSONException {
+    public Notification buildNotification(int id, JSONObject rawNotification, Context context, NotificationService service) throws JSONException {
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, rawNotification.getString("app"));
         for(int i=0; i<processors.size(); ++i){
             Log.d(TAG, "Will call notification processor: "+processors.get(i).toString());
             mBuilder = processors.get(i).updateNotification(id, mBuilder, mNotificationManager,
-                    rawNotification, context);
+                    rawNotification, context, service);
         }
         return mBuilder.build();
     }
@@ -40,5 +41,11 @@ public class NotificationBuilder {
             }
         }
         processors.insertElementAt(processor, place);
+    }
+
+    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
+        for(AbstractNotificationProcessor processor: processors){
+            processor.onNotificationEvent(event, intent, service);
+        }
     }
 }

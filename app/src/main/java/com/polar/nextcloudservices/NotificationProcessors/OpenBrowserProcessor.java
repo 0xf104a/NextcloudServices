@@ -15,6 +15,8 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.NotificationEvent;
+import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +29,7 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
                                                          JSONObject rawNotification,
-                                                         Context context) throws JSONException {
+                                                         Context context, NotificationService service) throws JSONException {
         if (!rawNotification.has("link")) {
             return builder;
         }
@@ -40,6 +42,12 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
                 PendingIntent.FLAG_UPDATE_CURRENT);
         return builder.setContentIntent(pending_intent);
     }
+
+    @Override
+    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
+
+    }
+
 
     @Override
     public int getPriority() {

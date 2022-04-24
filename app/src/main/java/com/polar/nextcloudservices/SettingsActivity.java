@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.Context;
 import android.app.ActivityManager;
+import android.util.SparseArray;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -181,8 +182,6 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     }
 
 
-
-
     @Override
     public void onDestroy(){
         if (mTask != null){
@@ -210,17 +209,19 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
         if (savedInstanceState == null) {
+            Log.d(TAG,"savedInstanceState is null.");
             SettingsFragment fragment = new SettingsFragment();
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.settings, fragment)
                     .commit();
+        } else {
+            Log.d(TAG, "savedInstanceState is not null.");
         }
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
 
         startNotificationService();
     }
@@ -259,6 +260,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private final String TAG = "SettingsActivity.SettingsFragment";
+        //private DialogFragment current_dialog_fragment = null;
 
         private boolean getBoolPreference(String key, boolean fallback) {
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -432,7 +434,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
         @Override
         public void onDisplayPreferenceDialog(Preference preference) {
-
+            Log.d(TAG, "Displaying preference dialog.");
             if (preference instanceof NumberDialogPreference) {
                 NumberDialogPreference dialogPreference = (NumberDialogPreference) preference;
                 DialogFragment dialogFragment = NumberPickerPreferenceDialogFragment
@@ -445,10 +447,29 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                         );
                 dialogFragment.setTargetFragment(this, 0);
                 dialogFragment.show(getParentFragmentManager(), TAG + ".NumberPicker");
+                Log.d(TAG, "Showing dialog fragment.");
+                //current_dialog_fragment = dialogFragment;
             } else {
                 super.onDisplayPreferenceDialog(preference);
             }
         }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            Log.d(TAG, "onPause called");
+            /*if(current_dialog_fragment != null){
+                Log.d(TAG, "Fragment has dialog opened.");
+                current_dialog_fragment.onPause();
+            }*/
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            Log.d(TAG, "onResume called");
+        }
+
     }
 
 

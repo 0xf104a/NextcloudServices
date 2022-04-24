@@ -58,6 +58,13 @@
             app:numberPickerPreference_maxValue="899"
             app:numberPickerPreference_unitText=" seconds" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Behaviour" >
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_on_dismiss"
+            android:summary="Remove notifications from server when they are dismissed."
+            android:title="Remove notifications on dismiss" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="Status">
         <EditTextPreference
             android:defaultValue="Default value"

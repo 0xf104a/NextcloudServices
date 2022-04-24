@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -23,40 +24,59 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         //Log.d("NotificationService.PollTask",user+":"+password);
         return Base64.encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT).toString();
     }
+
+    private HttpURLConnection request(NotificationService service, String path, String method,
+                                      Boolean setAccept) throws IOException {
+        String baseUrl = service.server;
+        String prefix = "https://";
+        if (service.useHttp) {
+            prefix = "http://";
+        }
+        String endpoint = prefix + baseUrl + path;
+        //Log.d(TAG, endpoint);
+        URL url = new URL(endpoint);
+        HttpURLConnection conn;
+        if (service.useHttp) {
+            conn = (HttpURLConnection) url.openConnection();
+        } else {
+            conn = (HttpsURLConnection) url.openConnection();
+        }
+        conn.setRequestProperty("Authorization", "Basic " + getAuth(service.username, service.password));
+        conn.setRequestProperty("Host", url.getHost());
+        conn.setRequestProperty("User-agent", UA);
+        conn.setRequestProperty("OCS-APIRequest", "true");
+        if (setAccept) {
+            conn.setRequestProperty("Accept", "application/json");
+        }
+        conn.setRequestMethod(method);
+        conn.setReadTimeout(60000);
+        conn.setConnectTimeout(5000);
+        return conn;
+    }
+
+    @Override
+    public void removeNotification(NotificationService service, int id) {
+        try {
+            HttpURLConnection conn = request(service, "/ocs/v2.php/apps/notifications/api/v2/notifications/" + id,
+                    "DELETE", false);
+            String responseCode = Integer.toString(conn.getResponseCode());
+            Log.d(TAG, "--> DELETE" + service.server + "/ocs/v2.php/apps/notifications/api/v2/notifications/" + id + " -- " + responseCode);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to DELETE notification: " + e.getLocalizedMessage());
+            Log.d(TAG, "Exception was: " + e.toString());
+        }
+    }
+
     @Override
     public JSONObject getNotifications(NotificationService service) {
         try {
-            String baseUrl = service.server;
-            String prefix = "https://";
-            if (service.useHttp) {
-                prefix = "http://";
-            }
 
-            String endpoint = prefix + baseUrl + "/ocs/v2.php/apps/notifications/api/v2/notifications";
-            Log.d(TAG, endpoint);
-            URL url = new URL(endpoint);
-            HttpURLConnection conn;
-            if(service.useHttp) {
-                conn = (HttpURLConnection) url.openConnection();
-            }else{
-                conn = (HttpsURLConnection) url.openConnection();
-            }
-            conn.setRequestProperty("Authorization", "Basic " + getAuth(service.username, service.password));
-            conn.setRequestProperty("Host", url.getHost());
-            conn.setRequestProperty("User-agent", UA);
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestMethod("GET");
-            conn.setReadTimeout(60000);
-            conn.setConnectTimeout(5000);
-            //conn.setRequestMethod("GET");
-            //Log.d(TAG, conn.getRequestProperties().toString());
-            //conn.setDoOutput(true);
+            HttpURLConnection conn = request(service, "/ocs/v2.php/apps/notifications/api/v2/notifications",
+                    "GET", true);
             conn.setDoInput(true);
 
-            //OutputStream os = conn.getOutputStream();
-            //os.close();
             String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> https://" + baseUrl + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
+            Log.d(TAG, "--> GET https://" + service.server + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder buffer = new StringBuilder("");

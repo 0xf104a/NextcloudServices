@@ -65,4 +65,22 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
             return null;
         }
     }
+
+    @Override
+    public void removeNotification(NotificationService service, int id) {
+        Map<String, List<String>> header = new HashMap<>();
+        LinkedList<String> values = new LinkedList<String>();
+        values.add("application/json");
+        header.put("Accept", values);
+
+        NextcloudRequest request = new NextcloudRequest.Builder().setMethod("DELETE")
+                .setUrl(Uri.encode("/ocs/v2.php/apps/notifications/api/v2/notifications/"+id, "/"))
+                .setHeader(header)
+                .build();
+        try {
+            API.performNetworkRequest(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
