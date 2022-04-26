@@ -16,7 +16,7 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "Received notificiation event");
-        int event_code = intent.getIntExtra("notification_event", 0);
-        mService.onNotificationEvent(NotificationEvent.fromInt(event_code), intent);
+        NotificationEvent event_type = (NotificationEvent) intent.getSerializableExtra("notification_event");
+        mService.onNotificationEvent(event_type, intent);
     }
 }

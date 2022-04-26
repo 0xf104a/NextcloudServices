@@ -55,7 +55,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         Intent intent = new Intent();
         intent.setAction(Config.NotificationEventAction);
         intent.putExtra("notification_id", id);
-        intent.putExtra("notification_event", NOTIFICATION_EVENT_DELETE.value);
+        intent.putExtra("notification_event", NOTIFICATION_EVENT_DELETE);
         return PendingIntent.getBroadcast(
                 context,
                 0,

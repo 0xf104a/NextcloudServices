@@ -16,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -79,6 +80,30 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .setUrl(Uri.encode("/ocs/v2.php/apps/notifications/api/v2/notifications/"+id, "/"))
                 .setHeader(header)
                 .build();
+        try {
+            API.performNetworkRequest(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void sendTalkReply(NotificationService service, String chatroom, String message) throws IOException {
+        Map<String, List<String>> header = new HashMap<>();
+        LinkedList<String> values = new LinkedList<String>();
+        values.add("application/json");
+        header.put("Accept", values);
+        header.put("Content-Type", values);
+
+        //FIXME: build params in a better way
+        final String params = "{\"message\": \"" + message + "\", \"chatroom\": \"" + chatroom + "\"}";
+
+        NextcloudRequest request = new NextcloudRequest.Builder().setMethod("POST")
+                .setUrl(Uri.encode("/ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom, "/"))
+                .setHeader(header)
+                .setRequestBody(params)
+                .build();
+
         try {
             API.performNetworkRequest(request);
         } catch (Exception e) {

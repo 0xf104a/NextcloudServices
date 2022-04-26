@@ -4,6 +4,9 @@ import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+
 /*
  * Nextcloud abstract API crates possibility to use different libraries for
  * polling for notifications. This is needed to use Nextcloud SSO library
@@ -11,6 +14,7 @@ import org.json.JSONObject;
  * The inheritors of this interface should be passed to NotificationService.
  */
 public interface NextcloudAbstractAPI {
-    public JSONObject getNotifications(NotificationService service);
-    public void removeNotification(NotificationService service, int id);
+    JSONObject getNotifications(NotificationService service);
+    void removeNotification(NotificationService service, int id);
+    void sendTalkReply(NotificationService service, String chatroom, String message) throws IOException;
 }

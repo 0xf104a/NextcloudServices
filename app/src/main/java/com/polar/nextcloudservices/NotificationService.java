@@ -170,6 +170,14 @@ public class NotificationService extends Service {
         }
     }
 
+    public void removeNotification(int id){
+        Log.d(TAG, "Removing notification: " + id);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(id);
+        active_notifications.remove(id);
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return binder;

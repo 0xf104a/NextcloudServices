@@ -18,4 +18,7 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="action_settings">Settings</string>
+
+    <!-- Reply button in Nextcloud talk notifications -->
+    <string name="talk_fast_reply">Reply</string>
 </resources>
