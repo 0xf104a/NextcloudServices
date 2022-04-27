@@ -9,14 +9,19 @@ Nextcloud services is a simple app to poll notifications from your Nextcloud ser
 ## Screenshots
 ![Screenshot 1](https://github.com/Andrewerr/NextcloudServices/raw/main/img/Screenshot_scaled.png)
 ## Instructions
-Currently login available only by putting credentials into app. So to login into your Nextcloud via this app follow steps below:
+WITHOUT NEXTCLOUD APP:
 * At your Nextcloud  open settings and navigate to "Security" 
 * Generate per-app password
 * Enter you login and server address into the app(Enter server address without `https://` prefix)
 * Enter generated per-app password
-* On Nextcloud server click "Add" button to add generated password to list of authenticated devices(Additionally it is recommended to disable file access to this key)
+* On Nextcloud server click "Add" button to add generated password to list of authenticated devices(Additionally it is recommended to disable file access for this per-app password)
 
-**IMPORTANT:** Do **NOT** ommit first two steps - this may be risky for your security
+IMPORTANT: Do **NOT** ommit first two steps - this may be risky for your security
+
+WITH NEXTCLOUD APP:
+* Click "Log-in via Nextcloud app"
+* Select account you want to use
+* In next dialog click "Allow button"
 
 ## Building 
 The app can be built using android studio or docker.
