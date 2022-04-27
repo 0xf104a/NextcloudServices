@@ -1,7 +1,11 @@
 package com.polar.nextcloudservices.API;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
+
+import androidx.core.graphics.drawable.IconCompat;
 
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.BuildConfig;
@@ -102,6 +106,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         conn.setDoOutput(true);
         conn.setConnectTimeout(5000);
 
+        //FIXME: create separate params generator
         final String params = "{\"message\": \"" + message + "\", \"chatroom\": \"" + chatroom + "\"}";
         OutputStream os = conn.getOutputStream();
         os.write(params.getBytes(StandardCharsets.UTF_8));
@@ -111,6 +116,13 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         int code = conn.getResponseCode();
         Log.d(TAG, "--> POST " + endpoint + " -- " + code);
 
+    }
+
+    public Bitmap getUserAvatar(NotificationService service, String userId) throws IOException {
+        HttpURLConnection connection = request(service, "/index.php/avatar/"+userId+"/256",
+                "GET", false);
+        connection.setDoInput(true);
+        return BitmapFactory.decodeStream(connection.getInputStream());
     }
 
     @Override

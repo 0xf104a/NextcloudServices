@@ -4,8 +4,12 @@ package com.polar.nextcloudservices.API;
  * Implements API for accounts imported from nextcloud.
  */
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
+
+import androidx.core.graphics.drawable.IconCompat;
 
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
@@ -17,6 +21,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -109,5 +114,14 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public Bitmap getUserAvatar(NotificationService service, String userId) throws Exception {
+        NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
+                .setUrl(Uri.encode("/index.php/avatar/"+userId+"/256 ", "/"))
+                .build();
+        InputStream stream = API.performNetworkRequest(request);
+        return BitmapFactory.decodeStream(stream);
     }
 }

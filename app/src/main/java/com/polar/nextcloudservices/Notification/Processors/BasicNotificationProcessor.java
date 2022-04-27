@@ -83,7 +83,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
             Log.d(TAG, "Creating channel");
             manager.createNotificationChannel(channel);
         }
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
         final String dateStr = rawNotification.getString("datetime");
         long unixTime = 0;
         try {

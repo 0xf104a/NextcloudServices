@@ -1,11 +1,14 @@
 package com.polar.nextcloudservices.API;
 
+import android.graphics.Bitmap;
+
+import androidx.core.graphics.drawable.IconCompat;
+
 import com.polar.nextcloudservices.NotificationService;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 /*
  * Nextcloud abstract API crates possibility to use different libraries for
@@ -17,4 +20,5 @@ public interface NextcloudAbstractAPI {
     JSONObject getNotifications(NotificationService service);
     void removeNotification(NotificationService service, int id);
     void sendTalkReply(NotificationService service, String chatroom, String message) throws IOException;
+    Bitmap getUserAvatar(NotificationService service, String userId) throws Exception;
 }

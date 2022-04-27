@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,9 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
+import androidx.core.graphics.drawable.IconCompat;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
@@ -54,13 +58,28 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     }
 
     @NonNull
-    private Person getPersonFromNotification(@NonNull JSONObject rawNotification) throws JSONException {
+    private Person getPersonFromNotification(@NonNull NotificationService service,
+                                             @NonNull JSONObject rawNotification) throws Exception {
         Person.Builder builder = new Person.Builder();
-        final String key = rawNotification.getString("object_id");
-        final String name = rawNotification.getJSONObject("subjectRichParameters")
-                .getJSONObject("call").getString("name");
-        return builder.setKey(key)
-                .setName(name).build();
+        if(rawNotification.getJSONObject("subjectRichParameters").has("user")){
+            JSONObject user = rawNotification.getJSONObject("subjectRichParameters")
+                    .getJSONObject("user");
+            final String name = user.getString("name");
+            final String id = user.getString("id");
+            builder.setKey(id).setName(name);
+            Bitmap image = service.API.getUserAvatar(service, id);
+            IconCompat compat = IconCompat.createWithAdaptiveBitmap(image);
+            builder.setIcon(compat);
+            return builder.build();
+        }else {
+            final String key = rawNotification.getString("object_id");
+            builder.setKey(key);
+            final String name = rawNotification.getJSONObject("subjectRichParameters")
+                    .getJSONObject("call").getString("name");
+            //NOTE:Nextcloud Talk does not seem to provide ability for setting avatar for calls
+            //     so it is not fetched here
+            return builder.setName(name).build();
+        }
     }
 
 
@@ -68,7 +87,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
                                                          @NonNull JSONObject rawNotification,
-                                                         Context context, NotificationService service) throws JSONException {
+                                                         Context context, NotificationService service) throws Exception {
 
         if (!rawNotification.getString("app").equals("spreed")) {
             return builder;
@@ -92,7 +111,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 builder.addAction(action);
                 final String title = rawNotification.getJSONObject("subjectRichParameters")
                         .getJSONObject("call").getString("name");
-                Person chat = getPersonFromNotification(rawNotification);
+                Person chat = getPersonFromNotification(service, rawNotification);
                 SimpleDateFormat  format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
                 final String dateStr = rawNotification.getString("datetime");
                 long unixTime = 0;

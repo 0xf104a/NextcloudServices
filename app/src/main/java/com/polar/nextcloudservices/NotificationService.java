@@ -25,6 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -146,14 +147,20 @@ public class NotificationService extends Service {
                         //Handle notification
                         Log.d(TAG, "Sending notification:" + notification_id);
                         active_notifications.add(notification_id);
-                        try {
-                            Notification mNotification = mNotificationBuilder.buildNotification(notification_id,
-                                    notification, getBaseContext(), this);
-                            mNotificationManager.notify(notification_id, mNotification);
-                        } catch (JSONException e){
-                            Log.e(TAG, "Failed to parse notification for id="+notification.getString("notification_id")+": "+e.getMessage());
-                            Log.e(TAG, e.toString());
-                        }
+                        final int m_notification_id = notification_id;
+                        //FIXME: In worst case too many threads can be run
+                        Thread thread = new Thread(() -> {
+                            Notification mNotification = null;
+                            try {
+                                mNotification = mNotificationBuilder.buildNotification(m_notification_id,
+                                        notification, getBaseContext(), this);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Failed to parse notification");
+                                e.printStackTrace();
+                            }
+                            mNotificationManager.notify(m_notification_id, mNotification);
+                        });
+                        thread.start();
                     }
                 }
                 for (int remove_id : remove_notifications) {

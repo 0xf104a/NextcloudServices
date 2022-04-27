@@ -13,6 +13,7 @@ import com.polar.nextcloudservices.NotificationService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Vector;
 
 public class NotificationBuilder {
@@ -23,7 +24,7 @@ public class NotificationBuilder {
         processors = new Vector<>();
     }
 
-    public Notification buildNotification(int id, JSONObject rawNotification, Context context, NotificationService service) throws JSONException {
+    public Notification buildNotification(int id, JSONObject rawNotification, Context context, NotificationService service) throws Exception {
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, rawNotification.getString("app"));
         for(int i=0; i<processors.size(); ++i){
