@@ -1,0 +1,3 @@
+- Now removed notifications can be synchronized with server
+- Talk notifications are now have messagings style and displayed in "Conversation" section on newer devices
+- Also fast "Reply" button was added for Talk notifications

@@ -2,7 +2,7 @@ Nextcloud services allow you to receive notifications from your Nextcloud servic
 
 INSTRUCTIONS:
 
-Currently login available only by putting credentials into app. So to login into your Nextcloud via this app follow steps below:
+WITHOUT NEXTCLOUD APP:
 * At your Nextcloud  open settings and navigate to "Security" 
 * Generate per-app password
 * Enter you login and server address into the app(Enter server address without `https://` prefix)
@@ -11,9 +11,18 @@ Currently login available only by putting credentials into app. So to login into
 
 IMPORTANT: Do **NOT** ommit first two steps - this may be risky for your security
 
+WITH NEXTCLOUD APP:
+* Click "Log-in via Nextcloud app"
+* Select account you want to use
+* In next dialog click "Allow button"
+
 CREDITS:
 * Nextcloud and ownCloud team for Nextcloud 
 * Deck Android app for deck logo
 * Nextcloud app for Nextcloud logo and spreed(talk) logo
+* @penguin86 for fixing bugs and suggesting new idead
+* @Donno for creating app icon
+* @invissvenska for NumberPickerPreference(licensed under LGPL-3.0)
+* @Devansh-Gaur-1611 for creating credit activity in the app
 
 GITHUB REPOSITORY: https://github.com/Andrewerr/NextcloudServices
