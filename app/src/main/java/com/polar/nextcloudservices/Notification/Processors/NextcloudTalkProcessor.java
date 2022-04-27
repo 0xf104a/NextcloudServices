@@ -7,11 +7,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
 
 import com.polar.nextcloudservices.Config;
@@ -25,6 +28,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
 
 public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public final int priority = 2;
@@ -46,6 +53,17 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         );
     }
 
+    @NonNull
+    private Person getPersonFromNotification(@NonNull JSONObject rawNotification) throws JSONException {
+        Person.Builder builder = new Person.Builder();
+        final String key = rawNotification.getString("object_id");
+        final String name = rawNotification.getJSONObject("subjectRichParameters")
+                .getJSONObject("call").getString("name");
+        return builder.setKey(key)
+                .setName(name).build();
+    }
+
+
     @Override
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
@@ -56,10 +74,12 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             return builder;
         }
 
+        Log.d(TAG, "Setting up talk notification");
+
         if (rawNotification.has("object_type")) {
             if (rawNotification.getString("object_type").equals("chat")) {
                 Log.d(TAG, "Talk notification of chat type, adding fast reply button");
-                String replyLabel = "Reply"; //FIXME: get from resources
+                String replyLabel = "Reply"; //FIXME: get text from resources
                 RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
                         .setLabel(replyLabel)
                         .build();
@@ -70,6 +90,24 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                                 .addRemoteInput(remoteInput)
                                 .build();
                 builder.addAction(action);
+                final String title = rawNotification.getJSONObject("subjectRichParameters")
+                        .getJSONObject("call").getString("name");
+                Person chat = getPersonFromNotification(rawNotification);
+                SimpleDateFormat  format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
+                final String dateStr = rawNotification.getString("datetime");
+                long unixTime = 0;
+                try {
+                    Date date = format.parse(dateStr);
+                    if(date == null){
+                        throw new ParseException("Date was not parsed: result is null", 0);
+                    }
+                    unixTime = date.getTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                builder.setStyle(new NotificationCompat.MessagingStyle(chat)
+                        .setConversationTitle(title)
+                        .addMessage(rawNotification.getString("message"), unixTime, chat));
             }
         }
 
@@ -77,8 +115,6 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         if (!Util.isPackageInstalled("com.nextcloud.talk2", pm)) {
             return builder;
         }
-
-        Log.d(TAG, "Setting up talk notification");
 
         Intent intent = pm.getLaunchIntentForPackage("com.nextcloud.talk2");
         //intent.setComponent(new ComponentName("com.nextcloud.talk2",

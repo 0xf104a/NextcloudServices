@@ -20,6 +20,10 @@ import com.polar.nextcloudservices.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class BasicNotificationProcessor implements AbstractNotificationProcessor {
     public final int priority = 0;
     private final static String TAG = "NotificationProcessors.BasicNotificationProcessor";
@@ -79,11 +83,28 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
             Log.d(TAG, "Creating channel");
             manager.createNotificationChannel(channel);
         }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
+        final String dateStr = rawNotification.getString("datetime");
+        long unixTime = 0;
+        try {
+            Date date = format.parse(dateStr);
+            if(date == null){
+                throw new ParseException("Date was not parsed: result is null", 0);
+            }
+            unixTime = date.getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         builder = builder.setSmallIcon(iconByApp(app_name))
                 .setContentTitle(title)
                 .setAutoCancel(true)
                 .setContentText(text)
                 .setChannelId(app_name);
+        if(unixTime != 0){
+            builder.setWhen(unixTime);
+        }else{
+            Log.w(TAG, "unixTime is 0, maybe parse failure?");
+        }
         if(removeOnDismiss){
             Log.d(TAG, "Adding intent for delete notification event");
             builder = builder.setDeleteIntent(createNotificationDeleteIntent(context, rawNotification.getInt("notification_id")));
