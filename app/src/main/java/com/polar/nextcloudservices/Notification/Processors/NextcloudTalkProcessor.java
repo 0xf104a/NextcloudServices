@@ -47,7 +47,8 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         intent.setAction(Config.NotificationEventAction);
         intent.putExtra("notification_id", rawNotification.getInt("notification_id"));
         intent.putExtra("notification_event", NOTIFICATION_EVENT_FASTREPLY);
-        intent.putExtra("talk_chatroom", rawNotification.getString("object_id"));
+        String[] link = rawNotification.getString("link").split("/"); // use provided link to extract talk chatroom id
+        intent.putExtra("talk_chatroom", link[link.length-1]);
 
         return PendingIntent.getBroadcast(
                 context,
@@ -146,7 +147,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     @Override
     public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
         if (event == NOTIFICATION_EVENT_FASTREPLY) {
-            final String chatroom = intent.getStringExtra("talk_chatroom");
+            final String chatroom = intent.getStringExtra("talk_chatroom"); // the string send by spreed is chatroomid/
             final int notification_id = intent.getIntExtra("notification_id", -1);
             if (notification_id < 0) {
                 Log.wtf(TAG, "Bad notification id: " + notification_id);
