@@ -15,6 +15,7 @@
         <item>Contribution: App icon</item>
         <item>Contribution: Bug fixes, ideas</item>
         <item>Contribution: Credits activity improvements</item>
+        <item>Contribution: Nextcloud talk "Reply" button fix</item>
     </string-array>
 
     <string-array name="oss_libs_owner_Img">
@@ -22,6 +23,7 @@
         <item>https://avatars.githubusercontent.com/u/31142286?v=4</item>
         <item>https://avatars.githubusercontent.com/u/6894017?v=4</item>
         <item>https://avatars.githubusercontent.com/u/89275109?v=4</item>
+        <item>https://avatars.githubusercontent.com/u/65976525?v=4</item>
     </string-array>
 
     <string-array name="oss_libs_owner_name">
@@ -29,6 +31,7 @@
         <item>Donno</item>
         <item>Daniele Verducci</item>
         <item>Devansh-gaur-1611</item>
+        <item>freeflyk</item>
     </string-array>
 
     <string-array name="oss_libs_owner_github_name">
@@ -36,6 +39,7 @@
         <item>Donnnno</item>
         <item>penguin86</item>
         <item>Devansh-gaur-1611</item>
+        <item>freeflyk</item>
     </string-array>
 
     <string-array name="oss_libs_links">
@@ -43,5 +47,6 @@
         <item>https://github.com/Donnnno</item>
         <item>https://github.com/penguin86</item>
         <item>https://github.com/Devansh-gaur-1611</item>
+        <item>https://github.com/freeflyk</item>
     </string-array>
 </resources>
