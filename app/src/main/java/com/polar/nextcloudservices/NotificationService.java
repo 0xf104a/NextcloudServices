@@ -81,7 +81,7 @@ public class NotificationService extends Service {
         mNotificationBuilder.addProcessor(new NextcloudTalkProcessor());
     }
 
-    private NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
+    private final NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
         @Override
         public void onConnected() {
             // ignore this one… see 5)
@@ -157,6 +157,7 @@ public class NotificationService extends Service {
                             } catch (Exception e) {
                                 Log.e(TAG, "Failed to parse notification");
                                 e.printStackTrace();
+                                return ;
                             }
                             mNotificationManager.notify(m_notification_id, mNotification);
                         });

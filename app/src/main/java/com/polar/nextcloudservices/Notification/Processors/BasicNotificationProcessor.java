@@ -64,7 +64,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
                 context,
                 0,
                 intent,
-                PendingIntent.FLAG_ONE_SHOT
+                PendingIntent.FLAG_IMMUTABLE
         );
     }
 
