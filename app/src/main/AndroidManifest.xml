@@ -12,6 +12,7 @@
     <queries>
         <package android:name="com.nextcloud.client" />
         <package android:name="com.nextcloud.android.beta" />
+        <package android:name="com.nextcloud.talk2" />
     </queries>
 
     <application

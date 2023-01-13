@@ -50,12 +50,21 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         String[] link = rawNotification.getString("link").split("/"); // use provided link to extract talk chatroom id
         intent.putExtra("talk_chatroom", link[link.length-1]);
 
-        return PendingIntent.getBroadcast(
-                context,
-                0,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE
-        );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return PendingIntent.getBroadcast(
+                    context,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+            );
+        }else{
+            return PendingIntent.getBroadcast(
+                    context,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+            );
+        }
     }
 
     @NonNull
@@ -133,6 +142,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
 
         PackageManager pm = context.getPackageManager();
         if (!Util.isPackageInstalled("com.nextcloud.talk2", pm)) {
+            Log.d(TAG, "talk2 is not installed");
             return builder;
         }
 
@@ -140,7 +150,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         //intent.setComponent(new ComponentName("com.nextcloud.talk2",
         //        "com.nextcloud.talk2.activities.MainActivity"));
         PendingIntent pending_intent = PendingIntent.getActivity(context, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_IMMUTABLE);
         return builder.setContentIntent(pending_intent);
     }
 
