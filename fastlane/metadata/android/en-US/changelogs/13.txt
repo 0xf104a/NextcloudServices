@@ -1,0 +1,3 @@
+- Fixed fast reply was not working(thanks to @freeflyk)
+- Improved S+ APIs compatability
+- Updated dependencies
