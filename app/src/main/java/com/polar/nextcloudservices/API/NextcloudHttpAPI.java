@@ -126,11 +126,27 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
+    public Bitmap getImagePreview(NotificationService service, String imageId) throws Exception {
+        // FIXME: This code is untested!
+        /*
+        HttpURLConnection connection = request(service, "/index.php/core/preview?fileId="+imageId+"&x=100&y=100&a=1",
+                "GET", false);
+        connection.setRequestProperty("Accept", "image/*");
+        connection.setDoInput(true);
+
+        int responseCode = connection.getResponseCode();
+        Log.d(TAG, "--> GET image preview --> " + responseCode);
+
+        return BitmapFactory.decodeStream(connection.getInputStream());
+         */
+        return null;
+    }
+
+    @Override
     public JSONObject getNotifications(NotificationService service) {
         try {
-
             HttpURLConnection conn = request(service, "/ocs/v2.php/apps/notifications/api/v2/notifications",
-                    "GET", true);
+            "GET", true);
             conn.setDoInput(true);
 
             String responseCode = Integer.toString(conn.getResponseCode());

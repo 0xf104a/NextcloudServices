@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -122,21 +123,27 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 final String title = rawNotification.getJSONObject("subjectRichParameters")
                         .getJSONObject("call").getString("name");
                 Person chat = getPersonFromNotification(service, rawNotification);
-                SimpleDateFormat  format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
                 final String dateStr = rawNotification.getString("datetime");
                 long unixTime = 0;
                 try {
                     Date date = format.parse(dateStr);
-                    if(date == null){
+                    if (date == null) {
                         throw new ParseException("Date was not parsed: result is null", 0);
                     }
                     unixTime = date.getTime();
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                builder.setStyle(new NotificationCompat.MessagingStyle(chat)
-                        .setConversationTitle(title)
-                        .addMessage(rawNotification.getString("message"), unixTime, chat));
+                if (rawNotification.getString("messageRich").equals("{file}") && rawNotification.getJSONObject("messageRichParameters").getJSONObject("file").getString("mimetype").startsWith("image/")) {
+                    Bitmap imagePreview = service.API.getImagePreview(service, rawNotification.getJSONObject("messageRichParameters").getJSONObject("file").getString("id"));
+                    builder.setStyle(new NotificationCompat.BigPictureStyle()
+                            .bigPicture(imagePreview));
+                } else {
+                    builder.setStyle(new NotificationCompat.MessagingStyle(chat)
+                            .setConversationTitle(title)
+                            .addMessage(rawNotification.getString("message"), unixTime, chat));
+                }
             }
         }
 

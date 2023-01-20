@@ -11,6 +11,7 @@ import android.util.Log;
 
 import androidx.core.graphics.drawable.IconCompat;
 
+import com.nextcloud.android.sso.QueryParam;
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
@@ -23,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -120,6 +122,21 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     public Bitmap getUserAvatar(NotificationService service, String userId) throws Exception {
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
                 .setUrl(Uri.encode("/index.php/avatar/"+userId+"/256 ", "/"))
+                .build();
+        InputStream stream = API.performNetworkRequest(request);
+        return BitmapFactory.decodeStream(stream);
+    }
+
+    @Override
+    public Bitmap getImagePreview(NotificationService service, String imageId) throws Exception {
+        Collection<QueryParam> parameter = new LinkedList<>();
+        parameter.add(new QueryParam("fileId", imageId));
+        parameter.add(new QueryParam("x", "100"));
+        parameter.add(new QueryParam("y", "100"));
+        parameter.add(new QueryParam("a", "1"));
+        NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
+                .setUrl(Uri.encode("/index.php/core/preview", "/"))
+                .setParameter(parameter)
                 .build();
         InputStream stream = API.performNetworkRequest(request);
         return BitmapFactory.decodeStream(stream);
