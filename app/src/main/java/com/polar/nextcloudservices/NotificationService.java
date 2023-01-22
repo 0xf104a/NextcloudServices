@@ -159,6 +159,7 @@ public class NotificationService extends Service {
                                 e.printStackTrace();
                                 return ;
                             }
+                            Log.d(TAG, "Will post notification now");
                             mNotificationManager.notify(m_notification_id, mNotification);
                         });
                         thread.start();

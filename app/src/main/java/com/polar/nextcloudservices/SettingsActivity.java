@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,6 +24,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -91,6 +95,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     private Timer mTimer = null;
     private PreferenceUpdateTimerTask mTask = null;
     private NotificationServiceConnection mServiceConnection = null;
+    private static final int NOTIFICATION_PERMISSION_CODE = 1;
 
     //Exit from activity when back arrow is pressed
     //https://stackoverflow.com/questions/34222591/navigate-back-from-settings-activity
@@ -223,9 +228,28 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        requestNotificationPermission();
         startNotificationService();
     }
 
+
+    public void requestNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NOTIFICATION_POLICY) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Notification permission is granted.");
+            return;
+        }
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NOTIFICATION_POLICY}, NOTIFICATION_PERMISSION_CODE );
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+            if (!(grantResults.length > 0) || grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                Log.d(TAG, "User denied notification permission");
+                Toast.makeText(this, "Permission to send notifications is not granted. Use Settings app to grant it manually", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     @Override
     protected void onResume() {
