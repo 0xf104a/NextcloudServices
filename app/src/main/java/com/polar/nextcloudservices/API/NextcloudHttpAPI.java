@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
@@ -80,15 +81,19 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         }
     }
 
-    @Override
-    public void sendTalkReply(NotificationService service, String chatroom, String message) throws IOException {
-        //FIXME: Refactor to separate post function
+    private static String getEndpoint(@NonNull NotificationService service){
         String baseUrl = service.server;
         String prefix = "https://";
         if (service.useHttp) {
             prefix = "http://";
         }
-        String endpoint = prefix + baseUrl + "/ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom;
+        return prefix + baseUrl;
+    }
+
+    @Override
+    public void sendTalkReply(NotificationService service, String chatroom, String message) throws IOException {
+        //FIXME: Refactor to separate post function
+        String endpoint = getEndpoint(service) + "/ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom;
         URL url = new URL(endpoint);
         HttpURLConnection conn;
         if (service.useHttp) {
@@ -127,19 +132,15 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
 
     @Override
     public Bitmap getImagePreview(NotificationService service, String imageId) throws Exception {
-        // FIXME: This code is untested!
-        /*
-        HttpURLConnection connection = request(service, "/index.php/core/preview?fileId="+imageId+"&x=100&y=100&a=1",
+        HttpURLConnection connection = request(service, "/index.php/core/preview?fileId=" + imageId + "&x=100&y=100&a=1",
                 "GET", false);
         connection.setRequestProperty("Accept", "image/*");
         connection.setDoInput(true);
 
         int responseCode = connection.getResponseCode();
-        Log.d(TAG, "--> GET image preview --> " + responseCode);
+        Log.d(TAG, "--> GET " + getEndpoint(service) + "/index.php/core/preview?fileId="+imageId+"&x=100&y=100&a=1 -- " + responseCode);
 
         return BitmapFactory.decodeStream(connection.getInputStream());
-         */
-        return null;
     }
 
     @Override
@@ -150,7 +151,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             conn.setDoInput(true);
 
             String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> GET https://" + service.server + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
+            Log.d(TAG, "--> GET "+ getEndpoint(service) + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder buffer = new StringBuilder("");
