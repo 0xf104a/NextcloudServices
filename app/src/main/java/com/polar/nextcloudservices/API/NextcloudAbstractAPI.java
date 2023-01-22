@@ -21,4 +21,5 @@ public interface NextcloudAbstractAPI {
     void removeNotification(NotificationService service, int id);
     void sendTalkReply(NotificationService service, String chatroom, String message) throws IOException;
     Bitmap getUserAvatar(NotificationService service, String userId) throws Exception;
+    Bitmap getImagePreview(NotificationService service, String path) throws Exception;
 }
