@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.text.InputType;
 import android.util.Log;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ import android.content.Context;
 import android.app.ActivityManager;
 import android.util.SparseArray;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -380,6 +382,18 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             });
              */
 
+            EditTextPreference passwordPreference = findPreference("password");
+
+            if (passwordPreference != null) {
+                passwordPreference.setOnBindEditTextListener(
+                        new EditTextPreference.OnBindEditTextListener() {
+                            @Override
+                            public void onBindEditText(@NonNull EditText editText) {
+                                editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                            }
+                        });
+            }
+
             setSSOPreferencesState();
         }
 
@@ -392,7 +406,6 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 status.setSummary(_status);
             }
         }
-
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
