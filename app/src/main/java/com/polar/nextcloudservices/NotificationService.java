@@ -47,7 +47,7 @@ import com.polar.nextcloudservices.Notification.Processors.NextcloudTalkProcesso
 import com.polar.nextcloudservices.Notification.Processors.OpenBrowserProcessor;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
-    private final String TAG = "NotifcationService.PollTask";
+    private final String TAG = "NotificationService.PollTask";
 
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
