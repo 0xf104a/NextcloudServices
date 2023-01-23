@@ -12,9 +12,7 @@
             android:key="password"
             android:title="Password"
             android:summary="Your password"
-            android:inputType="text|textPassword"
-            android:password="true"
-            />
+            android:inputType="textPassword"/>
         <EditTextPreference
             android:defaultValue=""
             android:key="login"
