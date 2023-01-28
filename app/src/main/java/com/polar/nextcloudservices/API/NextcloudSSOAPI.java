@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 public class NextcloudSSOAPI implements NextcloudAbstractAPI {
-    private NextcloudAPI API;
-    final private String TAG = "NextcloudSSOAPI";
+    final private NextcloudAPI API;
+    final private static String TAG = "NextcloudSSOAPI";
 
     public NextcloudSSOAPI(NextcloudAPI mNextcloudAPI) {
         API = mNextcloudAPI;
@@ -140,5 +140,12 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .build();
         InputStream stream = API.performNetworkRequest(request);
         return BitmapFactory.decodeStream(stream);
+    }
+
+    @Override
+    public void sendAction(NotificationService service, String link, String method) throws Exception {
+        NextcloudRequest request = new NextcloudRequest.Builder().setMethod(method)
+                .setUrl(Uri.encode(link, "/")).build();
+        API.performNetworkRequestV2(request);
     }
 }

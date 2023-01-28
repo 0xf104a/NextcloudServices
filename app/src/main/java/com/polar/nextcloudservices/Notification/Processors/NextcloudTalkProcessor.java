@@ -40,10 +40,11 @@ import java.util.Date;
 
 public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public final int priority = 2;
-    private static final String TAG = "NotificationProcessors.NextcloudTalkProcessor";
+    private static final String TAG = "Notification.Processors.NextcloudTalkProcessor";
     private static final String KEY_TEXT_REPLY = "key_text_reply";
 
-    static private PendingIntent getReplyIntent(Context context, @NonNull JSONObject rawNotification) throws JSONException {
+    static private PendingIntent getReplyIntent(Context context,
+                                                @NonNull JSONObject rawNotification) throws JSONException {
         Intent intent = new Intent();
         intent.setAction(Config.NotificationEventAction);
         intent.putExtra("notification_id", rawNotification.getInt("notification_id"));

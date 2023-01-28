@@ -26,7 +26,7 @@ import java.util.Date;
 
 public class BasicNotificationProcessor implements AbstractNotificationProcessor {
     public final int priority = 0;
-    private final static String TAG = "NotificationProcessors.BasicNotificationProcessor";
+    private final static String TAG = "Notification.Processors.BasicNotificationProcessor";
 
     public int iconByApp(String appName) {
         if (appName.equals("spreed")) {
