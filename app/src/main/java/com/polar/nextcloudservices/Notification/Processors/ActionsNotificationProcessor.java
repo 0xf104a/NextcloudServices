@@ -31,15 +31,19 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
     private static final String TAG = "Notification.Processors.ActionsNotificationProcessor";
 
     private static PendingIntent getCustomActionIntent(Context context, NotificationService service,
-                                                       JSONObject action){
+                                                       JSONObject action, int requestCode){
+        Log.d(TAG, action.toString());
         Intent intent = new Intent();
         intent.setAction(Config.NotificationEventAction);
         try {
             intent.putExtra("notification_event", NOTIFICATION_EVENT_CUSTOM_ACTION);
             String link = action.getString("link");
-            //Log.d(TAG, service.server);
-            intent.putExtra("action_link", Util.cleanUpURLIfNeeded(service.server, link));
-            intent.putExtra("action_method", action.getString("type"));
+            final String type = action.getString("type");
+            link = Util.cleanUpURLIfNeeded(service.server, link);
+            Log.d(TAG, link);
+            Log.d(TAG, type);
+            intent.putExtra("action_link", link);
+            intent.putExtra("action_method", type);
         } catch (JSONException e) {
             //Log.d(TAG, action.toString());
             Log.e(TAG, "Can not get link or method from action provided by Nextcloud API");
@@ -49,14 +53,14 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return PendingIntent.getBroadcast(
                     context,
-                    0,
+                    requestCode,
                     intent,
                     PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
             );
         }else{
             return PendingIntent.getBroadcast(
                     context,
-                    0,
+                    requestCode,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT
             );
@@ -76,7 +80,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
         final int n_actions = actions.length();
         for(int i = 0; i < n_actions; ++i){
             JSONObject action = actions.getJSONObject(i);
-            PendingIntent actionPendingIntent = getCustomActionIntent(context, service, action);
+            PendingIntent actionPendingIntent = getCustomActionIntent(context, service, action, i);
             if(actionPendingIntent == null){
                 Log.w(TAG, "Can not create action for notification");
                 return builder;
@@ -97,6 +101,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
         if(event == NOTIFICATION_EVENT_CUSTOM_ACTION){
             final String link = intent.getStringExtra("action_link");
             final String method = intent.getStringExtra("action_method");
+            Log.d(TAG, method + " " + link);
             Thread thread = new Thread(() ->{
                 try {
                     service.API.sendAction(service, link, method);
