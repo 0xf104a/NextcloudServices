@@ -18,6 +18,7 @@ import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.NotificationService;
 import com.polar.nextcloudservices.R;
+import com.polar.nextcloudservices.Util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,16 +30,20 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
     private static final String KEY_CUSTOM_ACTION = "key_custom_action";
     private static final String TAG = "Notification.Processors.ActionsNotificationProcessor";
 
-    private static PendingIntent getCustomActionIntent(Context context, JSONObject action){
+    private static PendingIntent getCustomActionIntent(Context context, NotificationService service,
+                                                       JSONObject action){
         Intent intent = new Intent();
         intent.setAction(Config.NotificationEventAction);
         try {
             intent.putExtra("notification_event", NOTIFICATION_EVENT_CUSTOM_ACTION);
-            intent.putExtra("action_link", action.getString("link"));
-            intent.putExtra("action_method", action.getString("method"));
+            String link = action.getString("link");
+            //Log.d(TAG, service.server);
+            intent.putExtra("action_link", Util.cleanUpURLIfNeeded(service.server, link));
+            intent.putExtra("action_method", action.getString("type"));
         } catch (JSONException e) {
+            //Log.d(TAG, action.toString());
             Log.e(TAG, "Can not get link or method from action provided by Nextcloud API");
-            Log.e(TAG, e.toString());
+            e.printStackTrace();
             return null;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -71,7 +76,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
         final int n_actions = actions.length();
         for(int i = 0; i < n_actions; ++i){
             JSONObject action = actions.getJSONObject(i);
-            PendingIntent actionPendingIntent = getCustomActionIntent(context, action);
+            PendingIntent actionPendingIntent = getCustomActionIntent(context, service, action);
             if(actionPendingIntent == null){
                 Log.w(TAG, "Can not create action for notification");
                 return builder;
