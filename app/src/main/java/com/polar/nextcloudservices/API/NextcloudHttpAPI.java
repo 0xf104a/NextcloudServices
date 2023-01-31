@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -90,11 +91,8 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         return prefix + baseUrl;
     }
 
-    @Override
-    public void sendTalkReply(NotificationService service, String chatroom, String message) throws IOException {
-        //FIXME: Refactor to separate post function
-        String endpoint = getEndpoint(service) + "/ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom;
-        URL url = new URL(endpoint);
+    private HttpURLConnection getBaseConnection(NotificationService service, URL url, String method)
+            throws IOException {
         HttpURLConnection conn;
         if (service.useHttp) {
             conn = (HttpURLConnection) url.openConnection();
@@ -108,6 +106,15 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         conn.setRequestProperty("Accept", "application/json");
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestMethod("POST");
+        return conn;
+    }
+
+    @Override
+    public void sendTalkReply(NotificationService service,
+                              String chatroom, String message) throws IOException {
+        String endpoint = getEndpoint(service) + "/ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom;
+        URL url = new URL(endpoint);
+        HttpURLConnection conn = getBaseConnection(service, url, "POST");
         conn.setDoOutput(true);
         conn.setConnectTimeout(5000);
 
@@ -141,6 +148,19 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         Log.d(TAG, "--> GET " + getEndpoint(service) + "/index.php/core/preview?fileId="+imageId+"&x=100&y=100&a=1 -- " + responseCode);
 
         return BitmapFactory.decodeStream(connection.getInputStream());
+    }
+
+    @Override
+    public void sendAction(NotificationService service, String link,
+                           String method) throws Exception {
+        String endpoint = getEndpoint(service) + link;
+        URL url = new URL(endpoint);
+        HttpURLConnection connection = getBaseConnection(service, url, method);
+        connection.setConnectTimeout(5000);
+        connection.setDoInput(true);
+
+        int responseCode = connection.getResponseCode();
+        Log.d(TAG, "--> " + method + getEndpoint(service) + link + "--" + responseCode);
     }
 
     @Override

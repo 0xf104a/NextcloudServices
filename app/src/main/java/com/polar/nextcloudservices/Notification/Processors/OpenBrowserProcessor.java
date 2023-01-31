@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 public class OpenBrowserProcessor implements AbstractNotificationProcessor {
     public final int priority = 1;
-    private static final String TAG = "NotificationProcessors.OpenBrowserProcessor";
+    private static final String TAG = "Notification.Processors.OpenBrowserProcessor";
 
     @Override
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,

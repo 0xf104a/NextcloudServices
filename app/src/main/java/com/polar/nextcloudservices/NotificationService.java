@@ -47,6 +47,7 @@ import com.polar.nextcloudservices.API.NextcloudSSOAPI;
 import com.polar.nextcloudservices.Notification.NotificationBroadcastReceiver;
 import com.polar.nextcloudservices.Notification.NotificationBuilder;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
+import com.polar.nextcloudservices.Notification.Processors.ActionsNotificationProcessor;
 import com.polar.nextcloudservices.Notification.Processors.BasicNotificationProcessor;
 import com.polar.nextcloudservices.Notification.Processors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.Notification.Processors.OpenBrowserProcessor;
@@ -84,6 +85,7 @@ public class NotificationService extends Service {
         mNotificationBuilder.addProcessor(new BasicNotificationProcessor());
         mNotificationBuilder.addProcessor(new OpenBrowserProcessor());
         mNotificationBuilder.addProcessor(new NextcloudTalkProcessor());
+        mNotificationBuilder.addProcessor(new ActionsNotificationProcessor());
     }
 
     private final NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
