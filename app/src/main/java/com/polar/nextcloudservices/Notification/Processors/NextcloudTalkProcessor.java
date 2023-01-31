@@ -152,7 +152,6 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             }
         }
 
-        //Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(rawNotification.getString("link")));
         CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
                 .setUrlBarHidingEnabled(true)
                 .setShowTitle(false)
@@ -162,7 +161,12 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
                 .build();
         browserIntent.intent.setData(Uri.parse(rawNotification.getString("link")));
-        return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_MUTABLE));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+        }else{
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
     }
 
     @Override

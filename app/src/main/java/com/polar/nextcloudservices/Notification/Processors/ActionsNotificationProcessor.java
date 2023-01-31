@@ -7,10 +7,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Config;
@@ -33,37 +35,36 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
     private static PendingIntent getCustomActionIntent(Context context, NotificationService service,
                                                        JSONObject action, int requestCode){
         Log.d(TAG, action.toString());
-        Intent intent = new Intent();
-        intent.setAction(Config.NotificationEventAction);
+        CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
+                .setUrlBarHidingEnabled(true)
+                .setShowTitle(false)
+                .setStartAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
+                .setExitAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
+                .setColorScheme(CustomTabsIntent.COLOR_SCHEME_SYSTEM)
+                .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
+                .build();
+        browserIntent.intent.setAction(Config.NotificationEventAction);
+
         try {
-            intent.putExtra("notification_event", NOTIFICATION_EVENT_CUSTOM_ACTION);
+            browserIntent.intent.putExtra("notification_event", NOTIFICATION_EVENT_CUSTOM_ACTION);
             String link = action.getString("link");
             final String type = action.getString("type");
             link = Util.cleanUpURLIfNeeded(service.server, link);
             Log.d(TAG, link);
             Log.d(TAG, type);
-            intent.putExtra("action_link", link);
-            intent.putExtra("action_method", type);
+            browserIntent.intent.putExtra("action_link", link);
+            browserIntent.intent.putExtra("action_method", type);
         } catch (JSONException e) {
             //Log.d(TAG, action.toString());
             Log.e(TAG, "Can not get link or method from action provided by Nextcloud API");
             e.printStackTrace();
             return null;
         }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return PendingIntent.getBroadcast(
-                    context,
-                    requestCode,
-                    intent,
-                    PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
-            );
+            return PendingIntent.getActivity(context, requestCode, browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         }else{
-            return PendingIntent.getBroadcast(
-                    context,
-                    requestCode,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-            );
+            return PendingIntent.getActivity(context, requestCode, browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
     }
 
