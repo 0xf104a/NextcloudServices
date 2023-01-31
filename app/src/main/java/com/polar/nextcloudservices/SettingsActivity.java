@@ -240,10 +240,10 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     public void requestNotificationPermission() {
         if(Build.VERSION.SDK_INT >= 33) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NOTIFICATION_POLICY) == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "post notification permission is granted.");
+                Log.d(TAG, "Notification permission is granted.");
                 return;
             }
-            Log.d(TAG, "post notification permission is not granted yet, so will request it now");
+            Log.d(TAG, "Notification permission is not granted yet, so will request it now");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NOTIFICATION_POLICY}, NOTIFICATION_PERMISSION_CODE);
         }
     }
