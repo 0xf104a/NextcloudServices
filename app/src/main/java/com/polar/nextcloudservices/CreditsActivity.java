@@ -9,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import com.polar.nextcloudservices.Adapters.CreditsAdapter;
 
@@ -47,8 +48,15 @@ public class CreditsActivity extends AppCompatActivity {
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(urls[position]));
-                startActivity(browserIntent);
+                CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
+                        .setUrlBarHidingEnabled(true)
+                        .setShowTitle(false)
+                        .setStartAnimations(parent.getContext(), android.R.anim.fade_in, android.R.anim.fade_out)
+                        .setExitAnimations(parent.getContext(), android.R.anim.fade_in, android.R.anim.fade_out)
+                        .setColorScheme(CustomTabsIntent.COLOR_SCHEME_SYSTEM)
+                        .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
+                        .build();
+                browserIntent.launchUrl(parent.getContext(), Uri.parse(urls[position]));
             }
         });
     }
