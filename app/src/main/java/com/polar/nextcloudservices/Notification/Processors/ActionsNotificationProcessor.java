@@ -35,36 +35,37 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
     private static PendingIntent getCustomActionIntent(Context context, NotificationService service,
                                                        JSONObject action, int requestCode){
         Log.d(TAG, action.toString());
-        CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
-                .setUrlBarHidingEnabled(true)
-                .setShowTitle(false)
-                .setStartAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
-                .setExitAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
-                .setColorScheme(CustomTabsIntent.COLOR_SCHEME_SYSTEM)
-                .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
-                .build();
-        browserIntent.intent.setAction(Config.NotificationEventAction);
-
+        Intent intent = new Intent();
+        intent.setAction(Config.NotificationEventAction);
         try {
-            browserIntent.intent.putExtra("notification_event", NOTIFICATION_EVENT_CUSTOM_ACTION);
+            intent.putExtra("notification_event", NOTIFICATION_EVENT_CUSTOM_ACTION);
             String link = action.getString("link");
             final String type = action.getString("type");
-            link = Util.cleanUpURLIfNeeded(service.server, link);
+            link = Util.cleanUpURLIfNeeded(link);
             Log.d(TAG, link);
             Log.d(TAG, type);
-            browserIntent.intent.putExtra("action_link", link);
-            browserIntent.intent.putExtra("action_method", type);
+            intent.putExtra("action_link", link);
+            intent.putExtra("action_method", type);
         } catch (JSONException e) {
             //Log.d(TAG, action.toString());
             Log.e(TAG, "Can not get link or method from action provided by Nextcloud API");
             e.printStackTrace();
             return null;
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return PendingIntent.getActivity(context, requestCode, browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+            return PendingIntent.getBroadcast(
+                    context,
+                    requestCode,
+                    intent,
+                    PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+            );
         }else{
-            return PendingIntent.getActivity(context, requestCode, browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            return PendingIntent.getBroadcast(
+                    context,
+                    requestCode,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+            );
         }
     }
 

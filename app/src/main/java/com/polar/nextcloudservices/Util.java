@@ -1,6 +1,11 @@
 package com.polar.nextcloudservices;
 
 import android.content.pm.PackageManager;
+import android.net.Uri;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class Util {
     public static boolean isPackageInstalled(String packageName, PackageManager packageManager) {
@@ -15,20 +20,15 @@ public class Util {
     /**
      * Clean-ups URL by removing domain and protocl if needed
      * Example: "https://cloud.example.com/query" -> "/query"
-     * @param domain Domain of a service
      * @param target Target URL to remove a domain from
      * @return String cleaned-up from protocol and domain
      */
-    public static String cleanUpURLIfNeeded(String domain, String target){
-        if(target.startsWith("http://")){
-            target = target.replaceFirst("http://", "");
+    public static String cleanUpURLIfNeeded(String target){
+        try {
+            URI uri = new URI(target);
+            return uri.getPath().toString();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
-        if(target.startsWith("https://")){
-            target = target.replaceFirst("https://", "");
-        }
-        if(target.startsWith(domain)){
-            target = target.replaceFirst(domain, "");
-        }
-        return target;
     }
 }
