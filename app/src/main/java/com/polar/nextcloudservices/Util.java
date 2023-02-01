@@ -2,6 +2,8 @@ package com.polar.nextcloudservices;
 
 import android.content.pm.PackageManager;
 
+import java.lang.reflect.Array;
+
 public class Util {
     public static boolean isPackageInstalled(String packageName, PackageManager packageManager) {
         try {
@@ -30,5 +32,14 @@ public class Util {
             target = target.replaceFirst(domain, "");
         }
         return target;
+    }
+
+    public static <T>  boolean isInArray(T obj, T[] array){
+        for (T t : array) {
+            if (t == obj) {
+                return true;
+            }
+        }
+        return false;
     }
 }

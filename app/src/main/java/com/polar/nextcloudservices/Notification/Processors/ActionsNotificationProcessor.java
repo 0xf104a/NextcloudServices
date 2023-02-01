@@ -1,7 +1,6 @@
 package com.polar.nextcloudservices.Notification.Processors;
 
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_CUSTOM_ACTION;
-import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_FASTREPLY;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -17,7 +16,6 @@ import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.NotificationService;
-import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Util;
 
 import org.json.JSONArray;
@@ -27,8 +25,8 @@ import org.json.JSONObject;
 public class ActionsNotificationProcessor implements AbstractNotificationProcessor {
 
     public static final int priority = 2;
-    private static final String KEY_CUSTOM_ACTION = "key_custom_action";
     private static final String TAG = "Notification.Processors.ActionsNotificationProcessor";
+    private static final String[] IGNORED_APPS = {"spreed"};
 
     private static PendingIntent getCustomActionIntent(Context context, NotificationService service,
                                                        JSONObject action, int requestCode){
@@ -40,8 +38,6 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             String link = action.getString("link");
             final String type = action.getString("type");
             link = Util.cleanUpURLIfNeeded(service.server, link);
-            Log.d(TAG, link);
-            Log.d(TAG, type);
             intent.putExtra("action_link", link);
             intent.putExtra("action_method", type);
         } catch (JSONException e) {
@@ -73,6 +69,10 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
                                                          @NonNull JSONObject rawNotification,
                                                          Context context,
                                                          NotificationService service) throws Exception {
+        final String appName = rawNotification.getString("app");
+        if (Util.isInArray(appName, IGNORED_APPS)) {
+            return builder;
+        }
         if(!rawNotification.has("actions")){
             return builder;
         }
