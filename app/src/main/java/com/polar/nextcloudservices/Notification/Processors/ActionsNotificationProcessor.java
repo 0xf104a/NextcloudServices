@@ -102,7 +102,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             final String link = intent.getStringExtra("action_link");
             final String method = intent.getStringExtra("action_method");
             Log.d(TAG, method + " " + link);
-            Thread thread = new Thread(() ->{
+            Thread thread = new Thread(() -> {
                 try {
                     service.API.sendAction(service, link, method);
                 } catch (Exception e) {
