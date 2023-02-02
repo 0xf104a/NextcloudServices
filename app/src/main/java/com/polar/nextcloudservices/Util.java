@@ -1,8 +1,14 @@
 package com.polar.nextcloudservices;
 
 import android.content.pm.PackageManager;
+import android.util.Log;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Util {
+    private static final String TAG = "Util";
+
     public static boolean isPackageInstalled(String packageName, PackageManager packageManager) {
         try {
             packageManager.getPackageInfo(packageName, 0);
@@ -13,22 +19,30 @@ public class Util {
     }
 
     /**
-     * Clean-ups URL by removing domain and protocl if needed
-     * Example: "https://cloud.example.com/query" -> "/query"
-     * @param domain Domain of a service
-     * @param target Target URL to remove a domain from
+     * Clean-ups URL by removing domain and protocol if needed
+     * according to wikipedia a uniform resource locator is composed of the following elements:
+     * URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+     * authority = [userinfo "@"] host [":" port]
+     *
+     * Example: "https://cloud.example.com/path?query#fragment" -> "/path?query#fragment"
+     * @param target Target URL to remove everything in front of the path
      * @return String cleaned-up from protocol and domain
      */
-    public static String cleanUpURLIfNeeded(String domain, String target){
-        if(target.startsWith("http://")){
-            target = target.replaceFirst("http://", "");
+   public static String cleanUpURLIfNeeded(String target){
+        try {
+            URI uri = new URI(target);
+            String result = uri.getPath().toString();
+            if(uri.getQuery() != null) {
+                result = result + "?" + uri.getQuery().toString();
+            }
+            if(uri.getFragment() != null) {
+                result = result + "#" + uri.getFragment().toString();
+            }
+            return result;
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "error cleaning up target link.");
+            e.printStackTrace();
+            return null;
         }
-        if(target.startsWith("https://")){
-            target = target.replaceFirst("https://", "");
-        }
-        if(target.startsWith(domain)){
-            target = target.replaceFirst(domain, "");
-        }
-        return target;
     }
 }

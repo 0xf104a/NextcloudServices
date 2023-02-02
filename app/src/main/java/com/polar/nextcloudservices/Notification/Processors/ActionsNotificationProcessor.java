@@ -39,7 +39,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             intent.putExtra("notification_event", NOTIFICATION_EVENT_CUSTOM_ACTION);
             String link = action.getString("link");
             final String type = action.getString("type");
-            link = Util.cleanUpURLIfNeeded(service.server, link);
+            link = Util.cleanUpURLIfNeeded(link);
             Log.d(TAG, link);
             Log.d(TAG, type);
             intent.putExtra("action_link", link);
