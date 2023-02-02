@@ -7,6 +7,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import java.lang.reflect.Array;
+
 public class Util {
     public static boolean isPackageInstalled(String packageName, PackageManager packageManager) {
         try {
@@ -30,5 +32,14 @@ public class Util {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static <T>  boolean isInArray(T obj, T[] array){
+        for (T t : array) {
+            if (t == obj) {
+                return true;
+            }
+        }
+        return false;
     }
 }
