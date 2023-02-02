@@ -1,8 +1,11 @@
 
 package com.polar.nextcloudservices;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,7 +21,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;

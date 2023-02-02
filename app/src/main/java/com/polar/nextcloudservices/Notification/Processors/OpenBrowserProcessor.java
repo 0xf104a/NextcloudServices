@@ -10,8 +10,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
@@ -35,12 +37,22 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
         }
 
         Log.d(TAG, "Setting link for browser opening");
-        String link = rawNotification.getString("link");
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent = intent.setData(Uri.parse((link)));
-        PendingIntent pending_intent = PendingIntent.getActivity(context, 0, intent,
-                PendingIntent.FLAG_IMMUTABLE);
-        return builder.setContentIntent(pending_intent);
+
+        CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
+                .setUrlBarHidingEnabled(true)
+                .setShowTitle(false)
+                .setStartAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
+                .setExitAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
+                .setColorScheme(CustomTabsIntent.COLOR_SCHEME_SYSTEM)
+                .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
+                .build();
+        browserIntent.intent.setData(Uri.parse(rawNotification.getString("link")));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+        }else{
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
     }
 
     @Override

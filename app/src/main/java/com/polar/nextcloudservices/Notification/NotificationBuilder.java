@@ -34,6 +34,7 @@ public class NotificationBuilder {
         }
         return mBuilder.build();
     }
+
     public void addProcessor(AbstractNotificationProcessor processor){
         int place=0;
         for(;place<processors.size(); ++place){

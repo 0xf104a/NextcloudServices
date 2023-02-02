@@ -27,6 +27,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
@@ -393,8 +394,15 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             Preference donate = (Preference) findPreference("donate");
             donate.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://liberapay.com/Andrewerr/donate"));
-                    startActivity(browserIntent);
+                    CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
+                            .setUrlBarHidingEnabled(true)
+                            .setShowTitle(false)
+                            .setStartAnimations(getContext(), android.R.anim.fade_in, android.R.anim.fade_out)
+                            .setExitAnimations(getContext(), android.R.anim.fade_in, android.R.anim.fade_out)
+                            .setColorScheme(CustomTabsIntent.COLOR_SCHEME_SYSTEM)
+                            .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
+                            .build();
+                    browserIntent.launchUrl(getContext(), Uri.parse("https://liberapay.com/Andrewerr/donate"));
                     Toast.makeText(getContext(),"Thank you!❤️", Toast.LENGTH_SHORT).show();
                     return true;
                 }
