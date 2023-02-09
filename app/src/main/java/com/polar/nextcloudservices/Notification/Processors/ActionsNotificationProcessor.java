@@ -39,6 +39,10 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             String link = action.getString("link");
             final String type = action.getString("type");
             link = Util.cleanUpURLIfNeeded(link);
+            if(link == null){
+                Log.e(TAG, "Nextcloud provided bad link for action");
+                return null;
+            }
             intent.putExtra("action_link", link);
             intent.putExtra("action_method", type);
         } catch (JSONException e) {
