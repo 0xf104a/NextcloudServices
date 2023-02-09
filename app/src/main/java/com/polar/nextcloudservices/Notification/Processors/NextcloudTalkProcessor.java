@@ -41,11 +41,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 
 public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public final int priority = 2;
     private static final String TAG = "Notification.Processors.NextcloudTalkProcessor";
     private static final String KEY_TEXT_REPLY = "key_text_reply";
+
+    private HashMap<String, Integer> chatroom2notificationId;
 
     static private PendingIntent getReplyIntent(Context context,
                                                 @NonNull JSONObject rawNotification) throws JSONException {
@@ -123,6 +126,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                         new NotificationCompat.Action.Builder(R.drawable.ic_reply_icon,
                                 "Reply", replyPendingIntent)
                                 .addRemoteInput(remoteInput)
+                                .setAllowGeneratedReplies(true)
                                 .build();
                 builder.addAction(action);
                 final String title = rawNotification.getJSONObject("subjectRichParameters")
@@ -140,8 +144,13 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                if (rawNotification.getString("messageRich").equals("{file}") && rawNotification.getJSONObject("messageRichParameters").getJSONObject("file").getString("mimetype").startsWith("image/")) {
-                    Bitmap imagePreview = service.API.getImagePreview(service, rawNotification.getJSONObject("messageRichParameters").getJSONObject("file").getString("id"));
+                if (rawNotification.getString("messageRich").equals("{file}") && rawNotification
+                        .getJSONObject("messageRichParameters")
+                        .getJSONObject("file")
+                        .getString("mimetype").startsWith("image/")) {
+                    Bitmap imagePreview = service.API.getImagePreview(service, rawNotification
+                            .getJSONObject("messageRichParameters")
+                            .getJSONObject("file").getString("id"));
                     builder.setStyle(new NotificationCompat.BigPictureStyle()
                             .bigPicture(imagePreview));
                 } else {

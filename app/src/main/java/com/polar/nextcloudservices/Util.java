@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 
 
 public class Util {
@@ -52,11 +53,6 @@ public class Util {
    }
 
     public static <T>  boolean isInArray(T obj, T[] array){
-        for (T t : array) {
-            if (t == obj) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.asList(array).contains(obj);
     }
 }

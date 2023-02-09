@@ -32,7 +32,6 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
 
     private static PendingIntent getCustomActionIntent(Context context, NotificationService service,
                                                        JSONObject action, int requestCode){
-        Log.d(TAG, action.toString());
         Intent intent = new Intent();
         intent.setAction(Config.NotificationEventAction);
         try {
@@ -43,7 +42,6 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             intent.putExtra("action_link", link);
             intent.putExtra("action_method", type);
         } catch (JSONException e) {
-            //Log.d(TAG, action.toString());
             Log.e(TAG, "Can not get link or method from action provided by Nextcloud API");
             e.printStackTrace();
             return null;
@@ -73,7 +71,10 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
                                                          NotificationService service) throws Exception {
         final String appName = rawNotification.getString("app");
         if (Util.isInArray(appName, IGNORED_APPS)) {
+            Log.d(TAG, appName + " is ignored");
             return builder;
+        } else {
+            Log.d(TAG, appName + " is not ignored");
         }
         if(!rawNotification.has("actions")){
             return builder;
