@@ -49,6 +49,7 @@ public class Util {
             e.printStackTrace();
             return null;
         }
+   }
 
     public static <T>  boolean isInArray(T obj, T[] array){
         for (T t : array) {
