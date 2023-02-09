@@ -9,15 +9,19 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.TrustedWebUtils;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
+import androidx.core.app.ShareCompat;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -148,18 +152,21 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             }
         }
 
-        PackageManager pm = context.getPackageManager();
-        if (!Util.isPackageInstalled("com.nextcloud.talk2", pm)) {
-            Log.d(TAG, "talk2 is not installed");
-            return builder;
-        }
+        CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
+                .setUrlBarHidingEnabled(true)
+                .setShowTitle(false)
+                .setStartAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
+                .setExitAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
+                .setColorScheme(CustomTabsIntent.COLOR_SCHEME_SYSTEM)
+                .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
+                .build();
+        browserIntent.intent.setData(Uri.parse(rawNotification.getString("link")));
 
-        Intent intent = pm.getLaunchIntentForPackage("com.nextcloud.talk2");
-        //intent.setComponent(new ComponentName("com.nextcloud.talk2",
-        //        "com.nextcloud.talk2.activities.MainActivity"));
-        PendingIntent pending_intent = PendingIntent.getActivity(context, 0, intent,
-                PendingIntent.FLAG_IMMUTABLE);
-        return builder.setContentIntent(pending_intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+        }else{
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
     }
 
     @Override

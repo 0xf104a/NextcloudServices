@@ -2,9 +2,14 @@ package com.polar.nextcloudservices;
 
 import android.content.pm.PackageManager;
 import android.util.Log;
+import android.net.Uri;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+
+import java.lang.reflect.Array;
+
 
 public class Util {
     private static final String TAG = "Util";
@@ -44,5 +49,13 @@ public class Util {
             e.printStackTrace();
             return null;
         }
+
+    public static <T>  boolean isInArray(T obj, T[] array){
+        for (T t : array) {
+            if (t == obj) {
+                return true;
+            }
+        }
+        return false;
     }
 }
