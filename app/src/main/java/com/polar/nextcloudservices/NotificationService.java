@@ -32,8 +32,11 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -61,6 +64,45 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     }
 }
 
+//Tracks notification groups
+//Groups are used to update single Android notification on
+//different nextcloud notifications
+class NotificationGroupTracker {
+    private final String TAG = "NotificationService.NotificationGroupTracker";
+    private final HashMap<String, HashSet<Integer>> groups = new HashMap<>();
+
+    public void onNotificationRemoved(int notification_id){
+        for (String key :
+                groups.keySet()) {
+            HashSet<Integer> ids = groups.get(key);
+            if(ids == null){
+                Log.wtf(TAG, "Can not get ids for group " + key);
+                continue;
+            }
+            ids.remove(notification_id);
+        }
+    }
+
+    public void createGroup(String name){
+        if(!groups.containsKey(name)){
+            groups.put(name, new HashSet<>());
+        }
+    }
+
+    public Optional<Integer> getNotificationId(String group){
+        if(groups.containsKey(group)){
+            HashSet<Integer> set = groups.get(group);
+            if(set == null){
+                Log.wtf(TAG, "Can not get ids for group " + group);
+                return Optional.empty();
+            }
+            return Optional.of(Collections.min(set));
+        } else {
+            return Optional.empty();
+        }
+    }
+}
+
 public class NotificationService extends Service {
     // constant
     public long pollingInterval = 3 * 1000; // 3 seconds
@@ -76,6 +118,8 @@ public class NotificationService extends Service {
     private PollTimerTask task;
     public NextcloudAbstractAPI API;
     private NotificationBuilder mNotificationBuilder;
+
+    private  NotificationGroupTracker group_tracker = new NotificationGroupTracker();
 
     private void registerNotificationProcessors(){
         if(mNotificationBuilder==null){
@@ -136,6 +180,10 @@ public class NotificationService extends Service {
             //activeNetwork is null
             return false;
         }
+    }
+
+    public void registerNotificationGroup(String name){
+        group_tracker.createGroup(name);
     }
 
     public void onPollFinished(JSONObject response) {

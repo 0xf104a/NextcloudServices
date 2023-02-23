@@ -23,5 +23,6 @@ public interface AbstractNotificationProcessor {
 
     void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service);
 
+
     int getPriority();
 }
