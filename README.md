@@ -24,7 +24,7 @@ WITH NEXTCLOUD APP:
 * In next dialog click "Allow button"
 
 ## Getting bleeding-edge version
-If you would like to test new features and fixes as they are developed you may download a bleeding-edge build from [Github Actions](https://github.com/Andrewerr/NextcloudServices/actions). Here is the [instruction](https://github.com/Andrewerr/NextcloudServices/actions/runs/4136114311) of how you can do it. Also please note that builds done by Actions are *not* signed, so you would need to delete your app installes from F-Droid(if you have installed it) and use `adb` to install app.
+If you would like to test new features and fixes as they are developed you may download a bleeding-edge build from [Github Actions](https://github.com/Andrewerr/NextcloudServices/actions). Here is the [instruction](https://docs.github.com/en/actions/managing-workflow-runs/downloading-workflow-artifacts) of how you can do it. Also please note that builds done by Actions are *not* signed, so you would need to delete your app installes from F-Droid(if you have installed it) and use `adb` to install app.
 
 ## Donate
 If you like this app please donate:<br>
