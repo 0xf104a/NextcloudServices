@@ -1,6 +1,5 @@
 package com.polar.nextcloudservices.Notification.Processors;
 
-import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_DELETE;
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_FASTREPLY;
 
 import android.app.NotificationManager;
@@ -49,7 +48,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     private static final String TAG = "Notification.Processors.NextcloudTalkProcessor";
     private static final String KEY_TEXT_REPLY = "key_text_reply";
 
-    private HashMap<String, Integer> chatroom2Ids;
+    private HashMap<String, Integer> chatroom2notificationId;
 
     static private PendingIntent getReplyIntent(Context context,
                                                 @NonNull JSONObject rawNotification) throws JSONException {
