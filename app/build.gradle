@@ -9,8 +9,8 @@ android {
         applicationId "com.polar.nextcloudservices"
         minSdkVersion 25
         targetSdkVersion 33
-        versionCode 13
-        versionName '1.0-beta13'
+        versionCode 14
+        versionName '1.0-beta14'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

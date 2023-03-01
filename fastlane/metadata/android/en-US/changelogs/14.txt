@@ -1,0 +1,5 @@
+- Image preview for Talk notifications(thanks to @freeflyk)
+- Fixed bug with a password not being masked(thanks to @freeflyk)
+- Open Talk chats in browser, improved handling of opening links(thanks to @freeflyk)
+- Handle custom actions in notifications(fixes 2FA via notification)
+- Android 13 notification permission request
