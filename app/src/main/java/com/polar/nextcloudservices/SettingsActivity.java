@@ -19,7 +19,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.Context;
 import android.app.ActivityManager;
-import android.util.SparseArray;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -45,6 +44,7 @@ import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGrant
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
+import com.polar.nextcloudservices.Services.NotificationService;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
 import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;

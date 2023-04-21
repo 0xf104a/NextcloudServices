@@ -5,6 +5,7 @@ package com.polar.nextcloudservices.Notification.Processors;
 // So it is executed first and can be overriden by per-app processors
 
 
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -18,7 +19,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
-import com.polar.nextcloudservices.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +28,7 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
     public final int priority = 1;
     private static final String TAG = "Notification.Processors.OpenBrowserProcessor";
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     @Override
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,

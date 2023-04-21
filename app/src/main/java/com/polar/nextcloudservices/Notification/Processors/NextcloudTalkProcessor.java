@@ -2,36 +2,29 @@ package com.polar.nextcloudservices.Notification.Processors;
 
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_FASTREPLY;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.customtabs.TrustedWebUtils;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
-import androidx.core.app.ShareCompat;
 import androidx.core.graphics.drawable.IconCompat;
-import androidx.core.graphics.drawable.RoundedBitmapDrawable;
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
-import com.polar.nextcloudservices.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationService;
 import com.polar.nextcloudservices.R;
-import com.polar.nextcloudservices.Util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +32,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -50,6 +42,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
 
     private HashMap<String, Integer> chatroom2notificationId;
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     static private PendingIntent getReplyIntent(Context context,
                                                 @NonNull JSONObject rawNotification) throws JSONException {
         Intent intent = new Intent();
@@ -102,6 +95,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     }
 
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     @Override
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,

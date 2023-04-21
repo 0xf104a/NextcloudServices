@@ -4,18 +4,18 @@ package com.polar.nextcloudservices.API;
  * Implements API for accounts imported from nextcloud.
  */
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
-import androidx.core.graphics.drawable.IconCompat;
-
+import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.QueryParam;
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
-import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
-import com.polar.nextcloudservices.NotificationService;
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
+import com.polar.nextcloudservices.Services.NotificationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,14 +34,26 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     final private NextcloudAPI API;
     final private static String TAG = "NextcloudSSOAPI";
 
-    public NextcloudSSOAPI(NextcloudAPI mNextcloudAPI) {
-        API = mNextcloudAPI;
+    public NextcloudSSOAPI(Context context, SingleSignOnAccount ssoAccount) {
+        // ignore this one… see 5)
+        NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
+            @Override
+            public void onConnected() {
+                // ignore this one… see 5)
+            }
+
+            @Override
+            public void onError(Exception ex) {
+                ex.printStackTrace();
+            }
+        };
+        API = new NextcloudAPI(context, ssoAccount, new GsonBuilder().create(), apiCallback);
     }
 
     @Override
     public JSONObject getNotifications(NotificationService service) {
         Map<String, List<String>> header = new HashMap<>();
-        LinkedList<String> values = new LinkedList<String>();
+        LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
         header.put("Accept", values);
 
@@ -49,7 +61,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .setUrl(Uri.encode("/ocs/v2.php/apps/notifications/api/v2/notifications", "/"))
                 .setHeader(header)
                 .build();
-        StringBuilder buffer = new StringBuilder("");
+        StringBuilder buffer = new StringBuilder();
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(API.performNetworkRequest(request)));
 
@@ -79,7 +91,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     @Override
     public void removeNotification(NotificationService service, int id) {
         Map<String, List<String>> header = new HashMap<>();
-        LinkedList<String> values = new LinkedList<String>();
+        LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
         header.put("Accept", values);
 
@@ -95,9 +107,9 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public void sendTalkReply(NotificationService service, String chatroom, String message) throws IOException {
+    public void sendTalkReply(NotificationService service, String chatroom, String message) {
         Map<String, List<String>> header = new HashMap<>();
-        LinkedList<String> values = new LinkedList<String>();
+        LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
         header.put("Accept", values);
         header.put("Content-Type", values);
@@ -147,5 +159,15 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod(method)
                 .setUrl(Uri.encode(link, "/")).build();
         API.performNetworkRequestV2(request);
+    }
+
+    @Override
+    public boolean isAPIConnected() {
+        return false;
+    }
+
+    @Override
+    public String getDisconnectReason() {
+        return null;
     }
 }

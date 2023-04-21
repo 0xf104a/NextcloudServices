@@ -2,9 +2,7 @@ package com.polar.nextcloudservices.API;
 
 import android.graphics.Bitmap;
 
-import androidx.core.graphics.drawable.IconCompat;
-
-import com.polar.nextcloudservices.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationService;
 
 import org.json.JSONObject;
 
@@ -23,4 +21,6 @@ public interface NextcloudAbstractAPI {
     Bitmap getUserAvatar(NotificationService service, String userId) throws Exception;
     Bitmap getImagePreview(NotificationService service, String path) throws Exception;
     void sendAction(NotificationService service, String link, String method) throws Exception;
+    boolean isAPIConnected();
+    String getDisconnectReason();
 }

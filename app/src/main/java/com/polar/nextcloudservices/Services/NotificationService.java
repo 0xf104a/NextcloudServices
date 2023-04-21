@@ -1,36 +1,26 @@
 
-package com.polar.nextcloudservices;
+package com.polar.nextcloudservices.Services;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.app.Notification;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -44,6 +34,7 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.API.NextcloudHttpAPI;
 import com.polar.nextcloudservices.API.NextcloudSSOAPI;
+import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.NotificationBroadcastReceiver;
 import com.polar.nextcloudservices.Notification.NotificationBuilder;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
@@ -51,6 +42,8 @@ import com.polar.nextcloudservices.Notification.Processors.ActionsNotificationPr
 import com.polar.nextcloudservices.Notification.Processors.BasicNotificationProcessor;
 import com.polar.nextcloudservices.Notification.Processors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.Notification.Processors.OpenBrowserProcessor;
+import com.polar.nextcloudservices.R;
+import com.polar.nextcloudservices.Utils.CommonUtil;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     private final String TAG = "NotificationService.PollTask";
@@ -76,6 +69,8 @@ public class NotificationService extends Service {
     private PollTimerTask task;
     public NextcloudAbstractAPI API;
     private NotificationBuilder mNotificationBuilder;
+    private ServiceSettings mServiceSettings;
+    private ConnectionController mConnectionController;
 
     private void registerNotificationProcessors(){
         if(mNotificationBuilder==null){
@@ -88,54 +83,14 @@ public class NotificationService extends Service {
         mNotificationBuilder.addProcessor(new ActionsNotificationProcessor());
     }
 
-    private final NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
-        @Override
-        public void onConnected() {
-            // ignore this one… see 5)
-        }
-
-        @Override
-        public void onError(Exception ex) {
-            status = "Disconnected: " + ex.getLocalizedMessage();
-            ex.printStackTrace();
-        }
-    };
-
     private final HashSet<Integer> active_notifications = new HashSet<>();
     // run on another Thread to avoid crash
-    private Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
     // timer handling
     private Timer mTimer = null;
 
     public String getStatus() {
         return this.status;
-    }
-
-    public boolean checkInternetConnection(Context context) {
-        ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity == null) {
-            return false;
-        } else {
-            //We need to check only active network state
-            final NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();
-
-            if (activeNetwork != null) {
-                if (activeNetwork.isConnected()) {
-                    if (activeNetwork.isRoaming()) {
-                        //Log.d(TAG, "Network is in roaming");
-                        return allowRoaming;
-                    } else if (connectivity.isActiveNetworkMetered()) {
-                        //Log.d(TAG, "Network is metered");
-                        return allowMetered;
-                    } else {
-                        //Log.d(TAG, "Network is unmetered");
-                        return true;
-                    }
-                }
-            }
-            //activeNetwork is null
-            return false;
-        }
     }
 
     public void onPollFinished(JSONObject response) {
@@ -157,7 +112,7 @@ public class NotificationService extends Service {
                         final int m_notification_id = notification_id;
                         //FIXME: In worst case too many threads can be run
                         Thread thread = new Thread(() -> {
-                            Notification mNotification = null;
+                            Notification mNotification;
                             try {
                                 mNotification = mNotificationBuilder.buildNotification(m_notification_id,
                                         notification, getBaseContext(), this);
@@ -238,12 +193,9 @@ public class NotificationService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mBuilder.setChannelId(channelId);
         }
-
-
         Notification mNotification = mBuilder.build();
         //Here we want to get Nextcloud account if it does exist
         //Otherwise we will use basic NextcloudHttpAPI
-        updateAccounts();
         startForeground(1, mNotification);
         binder = new Binder();
         //Create NotificationBuilder
@@ -251,43 +203,11 @@ public class NotificationService extends Service {
         getApplicationContext().registerReceiver(new NotificationBroadcastReceiver(this),
                 new IntentFilter(Config.NotificationEventAction));
         registerNotificationProcessors();
-    }
-
-    private void updateAccounts() {
-        if (getBoolPreference("sso_enabled", false)) {
-            final String name = getPreference("sso_name");
-            final String server = getPreference("sso_server");
-            final String type = getPreference("sso_type");
-            final String token = getPreference("sso_token");
-            final String userId = getPreference("sso_userid");
-            final SingleSignOnAccount ssoAccount = new SingleSignOnAccount(name, userId, token, server, type);
-            NextcloudAPI mNextcloudAPI = new NextcloudAPI(this, ssoAccount, new GsonBuilder().create(), apiCallback);
-            API = new NextcloudSSOAPI(mNextcloudAPI);
-            Log.i(TAG, "Succesfully added Nextcloud account to service");
-        } else {
-            //We do not have an account -> use HTTP API
-            Log.i(TAG, "No Nextcloud account was found.");
-            API = new NextcloudHttpAPI();
-        }
-    }
-
-    public String getPreference(String key) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getString(key, "<none>");
-    }
-
-    public Integer getIntPreference(String key) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getInt(key, Integer.MIN_VALUE);
-    }
-
-    public boolean getBoolPreference(String key, boolean fallback) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getBoolean(key, fallback);
+        mServiceSettings = new ServiceSettings(this);
     }
 
     public void onPreferencesChange() {
-        int _pollingInterval = getIntPreference("polling_interval") * 1000;
+        int _pollingInterval = mServiceSettings.getIntPreference("polling_interval") * 1000;
         if (_pollingInterval <= 0) {
             Log.w(TAG, "Invalid polling interval! Setting to 3 seconds.");
             _pollingInterval = 3 * 1000;
@@ -330,42 +250,33 @@ public class NotificationService extends Service {
         }
     }
 
+    public void updateAccounts(){
+
+    }
+
     class PollTimerTask extends TimerTask {
 
         @Override
         public void run() {
             // run on another thread
-            mHandler.post(new Runnable() {
+            mHandler.post(() -> {
+                username = mServiceSettings.getPreference("login");
+                password = mServiceSettings.getPreference("password");
+                server = mServiceSettings.getPreference("server");
+                useHttp = mServiceSettings.getBoolPreference("insecure_connection", false);
+                allowRoaming = mServiceSettings.getBoolPreference("allow_roaming", false);
+                allowMetered = mServiceSettings.getBoolPreference("allow_metered", false);
 
-                @Override
-                public void run() {
-                    username = getPreference("login");
-                    password = getPreference("password");
-                    server = getPreference("server");
-                    useHttp = getBoolPreference("insecure_connection", false);
-                    allowRoaming = getBoolPreference("allow_roaming", false);
-                    allowMetered = getBoolPreference("allow_metered", false);
+                //FIXME: Should call below method only when prefernces updated
+                onPreferencesChange();
 
-
-                    //FIXME: Should call below method only when prefernces updated
-                    onPreferencesChange();
-
-                    if (checkInternetConnection(getApplicationContext())) {
-                        new PollTask().execute(NotificationService.this);
-                    } else {
-                        status = "Disconnected: no network available";
-                    }
+                if (mConnectionController.checkConnection(getApplicationContext())) {
+                    new PollTask().execute(NotificationService.this);
+                } else {
+                    status = "Disconnected: no network available";
                 }
-
             });
         }
-
-        private String getDateTime() {
-            // get date time in custom format
-            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
-            return sdf.format(new Date());
-        }
-
 
     }
 }

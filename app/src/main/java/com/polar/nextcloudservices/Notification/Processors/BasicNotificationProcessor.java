@@ -14,8 +14,9 @@ import androidx.core.app.NotificationCompat;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
-import com.polar.nextcloudservices.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationService;
 import com.polar.nextcloudservices.R;
+import com.polar.nextcloudservices.Services.ServiceSettings;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,7 +74,8 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
                                                          NotificationManager manager,
                                                          JSONObject rawNotification,
                                                          Context context, NotificationService service) throws JSONException {
-        final boolean removeOnDismiss = service.getBoolPreference("remove_on_dismiss", false);
+        final ServiceSettings settings = new ServiceSettings(context);
+        final boolean removeOnDismiss = settings.isRemoveOnDismissEnabled();
         final String app = prettifyChannelName(rawNotification.getString("app"));
         final String title = rawNotification.getString("subject");
         final String text = rawNotification.getString("message");
@@ -121,9 +123,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         if(id < 0){
             Log.wtf(TAG, "Notification delete event has not provided an id of notification deleted!");
         }
-        Thread thread = new Thread(() -> {
-            service.API.removeNotification(service, id);
-        });
+        Thread thread = new Thread(() -> service.API.removeNotification(service, id));
         thread.start();
     }
 

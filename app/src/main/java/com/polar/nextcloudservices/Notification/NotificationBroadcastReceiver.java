@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.polar.nextcloudservices.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationService;
 
 public class NotificationBroadcastReceiver extends BroadcastReceiver {
     private final NotificationService mService;

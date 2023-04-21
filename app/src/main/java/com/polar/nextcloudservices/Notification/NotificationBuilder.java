@@ -8,16 +8,14 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.polar.nextcloudservices.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationService;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.Vector;
 
 public class NotificationBuilder {
-    private Vector<AbstractNotificationProcessor> processors;
+    private final Vector<AbstractNotificationProcessor> processors;
     private final static String TAG="NotificationBuilder";
 
     public NotificationBuilder(){

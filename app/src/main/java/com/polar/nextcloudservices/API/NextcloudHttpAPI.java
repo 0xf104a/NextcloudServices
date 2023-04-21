@@ -6,11 +6,9 @@ import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.graphics.drawable.IconCompat;
 
-import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.BuildConfig;
-import com.polar.nextcloudservices.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,8 +18,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -31,9 +27,9 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     private final String TAG = "NextcloudHttpAPI";
     private final String UA = "NextcloudServices/" + BuildConfig.VERSION_NAME;
 
-    private String getAuth(String user, String password) {
+    private static String getAuth(String user, String password) {
         //Log.d("NotificationService.PollTask",user+":"+password);
-        return Base64.encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT).toString();
+        return Base64.encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
     }
 
     private HttpURLConnection request(NotificationService service, String path, String method,
@@ -78,7 +74,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             Log.d(TAG, "--> DELETE " + prefix + service.server + "/ocs/v2.php/apps/notifications/api/v2/notifications/" + id + " -- " + responseCode);
         } catch (IOException e) {
             Log.e(TAG, "Failed to DELETE notification: " + e.getLocalizedMessage());
-            Log.d(TAG, "Exception was: " + e.toString());
+            Log.d(TAG, "Exception was: " + e);
         }
     }
 
@@ -164,6 +160,16 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
+    public boolean isAPIConnected() {
+        return false;
+    }
+
+    @Override
+    public String getDisconnectReason() {
+        return null;
+    }
+
+    @Override
     public JSONObject getNotifications(NotificationService service) {
         try {
             HttpURLConnection conn = request(service, "/ocs/v2.php/apps/notifications/api/v2/notifications",
@@ -175,7 +181,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder buffer = new StringBuilder("");
-            String line = "";
+            String line;
             while ((line = in.readLine()) != null) {
                 buffer.append(line);
             }

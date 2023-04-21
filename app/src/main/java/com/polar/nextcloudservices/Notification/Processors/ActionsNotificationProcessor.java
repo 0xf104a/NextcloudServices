@@ -2,23 +2,22 @@ package com.polar.nextcloudservices.Notification.Processors;
 
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_CUSTOM_ACTION;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
-import com.polar.nextcloudservices.NotificationService;
-import com.polar.nextcloudservices.Util;
+import com.polar.nextcloudservices.Services.NotificationService;
+import com.polar.nextcloudservices.Utils.CommonUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +29,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
     private static final String TAG = "Notification.Processors.ActionsNotificationProcessor";
     private static final String[] IGNORED_APPS = {"spreed"};
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     private static PendingIntent getCustomActionIntent(Context context, NotificationService service,
                                                        JSONObject action, int requestCode){
         Intent intent = new Intent();
@@ -38,7 +38,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             intent.putExtra("notification_event", NOTIFICATION_EVENT_CUSTOM_ACTION);
             String link = action.getString("link");
             final String type = action.getString("type");
-            link = Util.cleanUpURLIfNeeded(link);
+            link = CommonUtil.cleanUpURLIfNeeded(link);
             if(link == null){
                 Log.e(TAG, "Nextcloud provided bad link for action");
                 return null;
@@ -74,7 +74,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
                                                          Context context,
                                                          NotificationService service) throws Exception {
         final String appName = rawNotification.getString("app");
-        if (Util.isInArray(appName, IGNORED_APPS)) {
+        if (CommonUtil.isInArray(appName, IGNORED_APPS)) {
             Log.d(TAG, appName + " is ignored");
             return builder;
         } else {
