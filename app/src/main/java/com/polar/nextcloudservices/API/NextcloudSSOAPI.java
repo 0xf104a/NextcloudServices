@@ -16,6 +16,7 @@ import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.Services.NotificationService;
+import com.polar.nextcloudservices.Services.Status.Status;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +34,8 @@ import java.util.Map;
 public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     final private NextcloudAPI API;
     final private static String TAG = "NextcloudSSOAPI";
+    private boolean lastPollSuccessful = false;
+    private String mStatusString = "Disconnected";
 
     public NextcloudSSOAPI(Context context, SingleSignOnAccount ssoAccount) {
         // ignore this one… see 5)
@@ -63,15 +66,17 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .build();
         StringBuilder buffer = new StringBuilder();
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(API.performNetworkRequest(request)));
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(API.performNetworkRequestV2(request).getBody()));
 
-            String line = "";
+            String line;
             while ((line = in.readLine()) != null) {
                 buffer.append(line);
             }
             in.close();
         } catch (Exception e) {
-            service.status = "Disconnected: " + e.getLocalizedMessage();
+            mStatusString = "Disconnected: " + e.getLocalizedMessage();
+            lastPollSuccessful = false;
             e.printStackTrace();
             return null;
         }
@@ -79,11 +84,12 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
         try {
             JSONObject response = new JSONObject(buffer.toString());
             service.onPollFinished(response);
+            lastPollSuccessful = true;
             return response;
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");
             e.printStackTrace();
-            service.status = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
+            mStatusString = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
             return null;
         }
     }
@@ -100,7 +106,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .setHeader(header)
                 .build();
         try {
-            API.performNetworkRequest(request);
+            API.performNetworkRequestV2(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -124,7 +130,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .build();
 
         try {
-            API.performNetworkRequest(request);
+            API.performNetworkRequestV2(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -135,7 +141,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
                 .setUrl(Uri.encode("/index.php/avatar/"+userId+"/256 ", "/"))
                 .build();
-        InputStream stream = API.performNetworkRequest(request);
+        InputStream stream = API.performNetworkRequestV2(request).getBody();
         return BitmapFactory.decodeStream(stream);
     }
 
@@ -150,7 +156,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .setUrl(Uri.encode("/index.php/core/preview", "/"))
                 .setParameter(parameter)
                 .build();
-        InputStream stream = API.performNetworkRequest(request);
+        InputStream stream = API.performNetworkRequestV2(request).getBody();
         return BitmapFactory.decodeStream(stream);
     }
 
@@ -162,12 +168,10 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public boolean isAPIConnected() {
-        return false;
-    }
-
-    @Override
-    public String getDisconnectReason() {
-        return null;
+    public Status getStatus(Context context) {
+        if(lastPollSuccessful){
+            return Status.Ok();
+        }
+        return Status.Failed(mStatusString);
     }
 }

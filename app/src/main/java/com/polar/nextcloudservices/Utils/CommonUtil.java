@@ -13,8 +13,14 @@ import java.util.Date;
 
 
 public class CommonUtil {
-    private static final String TAG = "Util";
+    private static final String TAG = "Utils.CommonUtil";
 
+
+    /**
+     * @param packageName name of package which should be checked
+     * @param packageManager system package manager access object
+     * @return true if package is present on device, false otherwise
+     */
     public static boolean isPackageInstalled(String packageName, PackageManager packageManager) {
         try {
             packageManager.getPackageInfo(packageName, 0);

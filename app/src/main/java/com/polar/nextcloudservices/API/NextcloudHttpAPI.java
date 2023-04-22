@@ -1,5 +1,6 @@
 package com.polar.nextcloudservices.API;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.polar.nextcloudservices.BuildConfig;
 import com.polar.nextcloudservices.Services.NotificationService;
+import com.polar.nextcloudservices.Services.Status.Status;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +28,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     private final String TAG = "NextcloudHttpAPI";
     private final String UA = "NextcloudServices/" + BuildConfig.VERSION_NAME;
+    private String mStatusString = "Disconnected";
+    private boolean lastPollSuccessful = false;
 
     private static String getAuth(String user, String password) {
         //Log.d("NotificationService.PollTask",user+":"+password);
@@ -160,16 +164,6 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public boolean isAPIConnected() {
-        return false;
-    }
-
-    @Override
-    public String getDisconnectReason() {
-        return null;
-    }
-
-    @Override
     public JSONObject getNotifications(NotificationService service) {
         try {
             HttpURLConnection conn = request(service, "/ocs/v2.php/apps/notifications/api/v2/notifications",
@@ -180,7 +174,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             Log.d(TAG, "--> GET "+ getEndpoint(service) + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder buffer = new StringBuilder("");
+            StringBuilder buffer = new StringBuilder();
             String line;
             while ((line = in.readLine()) != null) {
                 buffer.append(line);
@@ -188,26 +182,36 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             in.close();
             //Log.d(TAG, buffer.toString());
             JSONObject response = new JSONObject(buffer.toString());
+            lastPollSuccessful = true;
+
             service.onPollFinished(response);
             return response;
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");
             e.printStackTrace();
-            service.status = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
+            mStatusString = "Disconnected: server has sent bad response: " + e.getLocalizedMessage();
             return null;
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
-            service.status = "Disconnected: File not found: check your credentials and Nextcloud instance.";
+            mStatusString = "Disconnected: File not found: check your credentials and Nextcloud instance.";
             return null;
         } catch (IOException e) {
             Log.e(TAG, "Error while getting response");
             e.printStackTrace();
-            service.status = "Disconnected: I/O error: " + e.getLocalizedMessage();
+            mStatusString = "Disconnected: I/O error: " + e.getLocalizedMessage();
             return null;
         } catch (Exception e) {
             e.printStackTrace();
-            service.status = "Disconnected: " + e.getLocalizedMessage();
+            mStatusString = "Disconnected: " + e.getLocalizedMessage();
             return null;
         }
+    }
+
+    @Override
+    public Status getStatus(Context context) {
+        if(lastPollSuccessful){
+            return Status.Ok();
+        }
+        return Status.Failed(mStatusString);
     }
 }

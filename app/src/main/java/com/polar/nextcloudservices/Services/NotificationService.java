@@ -43,6 +43,7 @@ import com.polar.nextcloudservices.Notification.Processors.BasicNotificationProc
 import com.polar.nextcloudservices.Notification.Processors.NextcloudTalkProcessor;
 import com.polar.nextcloudservices.Notification.Processors.OpenBrowserProcessor;
 import com.polar.nextcloudservices.R;
+import com.polar.nextcloudservices.Services.Status.StatusController;
 import com.polar.nextcloudservices.Utils.CommonUtil;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
@@ -57,7 +58,7 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
 public class NotificationService extends Service {
     // constant
     public long pollingInterval = 3 * 1000; // 3 seconds
-    public static final String TAG = "NotificationService";
+    public static final String TAG = "Services.NotificationService";
     public String server = "";
     public String username = "";
     public String password = "";
@@ -71,6 +72,7 @@ public class NotificationService extends Service {
     private NotificationBuilder mNotificationBuilder;
     private ServiceSettings mServiceSettings;
     private ConnectionController mConnectionController;
+    private StatusController mStatusController;
 
     private void registerNotificationProcessors(){
         if(mNotificationBuilder==null){
@@ -90,7 +92,7 @@ public class NotificationService extends Service {
     private Timer mTimer = null;
 
     public String getStatus() {
-        return this.status;
+        return mStatusController.getStatusString();
     }
 
     public void onPollFinished(JSONObject response) {
@@ -132,7 +134,6 @@ public class NotificationService extends Service {
                     mNotificationManager.cancel(remove_id);
                     active_notifications.remove(remove_id);
                 }
-                this.status = "Connected";
 
             } catch (Exception e) {
                 this.status = "Disconnected: " + e.getLocalizedMessage();
@@ -204,6 +205,10 @@ public class NotificationService extends Service {
                 new IntentFilter(Config.NotificationEventAction));
         registerNotificationProcessors();
         mServiceSettings = new ServiceSettings(this);
+        mConnectionController = new ConnectionController(mServiceSettings);
+        mStatusController = new StatusController(this);
+        mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_CONNECTION,
+                mConnectionController);
     }
 
     public void onPreferencesChange() {
@@ -272,8 +277,6 @@ public class NotificationService extends Service {
 
                 if (mConnectionController.checkConnection(getApplicationContext())) {
                     new PollTask().execute(NotificationService.this);
-                } else {
-                    status = "Disconnected: no network available";
                 }
             });
         }

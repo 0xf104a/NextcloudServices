@@ -4,7 +4,10 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-public class ConnectionController {
+import com.polar.nextcloudservices.Services.Status.Status;
+import com.polar.nextcloudservices.Services.Status.StatusCheckable;
+
+public class ConnectionController implements StatusCheckable {
     private final ServiceSettings mServiceSettings;
     public ConnectionController(ServiceSettings settings){
         mServiceSettings = settings;
@@ -31,5 +34,13 @@ public class ConnectionController {
             }
         }
         return false;
+    }
+
+    @Override
+    public Status getStatus(Context context) {
+        if(checkConnection(context)){
+            return Status.Ok();
+        }
+        return Status.Failed("Disconnected: no suitable network found.");
     }
 }
