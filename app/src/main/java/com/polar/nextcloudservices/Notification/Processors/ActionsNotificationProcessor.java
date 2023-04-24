@@ -111,7 +111,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             Log.d(TAG, method + " " + link);
             Thread thread = new Thread(() -> {
                 try {
-                    service.API.sendAction(service, link, method);
+                    service.mAPI.sendAction(link, method);
                 } catch (Exception e) {
                     Log.e(TAG, e.toString());
                 }

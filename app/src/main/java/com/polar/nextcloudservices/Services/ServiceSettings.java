@@ -6,8 +6,6 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
-import com.google.gson.GsonBuilder;
-import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.API.NextcloudHttpAPI;
@@ -36,8 +34,12 @@ public class ServiceSettings {
         } else {
             //We do not have an account -> use HTTP API
             Log.i(TAG, "No Nextcloud account was found.");
-            return new NextcloudHttpAPI();
+            return new NextcloudHttpAPI(this);
         }
+    }
+
+    public void onPreferencesChanged(){
+        //TODO: store cache of preferences.
     }
 
     public String getPreference(String key) {
@@ -46,7 +48,7 @@ public class ServiceSettings {
         return sharedPreferences.getString(key, "<none>");
     }
 
-    public Integer getIntPreference(String key) {
+    public Integer getIntPreference(String key, int i) {
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(mContext);
         return sharedPreferences.getInt(key, Integer.MIN_VALUE);
@@ -68,5 +70,25 @@ public class ServiceSettings {
 
     public boolean isRemoveOnDismissEnabled() {
         return getBoolPreference(ServiceSettingConfig.REMOVE_ON_DISMISS, false);
+    }
+
+    public int getPollingIntervalMs() {
+        return getIntPreference(ServiceSettingConfig.POLLING_INTERVAL, 3) * 1000;
+    }
+
+    public String getUsername() {
+        return getPreference(ServiceSettingConfig.USERNAME);
+    }
+
+    public String getPassword() {
+        return getPreference(ServiceSettingConfig.PASSWORD);
+    }
+
+    public String getServer() {
+        return getPreference(ServiceSettingConfig.SERVER);
+    }
+
+    public boolean getUseHttp(){
+        return getBoolPreference(ServiceSettingConfig.USE_HTTP, false);
     }
 }

@@ -79,7 +79,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             final String name = user.getString("name");
             final String id = user.getString("id");
             builder.setKey(id).setName(name);
-            Bitmap image = service.API.getUserAvatar(service, id);
+            Bitmap image = service.mAPI.getUserAvatar(id);
             IconCompat compat = IconCompat.createWithAdaptiveBitmap(image);
             builder.setIcon(compat);
             return builder.build();
@@ -142,7 +142,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                         .getJSONObject("messageRichParameters")
                         .getJSONObject("file")
                         .getString("mimetype").startsWith("image/")) {
-                    Bitmap imagePreview = service.API.getImagePreview(service, rawNotification
+                    Bitmap imagePreview = service.mAPI.getImagePreview(rawNotification
                             .getJSONObject("messageRichParameters")
                             .getJSONObject("file").getString("id"));
                     builder.setStyle(new NotificationCompat.BigPictureStyle()
@@ -189,8 +189,8 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             final String reply = remoteInput.getCharSequence(KEY_TEXT_REPLY).toString();
             Thread thread = new Thread(() -> {
                 try {
-                    service.API.sendTalkReply(service, chatroom, reply);
-                    service.API.removeNotification(service, notification_id);
+                    service.mAPI.sendTalkReply(chatroom, reply);
+                    service.mAPI.removeNotification(notification_id);
                     service.removeNotification(notification_id);
                 } catch (IOException e) {
                     Log.e(TAG, e.toString());

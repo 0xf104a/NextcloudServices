@@ -9,7 +9,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.polar.nextcloudservices.BuildConfig;
-import com.polar.nextcloudservices.Services.NotificationService;
+import com.polar.nextcloudservices.Services.PollingService;
+import com.polar.nextcloudservices.Services.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 
 import org.json.JSONException;
@@ -30,29 +31,35 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     private final String UA = "NextcloudServices/" + BuildConfig.VERSION_NAME;
     private String mStatusString = "Disconnected";
     private boolean lastPollSuccessful = false;
+    private final ServiceSettings mServiceSettings;
 
+    public NextcloudHttpAPI(ServiceSettings settings){
+        mServiceSettings = settings;
+    }
     private static String getAuth(String user, String password) {
         //Log.d("NotificationService.PollTask",user+":"+password);
         return Base64.encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
     }
 
-    private HttpURLConnection request(NotificationService service, String path, String method,
+    private HttpURLConnection request(String path, String method,
                                       Boolean setAccept) throws IOException {
-        String baseUrl = service.server;
+        String user = mServiceSettings.getUsername();
+        String password = mServiceSettings.getPassword();
+        String baseUrl = mServiceSettings.getServer();
         String prefix = "https://";
-        if (service.useHttp) {
+        if (mServiceSettings.getUseHttp()) {
             prefix = "http://";
         }
         String endpoint = prefix + baseUrl + path;
         //Log.d(TAG, endpoint);
         URL url = new URL(endpoint);
         HttpURLConnection conn;
-        if (service.useHttp) {
+        if (mServiceSettings.getUseHttp()) {
             conn = (HttpURLConnection) url.openConnection();
         } else {
             conn = (HttpsURLConnection) url.openConnection();
         }
-        conn.setRequestProperty("Authorization", "Basic " + getAuth(service.username, service.password));
+        conn.setRequestProperty("Authorization", "Basic " + getAuth(user, password));
         conn.setRequestProperty("Host", url.getHost());
         conn.setRequestProperty("User-agent", UA);
         conn.setRequestProperty("OCS-APIRequest", "true");
@@ -66,55 +73,56 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public void removeNotification(NotificationService service, int id) {
+    public void removeNotification(int id) {
         try {
             String prefix = "https://";
-            if (service.useHttp) {
+            if (mServiceSettings.getUseHttp()) {
                 prefix = "http://";
             }
-            HttpURLConnection conn = request(service, "/ocs/v2.php/apps/notifications/api/v2/notifications/" + id,
+            HttpURLConnection conn = request("/ocs/v2.php/apps/notifications/api/v2/notifications/" + id,
                     "DELETE", false);
             String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> DELETE " + prefix + service.server + "/ocs/v2.php/apps/notifications/api/v2/notifications/" + id + " -- " + responseCode);
+            Log.d(TAG, "--> DELETE " + prefix + mServiceSettings.getServer() + "/ocs/v2.php/apps/notifications/api/v2/notifications/" +
+                    id + " -- " + responseCode);
         } catch (IOException e) {
             Log.e(TAG, "Failed to DELETE notification: " + e.getLocalizedMessage());
             Log.d(TAG, "Exception was: " + e);
         }
     }
 
-    private static String getEndpoint(@NonNull NotificationService service){
-        String baseUrl = service.server;
+    private static String getEndpoint(@NonNull  ServiceSettings settings){
+        String baseUrl = settings.getServer();
         String prefix = "https://";
-        if (service.useHttp) {
+        if (settings.getUseHttp()) {
             prefix = "http://";
         }
         return prefix + baseUrl;
     }
 
-    private HttpURLConnection getBaseConnection(NotificationService service, URL url, String method)
+    private HttpURLConnection getBaseConnection(URL url, String method)
             throws IOException {
         HttpURLConnection conn;
-        if (service.useHttp) {
+        if (mServiceSettings.getUseHttp()) {
             conn = (HttpURLConnection) url.openConnection();
         } else {
             conn = (HttpsURLConnection) url.openConnection();
         }
-        conn.setRequestProperty("Authorization", "Basic " + getAuth(service.username, service.password));
+        conn.setRequestProperty("Authorization", "Basic " + getAuth(mServiceSettings.getUsername(),
+                mServiceSettings.getPassword()));
         conn.setRequestProperty("Host", url.getHost());
         conn.setRequestProperty("User-agent", UA);
         conn.setRequestProperty("OCS-APIRequest", "true");
         conn.setRequestProperty("Accept", "application/json");
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestMethod("POST");
+        conn.setRequestMethod(method);
         return conn;
     }
 
     @Override
-    public void sendTalkReply(NotificationService service,
-                              String chatroom, String message) throws IOException {
-        String endpoint = getEndpoint(service) + "/ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom;
+    public void sendTalkReply(String chatroom, String message) throws IOException {
+        String endpoint = getEndpoint(mServiceSettings) + "/ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom;
         URL url = new URL(endpoint);
-        HttpURLConnection conn = getBaseConnection(service, url, "POST");
+        HttpURLConnection conn = getBaseConnection(url, "POST");
         conn.setDoOutput(true);
         conn.setConnectTimeout(5000);
 
@@ -130,48 +138,48 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
 
     }
 
-    public Bitmap getUserAvatar(NotificationService service, String userId) throws IOException {
-        HttpURLConnection connection = request(service, "/index.php/avatar/"+userId+"/256",
+    public Bitmap getUserAvatar(String userId) throws IOException {
+        HttpURLConnection connection = request("/index.php/avatar/"+userId+"/256",
                 "GET", false);
         connection.setDoInput(true);
         return BitmapFactory.decodeStream(connection.getInputStream());
     }
 
     @Override
-    public Bitmap getImagePreview(NotificationService service, String imageId) throws Exception {
-        HttpURLConnection connection = request(service, "/index.php/core/preview?fileId=" + imageId + "&x=100&y=100&a=1",
+    public Bitmap getImagePreview(String imageId) throws Exception {
+        HttpURLConnection connection = request( "/index.php/core/preview?fileId=" + imageId + "&x=100&y=100&a=1",
                 "GET", false);
         connection.setRequestProperty("Accept", "image/*");
         connection.setDoInput(true);
 
         int responseCode = connection.getResponseCode();
-        Log.d(TAG, "--> GET " + getEndpoint(service) + "/index.php/core/preview?fileId="+imageId+"&x=100&y=100&a=1 -- " + responseCode);
+        Log.d(TAG, "--> GET " + getEndpoint(mServiceSettings) + "/index.php/core/preview?fileId="+imageId+"&x=100&y=100&a=1 -- " + responseCode);
 
         return BitmapFactory.decodeStream(connection.getInputStream());
     }
 
     @Override
-    public void sendAction(NotificationService service, String link,
+    public void sendAction(String link,
                            String method) throws Exception {
-        String endpoint = getEndpoint(service) + link;
+        String endpoint = getEndpoint(mServiceSettings) + link;
         URL url = new URL(endpoint);
-        HttpURLConnection connection = getBaseConnection(service, url, method);
+        HttpURLConnection connection = getBaseConnection(url, method);
         connection.setConnectTimeout(5000);
         connection.setDoInput(true);
 
         int responseCode = connection.getResponseCode();
-        Log.d(TAG, "--> " + method + getEndpoint(service) + link + "--" + responseCode);
+        Log.d(TAG, "--> " + method + getEndpoint(mServiceSettings) + link + "--" + responseCode);
     }
 
     @Override
-    public JSONObject getNotifications(NotificationService service) {
+    public JSONObject getNotifications(PollingService service) {
         try {
-            HttpURLConnection conn = request(service, "/ocs/v2.php/apps/notifications/api/v2/notifications",
+            HttpURLConnection conn = request("/ocs/v2.php/apps/notifications/api/v2/notifications",
             "GET", true);
             conn.setDoInput(true);
 
             String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> GET "+ getEndpoint(service) + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
+            Log.d(TAG, "--> GET "+ getEndpoint(mServiceSettings) + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder buffer = new StringBuilder();

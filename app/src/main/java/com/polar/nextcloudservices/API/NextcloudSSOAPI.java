@@ -15,14 +15,13 @@ import com.nextcloud.android.sso.QueryParam;
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
-import com.polar.nextcloudservices.Services.NotificationService;
+import com.polar.nextcloudservices.Services.PollingService;
 import com.polar.nextcloudservices.Services.Status.Status;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
@@ -54,7 +53,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public JSONObject getNotifications(NotificationService service) {
+    public JSONObject getNotifications(PollingService service) {
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
@@ -95,7 +94,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public void removeNotification(NotificationService service, int id) {
+    public void removeNotification(int id) {
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
@@ -113,7 +112,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public void sendTalkReply(NotificationService service, String chatroom, String message) {
+    public void sendTalkReply(String chatroom, String message) {
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
@@ -137,7 +136,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public Bitmap getUserAvatar(NotificationService service, String userId) throws Exception {
+    public Bitmap getUserAvatar(String userId) throws Exception {
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
                 .setUrl(Uri.encode("/index.php/avatar/"+userId+"/256 ", "/"))
                 .build();
@@ -146,7 +145,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public Bitmap getImagePreview(NotificationService service, String imageId) throws Exception {
+    public Bitmap getImagePreview(String imageId) throws Exception {
         Collection<QueryParam> parameter = new LinkedList<>();
         parameter.add(new QueryParam("fileId", imageId));
         parameter.add(new QueryParam("x", "100"));
@@ -161,7 +160,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public void sendAction(NotificationService service, String link, String method) throws Exception {
+    public void sendAction(String link, String method) throws Exception {
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod(method)
                 .setUrl(Uri.encode(link, "/")).build();
         API.performNetworkRequestV2(request);

@@ -2,7 +2,6 @@
 package com.polar.nextcloudservices.Services;
 
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -16,24 +15,16 @@ import android.app.Notification;
 
 
 import androidx.core.app.NotificationCompat;
-import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
-import com.google.gson.GsonBuilder;
-import com.nextcloud.android.sso.api.NextcloudAPI;
-import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
-import com.polar.nextcloudservices.API.NextcloudHttpAPI;
-import com.polar.nextcloudservices.API.NextcloudSSOAPI;
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.NotificationBroadcastReceiver;
 import com.polar.nextcloudservices.Notification.NotificationBuilder;
@@ -44,31 +35,24 @@ import com.polar.nextcloudservices.Notification.Processors.NextcloudTalkProcesso
 import com.polar.nextcloudservices.Notification.Processors.OpenBrowserProcessor;
 import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Services.Status.StatusController;
-import com.polar.nextcloudservices.Utils.CommonUtil;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
-    private final String TAG = "NotificationService.PollTask";
+    private final String TAG = "Service.NotificationService.PollTask";
 
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
-        return services[0].API.getNotifications(services[0]);
+        return services[0].mAPI.getNotifications(services[0]);
     }
 }
 
-public class NotificationService extends Service {
+public class NotificationService extends Service implements PollingService {
     // constant
     public long pollingInterval = 3 * 1000; // 3 seconds
     public static final String TAG = "Services.NotificationService";
-    public String server = "";
-    public String username = "";
-    public String password = "";
     public String status = "Disconnected";
-    public boolean useHttp = false;
-    public boolean allowRoaming = false;
-    public boolean allowMetered = false;
-    private Binder binder;
+    private Binder mBinder;
     private PollTimerTask task;
-    public NextcloudAbstractAPI API;
+    public NextcloudAbstractAPI mAPI;
     private NotificationBuilder mNotificationBuilder;
     private ServiceSettings mServiceSettings;
     private ConnectionController mConnectionController;
@@ -152,7 +136,7 @@ public class NotificationService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return binder;
+        return mBinder;
     }
 
     public void updateTimer() {
@@ -198,7 +182,7 @@ public class NotificationService extends Service {
         //Here we want to get Nextcloud account if it does exist
         //Otherwise we will use basic NextcloudHttpAPI
         startForeground(1, mNotification);
-        binder = new Binder();
+        mBinder = new Binder();
         //Create NotificationBuilder
         mNotificationBuilder = new NotificationBuilder();
         getApplicationContext().registerReceiver(new NotificationBroadcastReceiver(this),
@@ -212,7 +196,8 @@ public class NotificationService extends Service {
     }
 
     public void onPreferencesChange() {
-        int _pollingInterval = mServiceSettings.getIntPreference("polling_interval") * 1000;
+        mServiceSettings.onPreferencesChanged();
+        int _pollingInterval = mServiceSettings.getPollingIntervalMs();
         if (_pollingInterval <= 0) {
             Log.w(TAG, "Invalid polling interval! Setting to 3 seconds.");
             _pollingInterval = 3 * 1000;
@@ -256,7 +241,7 @@ public class NotificationService extends Service {
     }
 
     public void updateAccounts(){
-
+        mAPI = mServiceSettings.getAPIFromSettings();
     }
 
     class PollTimerTask extends TimerTask {
@@ -265,16 +250,6 @@ public class NotificationService extends Service {
         public void run() {
             // run on another thread
             mHandler.post(() -> {
-                username = mServiceSettings.getPreference("login");
-                password = mServiceSettings.getPreference("password");
-                server = mServiceSettings.getPreference("server");
-                useHttp = mServiceSettings.getBoolPreference("insecure_connection", false);
-                allowRoaming = mServiceSettings.getBoolPreference("allow_roaming", false);
-                allowMetered = mServiceSettings.getBoolPreference("allow_metered", false);
-
-                //FIXME: Should call below method only when prefernces updated
-                onPreferencesChange();
-
                 if (mConnectionController.checkConnection(getApplicationContext())) {
                     new PollTask().execute(NotificationService.this);
                 }

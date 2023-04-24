@@ -123,7 +123,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         if(id < 0){
             Log.wtf(TAG, "Notification delete event has not provided an id of notification deleted!");
         }
-        Thread thread = new Thread(() -> service.API.removeNotification(service, id));
+        Thread thread = new Thread(() -> service.mAPI.removeNotification(id));
         thread.start();
     }
 
