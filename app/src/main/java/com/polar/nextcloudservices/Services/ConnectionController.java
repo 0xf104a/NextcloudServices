@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 

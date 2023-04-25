@@ -13,10 +13,10 @@ import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Config;
+import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
-import com.polar.nextcloudservices.Services.NotificationService;
 import com.polar.nextcloudservices.R;
-import com.polar.nextcloudservices.Services.ServiceSettings;
+import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,7 +73,8 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
                                                          JSONObject rawNotification,
-                                                         Context context, NotificationService service) throws JSONException {
+                                                         Context context,
+                                                         NotificationController controller) throws JSONException {
         final ServiceSettings settings = new ServiceSettings(context);
         final boolean removeOnDismiss = settings.isRemoveOnDismissEnabled();
         final String app = prettifyChannelName(rawNotification.getString("app"));
@@ -115,7 +116,8 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
     }
 
     @Override
-    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
+    public void onNotificationEvent(NotificationEvent event, Intent intent,
+                                    NotificationController controller) {
         if(event != NOTIFICATION_EVENT_DELETE){
             return;
         }
@@ -123,7 +125,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         if(id < 0){
             Log.wtf(TAG, "Notification delete event has not provided an id of notification deleted!");
         }
-        Thread thread = new Thread(() -> service.mAPI.removeNotification(id));
+        Thread thread = new Thread(() -> controller.getAPI().removeNotification(id));
         thread.start();
     }
 

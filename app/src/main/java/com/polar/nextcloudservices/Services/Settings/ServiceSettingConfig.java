@@ -1,4 +1,4 @@
-package com.polar.nextcloudservices.Services;
+package com.polar.nextcloudservices.Services.Settings;
 
 public class ServiceSettingConfig {
     public static final String ALLOW_METERED = "allow_metered";

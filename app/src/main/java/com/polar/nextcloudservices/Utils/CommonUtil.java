@@ -1,6 +1,7 @@
 package com.polar.nextcloudservices.Utils;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 

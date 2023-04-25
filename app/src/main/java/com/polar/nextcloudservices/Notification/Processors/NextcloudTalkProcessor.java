@@ -20,8 +20,10 @@ import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
 import androidx.core.graphics.drawable.IconCompat;
 
+import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.Services.NotificationService;
 import com.polar.nextcloudservices.R;
@@ -39,8 +41,6 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public final int priority = 2;
     private static final String TAG = "Notification.Processors.NextcloudTalkProcessor";
     private static final String KEY_TEXT_REPLY = "key_text_reply";
-
-    private HashMap<String, Integer> chatroom2notificationId;
 
     @SuppressLint("UnspecifiedImmutableFlag")
     static private PendingIntent getReplyIntent(Context context,
@@ -70,7 +70,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     }
 
     @NonNull
-    private Person getPersonFromNotification(@NonNull NotificationService service,
+    private Person getPersonFromNotification(@NonNull NotificationController controller,
                                              @NonNull JSONObject rawNotification) throws Exception {
         Person.Builder builder = new Person.Builder();
         if(rawNotification.getJSONObject("subjectRichParameters").has("user")){
@@ -79,7 +79,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             final String name = user.getString("name");
             final String id = user.getString("id");
             builder.setKey(id).setName(name);
-            Bitmap image = service.mAPI.getUserAvatar(id);
+            Bitmap image = controller.getAPI().getUserAvatar(id);
             IconCompat compat = IconCompat.createWithAdaptiveBitmap(image);
             builder.setIcon(compat);
             return builder.build();
@@ -100,7 +100,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
                                                          @NonNull JSONObject rawNotification,
-                                                         Context context, NotificationService service) throws Exception {
+                                                         Context context, NotificationController controller) throws Exception {
 
         if (!rawNotification.getString("app").equals("spreed")) {
             return builder;
@@ -116,16 +116,17 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                         .setLabel(replyLabel)
                         .build();
                 PendingIntent replyPendingIntent = getReplyIntent(context, rawNotification);
+                final String fastreply_title = context.getString(R.string.talk_fast_reply);
                 NotificationCompat.Action action =
                         new NotificationCompat.Action.Builder(R.drawable.ic_reply_icon,
-                                "Reply", replyPendingIntent)
+                                fastreply_title, replyPendingIntent)
                                 .addRemoteInput(remoteInput)
                                 .setAllowGeneratedReplies(true)
                                 .build();
                 builder.addAction(action);
                 final String title = rawNotification.getJSONObject("subjectRichParameters")
                         .getJSONObject("call").getString("name");
-                Person chat = getPersonFromNotification(service, rawNotification);
+                Person chat = getPersonFromNotification(controller, rawNotification);
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
                 final String dateStr = rawNotification.getString("datetime");
                 long unixTime = 0;
@@ -142,7 +143,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                         .getJSONObject("messageRichParameters")
                         .getJSONObject("file")
                         .getString("mimetype").startsWith("image/")) {
-                    Bitmap imagePreview = service.mAPI.getImagePreview(rawNotification
+                    Bitmap imagePreview = controller.getAPI().getImagePreview(rawNotification
                             .getJSONObject("messageRichParameters")
                             .getJSONObject("file").getString("id"));
                     builder.setStyle(new NotificationCompat.BigPictureStyle()
@@ -173,7 +174,8 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     }
 
     @Override
-    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
+    public void onNotificationEvent(NotificationEvent event, Intent intent,
+                                    NotificationController controller) {
         if (event == NOTIFICATION_EVENT_FASTREPLY) {
             final String chatroom = intent.getStringExtra("talk_chatroom"); // the string send by spreed is chatroomid/
             final int notification_id = intent.getIntExtra("notification_id", -1);
@@ -187,11 +189,12 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 return;
             }
             final String reply = remoteInput.getCharSequence(KEY_TEXT_REPLY).toString();
+            NextcloudAbstractAPI api = controller.getAPI();
             Thread thread = new Thread(() -> {
                 try {
-                    service.mAPI.sendTalkReply(chatroom, reply);
-                    service.mAPI.removeNotification(notification_id);
-                    service.removeNotification(notification_id);
+                    api.sendTalkReply(chatroom, reply);
+                    api.removeNotification(notification_id);
+                    controller.removeNotification(notification_id);
                 } catch (IOException e) {
                     Log.e(TAG, e.toString());
                 }

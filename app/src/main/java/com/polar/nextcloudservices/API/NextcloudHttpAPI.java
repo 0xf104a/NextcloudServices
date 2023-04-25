@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.polar.nextcloudservices.BuildConfig;
 import com.polar.nextcloudservices.Services.PollingService;
-import com.polar.nextcloudservices.Services.ServiceSettings;
+import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 
 import org.json.JSONException;
@@ -79,10 +79,12 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             if (mServiceSettings.getUseHttp()) {
                 prefix = "http://";
             }
-            HttpURLConnection conn = request("/ocs/v2.php/apps/notifications/api/v2/notifications/" + id,
+            HttpURLConnection conn =
+                    request("/ocs/v2.php/apps/notifications/api/v2/notifications/" + id,
                     "DELETE", false);
             String responseCode = Integer.toString(conn.getResponseCode());
-            Log.d(TAG, "--> DELETE " + prefix + mServiceSettings.getServer() + "/ocs/v2.php/apps/notifications/api/v2/notifications/" +
+            Log.d(TAG, "--> DELETE " + prefix + mServiceSettings.getServer()
+                    + "/ocs/v2.php/apps/notifications/api/v2/notifications/" +
                     id + " -- " + responseCode);
         } catch (IOException e) {
             Log.e(TAG, "Failed to DELETE notification: " + e.getLocalizedMessage());
@@ -147,13 +149,15 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
 
     @Override
     public Bitmap getImagePreview(String imageId) throws Exception {
-        HttpURLConnection connection = request( "/index.php/core/preview?fileId=" + imageId + "&x=100&y=100&a=1",
+        HttpURLConnection connection = request( "/index.php/core/preview?fileId="
+                        + imageId + "&x=100&y=100&a=1",
                 "GET", false);
         connection.setRequestProperty("Accept", "image/*");
         connection.setDoInput(true);
 
         int responseCode = connection.getResponseCode();
-        Log.d(TAG, "--> GET " + getEndpoint(mServiceSettings) + "/index.php/core/preview?fileId="+imageId+"&x=100&y=100&a=1 -- " + responseCode);
+        Log.d(TAG, "--> GET " + getEndpoint(mServiceSettings)
+                + "/index.php/core/preview?fileId="+imageId+"&x=100&y=100&a=1 -- " + responseCode);
 
         return BitmapFactory.decodeStream(connection.getInputStream());
     }
@@ -168,7 +172,8 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         connection.setDoInput(true);
 
         int responseCode = connection.getResponseCode();
-        Log.d(TAG, "--> " + method + getEndpoint(mServiceSettings) + link + "--" + responseCode);
+        Log.d(TAG, "--> " + method + getEndpoint(mServiceSettings)
+                + link + "--" + responseCode);
     }
 
     @Override

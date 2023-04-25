@@ -16,17 +16,18 @@ import java.util.Vector;
 
 public class NotificationBuilder {
     private final Vector<AbstractNotificationProcessor> processors;
-    private final static String TAG="NotificationBuilder";
+    private final static String TAG = "Notification.NotificationBuilder";
 
     public NotificationBuilder(){
         processors = new Vector<>();
     }
 
-    public Notification buildNotification(int id, JSONObject rawNotification, Context context, NotificationService service) throws Exception {
+    public Notification buildNotification(int id, JSONObject rawNotification, Context context,
+                                          NotificationController service) throws Exception {
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, rawNotification.getString("app"));
         for(int i=0; i<processors.size(); ++i){
-            Log.d(TAG, "Will call notification processor: "+processors.get(i).toString());
+            Log.d(TAG, "Will call notification processor: " + processors.get(i).toString());
             mBuilder = processors.get(i).updateNotification(id, mBuilder, mNotificationManager,
                     rawNotification, context, service);
         }
@@ -43,7 +44,7 @@ public class NotificationBuilder {
         processors.insertElementAt(processor, place);
     }
 
-    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
+    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationController service) {
         for(AbstractNotificationProcessor processor: processors){
             processor.onNotificationEvent(event, intent, service);
         }

@@ -14,9 +14,10 @@ public interface AbstractNotificationProcessor {
     NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
                                                          JSONObject rawNotification,
-                                                         Context context, NotificationService service) throws Exception;
+                                                         Context context, NotificationController controller) throws Exception;
 
-    void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service);
+    void onNotificationEvent(NotificationEvent event, Intent intent,
+                             NotificationController controller);
 
     int getPriority();
 }

@@ -18,7 +18,9 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
+import com.polar.nextcloudservices.Notification.NotificationEventReceiver;
 import com.polar.nextcloudservices.Services.NotificationService;
 
 import org.json.JSONException;
@@ -33,7 +35,7 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
     public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
                                                          NotificationManager manager,
                                                          JSONObject rawNotification,
-                                                         Context context, NotificationService service) throws JSONException {
+                                                         Context context, NotificationController controller) throws JSONException {
         if (!rawNotification.has("link")) {
             return builder;
         }
@@ -58,10 +60,9 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
     }
 
     @Override
-    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationService service) {
+    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationController controller) {
 
     }
-
 
     @Override
     public int getPriority() {

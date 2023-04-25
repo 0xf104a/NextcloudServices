@@ -1,4 +1,4 @@
-package com.polar.nextcloudservices.Services;
+package com.polar.nextcloudservices.Services.Settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -10,12 +10,13 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.API.NextcloudHttpAPI;
 import com.polar.nextcloudservices.API.NextcloudSSOAPI;
+import com.polar.nextcloudservices.Services.Settings.ServiceSettingConfig;
 
 /**
  * Implements interface for accessing settings
  */
 public class ServiceSettings {
-    private static final String TAG = "Services.ServiceSettings";
+    private static final String TAG = "Services.Settings.ServiceSettings";
     private final Context mContext;
 
     public ServiceSettings(Context context){

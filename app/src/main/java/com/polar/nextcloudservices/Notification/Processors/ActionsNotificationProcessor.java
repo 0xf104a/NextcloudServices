@@ -15,8 +15,8 @@ import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
-import com.polar.nextcloudservices.Services.NotificationService;
 import com.polar.nextcloudservices.Utils.CommonUtil;
 
 import org.json.JSONArray;
@@ -30,7 +30,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
     private static final String[] IGNORED_APPS = {"spreed"};
 
     @SuppressLint("UnspecifiedImmutableFlag")
-    private static PendingIntent getCustomActionIntent(Context context, NotificationService service,
+    private static PendingIntent getCustomActionIntent(Context context,
                                                        JSONObject action, int requestCode){
         Intent intent = new Intent();
         intent.setAction(Config.NotificationEventAction);
@@ -72,7 +72,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
                                                          NotificationManager manager,
                                                          @NonNull JSONObject rawNotification,
                                                          Context context,
-                                                         NotificationService service) throws Exception {
+                                                         NotificationController controller) throws Exception {
         final String appName = rawNotification.getString("app");
         if (CommonUtil.isInArray(appName, IGNORED_APPS)) {
             Log.d(TAG, appName + " is ignored");
@@ -87,7 +87,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
         final int n_actions = actions.length();
         for(int i = 0; i < n_actions; ++i){
             JSONObject action = actions.getJSONObject(i);
-            PendingIntent actionPendingIntent = getCustomActionIntent(context, service, action, i);
+            PendingIntent actionPendingIntent = getCustomActionIntent(context, action, i);
             if(actionPendingIntent == null){
                 Log.w(TAG, "Can not create action for notification");
                 return builder;
@@ -104,14 +104,14 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
 
     @Override
     public void onNotificationEvent(NotificationEvent event, Intent intent,
-                                    NotificationService service) {
+                                    NotificationController controller) {
         if(event == NOTIFICATION_EVENT_CUSTOM_ACTION){
             final String link = intent.getStringExtra("action_link");
             final String method = intent.getStringExtra("action_method");
             Log.d(TAG, method + " " + link);
             Thread thread = new Thread(() -> {
                 try {
-                    service.mAPI.sendAction(link, method);
+                    controller.getAPI().sendAction(link, method);
                 } catch (Exception e) {
                     Log.e(TAG, e.toString());
                 }
