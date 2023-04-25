@@ -43,17 +43,13 @@ public class NotificationController implements NotificationEventReceiver, Status
         mNotificationManager =
                 (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
         mServiceSettings = settings;
+        registerNotificationProcessors();
     }
 
     private void registerNotificationProcessors(){
-        if(mNotificationBuilder == null){
-            throw new RuntimeException("registerNotificationProcessors called too early: mNotificationBuilder is null!");
+        for(AbstractNotificationProcessor processor : NotificationConfig.NOTIFICATION_PROCESSORS){
+            mNotificationBuilder.addProcessor(processor);
         }
-        //Register your notification processors here
-        mNotificationBuilder.addProcessor(new BasicNotificationProcessor());
-        mNotificationBuilder.addProcessor(new OpenBrowserProcessor());
-        mNotificationBuilder.addProcessor(new NextcloudTalkProcessor());
-        mNotificationBuilder.addProcessor(new ActionsNotificationProcessor());
     }
 
     private void sendNotification(int notification_id, JSONObject notification){

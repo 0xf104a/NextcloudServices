@@ -115,6 +115,7 @@ public class NotificationService extends Service implements PollingService {
         startForeground(1, getPollingNotification());
         mBinder = new Binder();
         mServiceSettings = new ServiceSettings(this);
+        mAPI = mServiceSettings.getAPIFromSettings();
         mConnectionController = new ConnectionController(mServiceSettings);
         mNotificationController = new NotificationController(this, mServiceSettings);
         mStatusController = new StatusController(this);

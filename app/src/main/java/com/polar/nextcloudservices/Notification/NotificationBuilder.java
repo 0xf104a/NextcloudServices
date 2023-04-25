@@ -36,6 +36,9 @@ public class NotificationBuilder {
 
     public void addProcessor(AbstractNotificationProcessor processor){
         int place=0;
+        if(processors.size() == 0){
+            Log.w(TAG, "No processors are registered. Resulting notification would be likely invalid");
+        }
         for(;place<processors.size(); ++place){
             if(processors.get(place).getPriority()>=processor.getPriority()){
                break;
@@ -44,7 +47,8 @@ public class NotificationBuilder {
         processors.insertElementAt(processor, place);
     }
 
-    public void onNotificationEvent(NotificationEvent event, Intent intent, NotificationController service) {
+    public void onNotificationEvent(NotificationEvent event, Intent intent,
+                                    NotificationController service) {
         for(AbstractNotificationProcessor processor: processors){
             processor.onNotificationEvent(event, intent, service);
         }
