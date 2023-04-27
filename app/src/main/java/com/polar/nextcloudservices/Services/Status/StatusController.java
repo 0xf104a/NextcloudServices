@@ -2,6 +2,8 @@ package com.polar.nextcloudservices.Services.Status;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,29 +14,44 @@ import java.util.Vector;
  */
 public class StatusController {
     private final HashMap<Integer, StatusCheckable> components;
+    private final HashMap<Integer, Integer> components_priority_mapping;
     private final Context mContext;
 
     public StatusController(Context context){
         components = new HashMap<>();
         mContext = context;
+        components_priority_mapping = new HashMap<>();
     }
 
-    public void addComponent(Integer componentId, StatusCheckable component){
+    public void addComponent(Integer componentId, @NonNull StatusCheckable component,
+                             Integer priority){
         components.put(componentId, component);
+        components_priority_mapping.put(componentId, priority);
     }
 
     public void removeComponent(Integer componentId){
         components.remove(componentId);
+        components_priority_mapping.remove(componentId);
     }
 
     public Status check(){
-        for(StatusCheckable component: components.values()){
+        String statusString = "Disconnected";
+        Integer maxPriority = Integer.MIN_VALUE;
+        Status status = Status.Ok();
+        for(Integer componentId: components.keySet()){
+            StatusCheckable component = components.get(componentId);
+            assert component != null;
             Status state = component.getStatus(mContext);
+            Integer priority = components_priority_mapping.getOrDefault(maxPriority,
+                    Integer.MIN_VALUE);
             if(!state.isOk){
-                return Status.Failed(state.reason);
+                if(priority >= maxPriority){
+                    status = state;
+                    maxPriority = priority;
+                }
             }
         }
-        return Status.Ok();
+        return status;
     }
 
     public String getStatusString(){

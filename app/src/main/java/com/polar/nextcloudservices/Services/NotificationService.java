@@ -120,10 +120,13 @@ public class NotificationService extends Service implements PollingService {
         mNotificationController = new NotificationController(this, mServiceSettings);
         mStatusController = new StatusController(this);
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_CONNECTION,
-                mConnectionController);
+                mConnectionController, NotificationServiceConfig.CONNECTION_COMPONENT_PRIORITY);
         mStatusController.addComponent(
                 NotificationServiceComponents.SERVICE_COMPONENT_NOTIFICATION_CONTROLLER,
-                mNotificationController);
+                mNotificationController,
+                NotificationServiceConfig.NOTIFICATION_CONTROLLER_PRIORITY);
+        mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_API,
+                mAPI, NotificationServiceConfig.API_COMPONENT_PRIORITY);
     }
 
     public void onPreferencesChange() {
@@ -169,7 +172,8 @@ public class NotificationService extends Service implements PollingService {
 
     public void updateAccounts(){
         mAPI = mServiceSettings.getAPIFromSettings();
-        mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_API, mAPI);
+        mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_API, mAPI,
+                NotificationServiceConfig.CONNECTION_COMPONENT_PRIORITY);
     }
 
     class PollTimerTask extends TimerTask {
