@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.invoke.MethodHandles;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +30,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     private final String TAG = "NextcloudHttpAPI";
     private final String UA = "NextcloudServices/" + BuildConfig.VERSION_NAME;
-    private String mStatusString = "Disconnected";
+    private String mStatusString = "Updating settings";
     private boolean lastPollSuccessful = false;
     private final ServiceSettings mServiceSettings;
 
@@ -74,6 +75,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
 
     @Override
     public void removeNotification(int id) {
+        Log.d(TAG, "Removing notification " + id);
         try {
             String prefix = "https://";
             if (mServiceSettings.getUseHttp()) {

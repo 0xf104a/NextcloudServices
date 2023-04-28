@@ -10,7 +10,6 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.API.NextcloudHttpAPI;
 import com.polar.nextcloudservices.API.NextcloudSSOAPI;
-import com.polar.nextcloudservices.Services.Settings.ServiceSettingConfig;
 
 /**
  * Implements interface for accessing settings
@@ -18,12 +17,13 @@ import com.polar.nextcloudservices.Services.Settings.ServiceSettingConfig;
 public class ServiceSettings {
     private static final String TAG = "Services.Settings.ServiceSettings";
     private final Context mContext;
+    private NextcloudAbstractAPI mCachedAPI = null;
 
     public ServiceSettings(Context context){
         mContext = context;
     }
 
-    public NextcloudAbstractAPI getAPIFromSettings(){
+    private NextcloudAbstractAPI makeAPIFromSettings(){
         if (getBoolPreference("sso_enabled", false)) {
             final String name = getPreference("sso_name");
             final String server = getPreference("sso_server");
@@ -39,8 +39,15 @@ public class ServiceSettings {
         }
     }
 
+    public NextcloudAbstractAPI getAPIFromSettings(){
+        if(mCachedAPI == null){
+            mCachedAPI = makeAPIFromSettings();
+        }
+        return mCachedAPI;
+    }
+
     public void onPreferencesChanged(){
-        //TODO: store cache of preferences.
+        mCachedAPI = makeAPIFromSettings();
     }
 
     public String getPreference(String key) {

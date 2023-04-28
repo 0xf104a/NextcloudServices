@@ -14,6 +14,7 @@ import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.QueryParam;
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
+import com.nextcloud.android.sso.api.Response;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.Services.PollingService;
 import com.polar.nextcloudservices.Services.Status.Status;
@@ -34,7 +35,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     final private NextcloudAPI API;
     final private static String TAG = "NextcloudSSOAPI";
     private boolean lastPollSuccessful = false;
-    private String mStatusString = "Disconnected";
+    private String mStatusString = "Updating settings";
 
     public NextcloudSSOAPI(Context context, SingleSignOnAccount ssoAccount) {
         // ignore this one… see 5)
@@ -83,6 +84,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
         try {
             JSONObject response = new JSONObject(buffer.toString());
             service.onPollFinished(response);
+            Log.d(TAG, "Setting lastPollSuccessful as true");
             lastPollSuccessful = true;
             return response;
         } catch (JSONException e) {
@@ -105,7 +107,9 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .setHeader(header)
                 .build();
         try {
-            API.performNetworkRequestV2(request);
+            Response response = API.performNetworkRequestV2(request);
+            InputStream stream = response.getBody();
+            String result = stream.toString();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -169,6 +173,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     @Override
     public Status getStatus(Context context) {
         if(lastPollSuccessful){
+            Log.d(TAG, "Last poll is successful");
             return Status.Ok();
         }
         return Status.Failed(mStatusString);

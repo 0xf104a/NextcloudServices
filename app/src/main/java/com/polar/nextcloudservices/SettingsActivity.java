@@ -1,6 +1,7 @@
 package com.polar.nextcloudservices;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -90,6 +91,11 @@ class NotificationServiceConnection implements ServiceConnection {
     public void onServiceDisconnected(ComponentName name) {
         Log.w(TAG, "Service has disconnected.");
         isConnected = false;
+    }
+
+    public void tellPreferencesChanged() {
+        Log.d(TAG, "Telling about preferences change to service");
+        mService.onPreferencesChanged();
     }
 }
 
@@ -290,7 +296,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
 
 
-    public static class SettingsFragment extends PreferenceFragmentCompat {
+    public static class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener{
         private final String TAG = "SettingsActivity.SettingsFragment";
         //private DialogFragment current_dialog_fragment = null;
 
@@ -306,6 +312,15 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 throw new NullPointerException();
             }
             activity.mServiceConnection.tellAccountChanged();
+        }
+
+        private void notifyPreferenceChange(){
+            SettingsActivity activity = (SettingsActivity) getActivity();
+            if(activity == null){
+                Log.wtf(TAG, "Activity can not be null!");
+                throw new NullPointerException();
+            }
+            activity.mServiceConnection.tellPreferencesChanged();
         }
 
         private void enableSSO(@NonNull SingleSignOnAccount account){
@@ -506,6 +521,8 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
         @Override
         public void onPause() {
+            Objects.requireNonNull(getPreferenceManager().getSharedPreferences())
+                    .unregisterOnSharedPreferenceChangeListener(this);
             super.onPause();
             Log.d(TAG, "onPause called");
             /*if(current_dialog_fragment != null){
@@ -516,10 +533,16 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
         @Override
         public void onResume() {
+            Objects.requireNonNull(getPreferenceManager().getSharedPreferences())
+                    .registerOnSharedPreferenceChangeListener(this);
             super.onResume();
             Log.d(TAG, "onResume called");
         }
 
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            notifyPreferenceChange();
+        }
     }
 
 

@@ -1,6 +1,7 @@
 package com.polar.nextcloudservices.Services.Status;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -13,6 +14,7 @@ import java.util.Vector;
  * Implements status-checking logic
  */
 public class StatusController {
+    private static final String TAG = "Services.Status.StatusController";
     private final HashMap<Integer, StatusCheckable> components;
     private final HashMap<Integer, Integer> components_priority_mapping;
     private final Context mContext;
@@ -35,7 +37,6 @@ public class StatusController {
     }
 
     public Status check(){
-        String statusString = "Disconnected";
         Integer maxPriority = Integer.MIN_VALUE;
         Status status = Status.Ok();
         for(Integer componentId: components.keySet()){
@@ -45,6 +46,8 @@ public class StatusController {
             Integer priority = components_priority_mapping.getOrDefault(maxPriority,
                     Integer.MIN_VALUE);
             if(!state.isOk){
+                Log.d(TAG, "Got status: " + state.reason);
+                Log.d(TAG, "Component id: " + componentId);
                 if(priority >= maxPriority){
                     status = state;
                     maxPriority = priority;

@@ -122,11 +122,16 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
             return;
         }
         int id = intent.getIntExtra("notification_id", -1);
+        Log.d(TAG, "Should remove notification " + id);
         if(id < 0){
             Log.wtf(TAG, "Notification delete event has not provided an id of notification deleted!");
         }
-        Thread thread = new Thread(() -> controller.getAPI().removeNotification(id));
+        Thread thread = new Thread(() -> callRemoveNotification(controller, id));
         thread.start();
+    }
+
+    private void callRemoveNotification(NotificationController controller, int id){
+        controller.getAPI().removeNotification(id);
     }
 
     @Override

@@ -32,7 +32,7 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
 
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
-        return services[0].mAPI.getNotifications(services[0]);
+        return services[0].getAPI().getNotifications(services[0]);
     }
 }
 
@@ -107,6 +107,14 @@ public class NotificationService extends Service implements PollingService {
         // schedule task
         task = new PollTimerTask();
         mTimer.scheduleAtFixedRate(task, 0, pollingInterval);
+    }
+
+    public NextcloudAbstractAPI getAPI(){
+        if(mServiceSettings == null){
+            Log.wtf(TAG, "mServiceSettings is null!");
+            return null;
+        }
+        return mServiceSettings.getAPIFromSettings();
     }
 
     @Override
