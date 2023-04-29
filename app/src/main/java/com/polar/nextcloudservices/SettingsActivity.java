@@ -135,6 +135,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                     startNotificationService();
                 }
                 if (isNotificationServiceRunning()) {
+                    Log.d(TAG, "Service is running");
                     updateNotificationServiceStatus(settings);
                 } else {
                     (settings).setStatus("Disconnected: service is not running");
@@ -147,13 +148,16 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         if(isNotificationServiceRunning()) {
             Log.i(TAG, "Stopping service");
             Context context = getApplicationContext();
+            //mServiceConnection = null;
+            unbindService(mServiceConnection);
+            mServiceConnection = null;
             context.stopService(new Intent(context, NotificationService.class));
         }
     }
     public void startNotificationService() {
         ///--------
         //Log.d(TAG, "startService: ENTERING");
-        if (!isNotificationServiceRunning()&&getBoolPreference("enable_polling",true)) {
+        if (!isNotificationServiceRunning() && getBoolPreference("enable_polling",true)) {
             Log.d(TAG, "Service is not running: creating intent to start it");
             startService(new Intent(getApplicationContext(), NotificationService.class));
         }
@@ -166,14 +170,14 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     }
 
     private void updateNotificationServiceStatus(SettingsFragment settings) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningServiceInfo> services = manager.getRunningServices(Integer.MAX_VALUE);
-        if (services.size() == 0) {
+        if (!isNotificationServiceRunning()) {
             Log.e(TAG, "Service is not running!");
             settings.setStatus("Disconnected: service is not running");
-        } else if(mServiceConnection==null){
+        } else if(mServiceConnection == null && isNotificationServiceRunning()) {
+            Log.d(TAG, "Service is running but disconnected");
             mServiceConnection = new NotificationServiceConnection(settings);
-            bindService(new Intent(getApplicationContext(), NotificationService.class), mServiceConnection, 0);
+            bindService(new Intent(getApplicationContext(), NotificationService.class),
+                    mServiceConnection, 0);
         } else {
             mServiceConnection.updateStatus();
         }
@@ -305,13 +309,13 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             return sharedPreferences.getBoolean(key, fallback);
         }
 
-        private void notifyService(){
+        private void notifyAccountChange(){
             SettingsActivity activity = (SettingsActivity) getActivity();
             if(activity == null){
                 Log.wtf(TAG, "Activity can not be null!");
                 throw new NullPointerException();
             }
-            activity.mServiceConnection.tellAccountChanged();
+            notifyPreferenceChange();
         }
 
         private void notifyPreferenceChange(){
@@ -319,6 +323,10 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             if(activity == null){
                 Log.wtf(TAG, "Activity can not be null!");
                 throw new NullPointerException();
+            }
+            if(activity.mServiceConnection == null){
+                Log.i(TAG, "Not notifying service about preference change: no connection to it.");
+                return;
             }
             activity.mServiceConnection.tellPreferencesChanged();
         }
@@ -334,7 +342,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             editor.putString("sso_userid", account.userId);
             editor.apply();
             setSSOPreferencesState();
-            notifyService();
+            notifyAccountChange();
         }
 
         private void disableSSO(){
@@ -343,7 +351,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             editor.putBoolean("sso_enabled", false);
             editor.apply();
             setSSOPreferencesState();
-            notifyService();
+            notifyAccountChange();
         }
 
         private void openAccountChooser() {
@@ -544,6 +552,4 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             notifyPreferenceChange();
         }
     }
-
-
 }

@@ -140,6 +140,7 @@ public class NotificationService extends Service implements PollingService {
     public void onPreferencesChange() {
         mServiceSettings.onPreferencesChanged();
         int _pollingInterval = mServiceSettings.getPollingIntervalMs();
+        updateAccounts();
         if (_pollingInterval <= 0) {
             Log.w(TAG, "Invalid polling interval! Setting to 3 seconds.");
             _pollingInterval = 3 * 1000;

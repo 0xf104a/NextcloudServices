@@ -28,7 +28,7 @@ public class NotificationController implements NotificationEventReceiver, Status
     private final HashSet<Integer> active_notifications = new HashSet<>();
     private final NotificationBuilder mNotificationBuilder;
     private final Context mContext;
-    private String mStatusString = "Can not send notification";
+    private String mStatusString = "Updating settings";
     private boolean isLastSendSuccessful = false;
     private static final String TAG = "Notification.NotificationController";
     private final NotificationManager mNotificationManager;
