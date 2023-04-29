@@ -107,9 +107,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .setHeader(header)
                 .build();
         try {
-            Response response = API.performNetworkRequestV2(request);
-            InputStream stream = response.getBody();
-            String result = stream.toString();
+            API.performNetworkRequestV2(request);
         } catch (Exception e) {
             e.printStackTrace();
         }

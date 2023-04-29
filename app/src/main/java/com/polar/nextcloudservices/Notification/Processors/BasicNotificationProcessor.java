@@ -2,11 +2,13 @@ package com.polar.nextcloudservices.Notification.Processors;
 
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_DELETE;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -56,17 +58,27 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         return result;
     }
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     private PendingIntent createNotificationDeleteIntent(Context context, int id) {
         Intent intent = new Intent();
         intent.setAction(Config.NotificationEventAction);
         intent.putExtra("notification_id", id);
         intent.putExtra("notification_event", NOTIFICATION_EVENT_DELETE);
-        return PendingIntent.getBroadcast(
-                context,
-                0,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE
-        );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return PendingIntent.getBroadcast(
+                    context,
+                    id,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+        } else {
+            return PendingIntent.getBroadcast(
+                    context,
+                    id,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+            );
+        }
     }
 
     @Override
@@ -110,7 +122,8 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         }
         if(removeOnDismiss){
             Log.d(TAG, "Adding intent for delete notification event");
-            builder = builder.setDeleteIntent(createNotificationDeleteIntent(context, rawNotification.getInt("notification_id")));
+            builder = builder.setDeleteIntent(createNotificationDeleteIntent(context,
+                    rawNotification.getInt("notification_id")));
         }
         return builder;
     }

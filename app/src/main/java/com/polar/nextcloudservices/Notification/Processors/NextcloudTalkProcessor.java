@@ -46,6 +46,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     static private PendingIntent getReplyIntent(Context context,
                                                 @NonNull JSONObject rawNotification) throws JSONException {
         Intent intent = new Intent();
+        int notification_id = rawNotification.getInt("notification_id");
         intent.setAction(Config.NotificationEventAction);
         intent.putExtra("notification_id", rawNotification.getInt("notification_id"));
         intent.putExtra("notification_event", NOTIFICATION_EVENT_FASTREPLY);
@@ -55,14 +56,14 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return PendingIntent.getBroadcast(
                     context,
-                    0,
+                    notification_id,
                     intent,
                     PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
             );
         }else{
             return PendingIntent.getBroadcast(
                     context,
-                    0,
+                    notification_id,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT
             );

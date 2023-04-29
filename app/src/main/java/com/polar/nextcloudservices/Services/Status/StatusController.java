@@ -43,11 +43,12 @@ public class StatusController {
             StatusCheckable component = components.get(componentId);
             assert component != null;
             Status state = component.getStatus(mContext);
-            Integer priority = components_priority_mapping.getOrDefault(maxPriority,
+            Integer priority = components_priority_mapping.getOrDefault(componentId,
                     Integer.MIN_VALUE);
             if(!state.isOk){
                 Log.d(TAG, "Got status: " + state.reason);
                 Log.d(TAG, "Component id: " + componentId);
+                Log.d(TAG, "Component prio: " + priority);
                 if(priority >= maxPriority){
                     status = state;
                     maxPriority = priority;
