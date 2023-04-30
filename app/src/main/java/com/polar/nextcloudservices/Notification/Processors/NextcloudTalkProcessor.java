@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -20,13 +21,17 @@ import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
 import androidx.core.graphics.drawable.IconCompat;
 
+import com.bumptech.glide.util.Util;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.NotificationBuilder;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.Services.NotificationService;
 import com.polar.nextcloudservices.R;
+import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
+import com.polar.nextcloudservices.Utils.CommonUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -95,6 +100,27 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         }
     }
 
+    private void setOpenIntentIfNeeded(NotificationCompat.Builder builder,
+                                                      Context context){
+        PackageManager pm = context.getPackageManager();
+        if (!CommonUtil.isPackageInstalled("com.nextcloud.talk2", pm)) {
+            Log.w(TAG, "Expected to find com.netxtcloud.talk2 installed, but package was not found");
+            return ;
+        }
+        Log.d(TAG, "Setting up talk notification");
+
+        Intent intent = pm.getLaunchIntentForPackage("com.nextcloud.talk2");
+        PendingIntent pending_intent;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            pending_intent = PendingIntent.getActivity(context, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        } else {
+            pending_intent = PendingIntent.getActivity(context, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        }
+        builder.setContentIntent(pending_intent);
+    }
+
 
     @SuppressLint("UnspecifiedImmutableFlag")
     @Override
@@ -140,6 +166,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+                setOpenIntentIfNeeded(builder, context);
                 if (rawNotification.getString("messageRich").equals("{file}") && rawNotification
                         .getJSONObject("messageRichParameters")
                         .getJSONObject("file")

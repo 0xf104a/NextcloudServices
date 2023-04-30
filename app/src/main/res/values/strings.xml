@@ -3,4 +3,7 @@
     <string name="action_settings">Settings</string>
     <!-- Reply button in Nextcloud talk notifications -->
     <string name="talk_fast_reply">Reply</string>
+    <!-- Open spreed notifications via browser -->
+    <string name="open_spreed_in_browser_title">Open Talk notifications in browser</string>
+    <string name="open_spreed_in_browser_summary">Enables opening Talk notifications via browser instead of launching Talk app</string>
 </resources>

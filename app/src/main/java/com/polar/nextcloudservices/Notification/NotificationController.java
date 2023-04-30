@@ -126,4 +126,8 @@ public class NotificationController implements NotificationEventReceiver, Status
     public Context getContext(){
         return mContext;
     }
+
+    public ServiceSettings getServiceSettings(){
+        return mServiceSettings;
+    }
 }

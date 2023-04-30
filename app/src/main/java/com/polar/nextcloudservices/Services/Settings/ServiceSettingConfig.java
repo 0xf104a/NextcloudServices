@@ -9,4 +9,5 @@ public class ServiceSettingConfig {
     public static final String PASSWORD = "password";
     public static final String SERVER = "server";
     public static final String USE_HTTP = "insecure_connection";
+    public static final String OPEN_SPREED_IN_BROWSER = "open_spreed_in_browser";
 }

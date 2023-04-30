@@ -62,6 +62,11 @@
             android:key="remove_on_dismiss"
             android:summary="Remove notifications from server when they are dismissed."
             android:title="Remove notifications on dismiss" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="open_spreed_in_browser"
+            android:summary="@string/open_spreed_in_browser_summary"
+            android:title="@string/open_spreed_in_browser_title" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Status">
         <EditTextPreference
