@@ -2,7 +2,7 @@ package com.polar.nextcloudservices.API;
 
 import android.graphics.Bitmap;
 
-import com.polar.nextcloudservices.Services.PollingService;
+import com.polar.nextcloudservices.Services.PollUpdateListener;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
 import org.json.JSONObject;
@@ -16,7 +16,7 @@ import java.io.IOException;
  * The inheritors of this interface should be passed to NotificationService.
  */
 public interface NextcloudAbstractAPI extends StatusCheckable {
-    JSONObject getNotifications(PollingService service);
+    JSONObject getNotifications(PollUpdateListener service);
     void removeNotification(int id);
     void sendTalkReply(String chatroom, String message) throws IOException;
     Bitmap getUserAvatar(String userId) throws Exception;

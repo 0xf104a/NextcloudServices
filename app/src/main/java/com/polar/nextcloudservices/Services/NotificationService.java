@@ -36,7 +36,7 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     }
 }
 
-public class NotificationService extends Service implements PollingService {
+public class NotificationService extends Service implements PollUpdateListener {
     // constant
     public long pollingInterval = 3 * 1000; // 3 seconds
     public static final String TAG = "Services.NotificationService";

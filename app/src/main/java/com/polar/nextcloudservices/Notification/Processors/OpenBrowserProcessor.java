@@ -53,9 +53,11 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
         browserIntent.intent.setData(Uri.parse(rawNotification.getString("link")));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0,
+                    browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         }else{
-            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0,
+                    browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
     }
 

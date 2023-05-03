@@ -9,7 +9,7 @@ public class NotificationConfig {
     public static final AbstractNotificationProcessor[] NOTIFICATION_PROCESSORS = {
             new BasicNotificationProcessor(),
             new NextcloudTalkProcessor(),
-            new OpenBrowserProcessor(),
+          //  new OpenBrowserProcessor(),
             new ActionsNotificationProcessor()
     };
 }

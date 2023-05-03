@@ -9,7 +9,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.polar.nextcloudservices.BuildConfig;
-import com.polar.nextcloudservices.Services.PollingService;
+import com.polar.nextcloudservices.Services.PollUpdateListener;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 
@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.invoke.MethodHandles;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -179,7 +178,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public JSONObject getNotifications(PollingService service) {
+    public JSONObject getNotifications(PollUpdateListener service) {
         try {
             HttpURLConnection conn = request("/ocs/v2.php/apps/notifications/api/v2/notifications",
             "GET", true);

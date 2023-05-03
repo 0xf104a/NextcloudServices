@@ -14,9 +14,8 @@ import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.QueryParam;
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
-import com.nextcloud.android.sso.api.Response;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
-import com.polar.nextcloudservices.Services.PollingService;
+import com.polar.nextcloudservices.Services.PollUpdateListener;
 import com.polar.nextcloudservices.Services.Status.Status;
 
 import org.json.JSONException;
@@ -54,7 +53,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public JSONObject getNotifications(PollingService service) {
+    public JSONObject getNotifications(PollUpdateListener service) {
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<>();
         values.add("application/json");

@@ -21,14 +21,11 @@ import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
 import androidx.core.graphics.drawable.IconCompat;
 
-import com.bumptech.glide.util.Util;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
-import com.polar.nextcloudservices.Notification.NotificationBuilder;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
-import com.polar.nextcloudservices.Services.NotificationService;
 import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Utils.CommonUtil;
@@ -40,7 +37,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 
 public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public final int priority = 2;
@@ -100,25 +96,59 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         }
     }
 
-    private void setOpenIntentIfNeeded(NotificationCompat.Builder builder,
-                                                      Context context){
+    private NotificationCompat.Builder setCustomTabsIntent(Context context,
+                                                           NotificationCompat.Builder builder,
+                                                           String link) {
+        CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
+                .setUrlBarHidingEnabled(true)
+                .setShowTitle(false)
+                .setStartAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
+                .setExitAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
+                .setColorScheme(CustomTabsIntent.COLOR_SCHEME_SYSTEM)
+                .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
+                .build();
+        browserIntent.intent.setData(Uri.parse(link));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0,
+                    browserIntent.intent,
+                    PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+        }else{
+            return builder.setContentIntent(PendingIntent.getActivity(context, 0,
+                    browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
+    }
+
+    private NotificationCompat.Builder setTalkOpenIntent(Context context,
+                                                         NotificationCompat.Builder builder){
         PackageManager pm = context.getPackageManager();
         if (!CommonUtil.isPackageInstalled("com.nextcloud.talk2", pm)) {
-            Log.w(TAG, "Expected to find com.netxtcloud.talk2 installed, but package was not found");
-            return ;
+            Log.w(TAG, "Expected to find com.nextcloud.talk2 installed, but package was not found");
+            return builder;
         }
-        Log.d(TAG, "Setting up talk notification");
+        Log.d(TAG, "Setting up talk notification open intent");
 
         Intent intent = pm.getLaunchIntentForPackage("com.nextcloud.talk2");
         PendingIntent pending_intent;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            pending_intent = PendingIntent.getActivity(context, 0, intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        pending_intent = PendingIntent.getActivity(context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        return  builder.setContentIntent(pending_intent);
+    }
+
+    private NotificationCompat.Builder setOpenIntent(NotificationController controller,
+                                                     NotificationCompat.Builder builder,
+                                                     Context context, String link){
+        ServiceSettings settings = controller.getServiceSettings();
+        if(settings.getSpreedOpenedInBrowser()){
+            return setCustomTabsIntent(context, builder, link);
         } else {
-            pending_intent = PendingIntent.getActivity(context, 0, intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            PackageManager pm = context.getPackageManager();
+            if (!CommonUtil.isPackageInstalled("com.nextcloud.talk2", pm)) {
+                Log.w(TAG, "Expected to find com.nextcloud.talk2 installed, but package was not found");
+                return setCustomTabsIntent(context, builder, link);
+            }
+            return setTalkOpenIntent(context, builder);
         }
-        builder.setContentIntent(pending_intent);
     }
 
 
@@ -166,7 +196,6 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                setOpenIntentIfNeeded(builder, context);
                 if (rawNotification.getString("messageRich").equals("{file}") && rawNotification
                         .getJSONObject("messageRichParameters")
                         .getJSONObject("file")
@@ -183,22 +212,9 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 }
             }
         }
-
-        CustomTabsIntent browserIntent = new CustomTabsIntent.Builder()
-                .setUrlBarHidingEnabled(true)
-                .setShowTitle(false)
-                .setStartAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
-                .setExitAnimations(context, android.R.anim.fade_in, android.R.anim.fade_out)
-                .setColorScheme(CustomTabsIntent.COLOR_SCHEME_SYSTEM)
-                .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
-                .build();
-        browserIntent.intent.setData(Uri.parse(rawNotification.getString("link")));
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
-        }else{
-            return builder.setContentIntent(PendingIntent.getActivity(context, 0, browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
-        }
+        builder = setOpenIntent(controller, builder, context,
+                rawNotification.getString("link"));
+        return builder;
     }
 
     @Override
@@ -236,6 +252,4 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public int getPriority() {
         return priority;
     }
-
-
 }
