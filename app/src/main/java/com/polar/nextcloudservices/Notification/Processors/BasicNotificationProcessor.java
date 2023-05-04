@@ -94,7 +94,7 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         final String app_name = rawNotification.getString("app");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(app_name, app, NotificationManager.IMPORTANCE_HIGH);
-            Log.d(TAG, "Creating channel");
+            Log.i(TAG, "Creating channel " + app_name);
             manager.createNotificationChannel(channel);
         }
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");

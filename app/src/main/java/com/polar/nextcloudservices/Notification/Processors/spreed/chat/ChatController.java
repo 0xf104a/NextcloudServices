@@ -2,10 +2,13 @@ package com.polar.nextcloudservices.Notification.Processors.spreed.chat;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.Person;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A generic controller of a chat logic.
@@ -27,7 +30,7 @@ public class ChatController {
 
     private Chat getChat(String room, int nc_notification_id){
         if(!chat_by_room.containsKey(room)){
-            Chat chat = new Chat(nc_notification_id);
+            Chat chat = new Chat(nc_notification_id, room);
             chat_by_room.put(room, chat);
             chat_by_notification_id.put(nc_notification_id, chat);
             notification_id_by_room.put(room, nc_notification_id);
@@ -35,7 +38,7 @@ public class ChatController {
         return chat_by_room.get(room);
     }
 
-    public int getNotificationIdByRoom(String room){
+    public Integer getNotificationIdByRoom(String room){
         return notification_id_by_room.get(room);
     }
 
@@ -60,9 +63,31 @@ public class ChatController {
             Log.wtf(TAG, "Requested non-existent room or null is in chat_by_room map");
             return null;
         }
-        for(ChatMessage message : chat.messages){
-            style = style.addMessage(message.text, message.timestamp, message.person);
+        synchronized (chat.messages) {
+            List<ChatMessage> cMessages = chat.messages;
+            Collections.sort(cMessages);
+            for (ChatMessage message : cMessages) {
+                style = style.addMessage(message.text, message.timestamp, message.person);
+            }
         }
         return style;
+    }
+
+    public Chat getChatByNotificationId(Integer notification_id){
+        return chat_by_notification_id.get(notification_id);
+    }
+
+    public void removeChat(@NonNull Chat chat){
+        synchronized (chat_by_room){
+            chat_by_room.remove(chat.room);
+        }
+        synchronized (chat_by_notification_id){
+            for(ChatMessage message : chat.messages){
+                chat_by_notification_id.remove(message.notification_id);
+            }
+        }
+        synchronized (notification_id_by_room){
+            notification_id_by_room.remove(chat.room);
+        }
     }
 }

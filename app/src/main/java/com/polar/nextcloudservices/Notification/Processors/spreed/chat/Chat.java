@@ -5,13 +5,15 @@ import androidx.core.app.Person;
 import java.util.Vector;
 
 public class Chat {
-    public Vector<ChatMessage> messages;
-    //public String chat_id;
+    public final Vector<ChatMessage> messages;
+    public String room;
     public Integer nc_notification_id;
 
-    public Chat(Integer nc_notification_id) {
+
+    public Chat(Integer nc_notification_id, String room) {
         this.nc_notification_id = nc_notification_id;
         messages = new Vector<>();
+        this.room = room;
     }
 
     public void onNewMessage(String text, Person person, long timestamp, int nc_notification_id){

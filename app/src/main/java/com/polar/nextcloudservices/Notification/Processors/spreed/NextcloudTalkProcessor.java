@@ -1,5 +1,6 @@
 package com.polar.nextcloudservices.Notification.Processors.spreed;
 
+import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_DELETE;
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_FASTREPLY;
 
 import android.annotation.SuppressLint;
@@ -28,7 +29,9 @@ import com.polar.nextcloudservices.Notification.NotificationBuilderResult;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationControllerExtData;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
+import com.polar.nextcloudservices.Notification.Processors.spreed.chat.Chat;
 import com.polar.nextcloudservices.Notification.Processors.spreed.chat.ChatController;
+import com.polar.nextcloudservices.Notification.Processors.spreed.chat.ChatMessage;
 import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Utils.CommonUtil;
@@ -231,7 +234,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                     builderResult.builder.setStyle(new NotificationCompat.BigPictureStyle()
                             .bigPicture(imagePreview));
                 } else {
-                    builderResult = setMessagingChatStyle(controller, builderResult,
+                    setMessagingChatStyle(controller, builderResult,
                             rawNotification);
                 }
             }
@@ -261,14 +264,37 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             Thread thread = new Thread(() -> {
                 try {
                     api.sendTalkReply(chatroom, reply);
-                    api.removeNotification(notification_id);
-                    controller.removeNotification(notification_id);
                 } catch (IOException e) {
                     Log.e(TAG, e.toString());
                 }
             });
             thread.start();
 
+        } else if(event == NOTIFICATION_EVENT_DELETE){
+            //NOTE: we actually can not get here if remove on dismiss disabled
+            //      so we may safely ignore checking settings
+            final int notification_id = intent.getIntExtra("notification_id", -1);
+            if(notification_id == -1){
+                Log.e(TAG, "Invalid notification id, can not properly handle notification deletion");
+                return;
+            }
+            Chat chat = mChatController.getChatByNotificationId(notification_id);
+            if(chat == null){
+                Log.wtf(TAG, "Can not find chat by notification id " + notification_id);
+                return;
+            }
+            NextcloudAbstractAPI api = controller.getAPI();
+            for(ChatMessage message : chat.messages){
+                Thread thread = new Thread(() -> {
+                    try {
+                        api.removeNotification(message.notification_id);
+                    } catch (Exception e) {
+                        Log.e(TAG, e.toString());
+                    }
+                });
+                thread.start();
+            }
+            mChatController.removeChat(chat);
         }
     }
 
