@@ -1,4 +1,4 @@
-package com.polar.nextcloudservices.Notification.Processors;
+package com.polar.nextcloudservices.Notification.Processors.spreed;
 
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_FASTREPLY;
 
@@ -24,8 +24,11 @@ import androidx.core.graphics.drawable.IconCompat;
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.NotificationBuilderResult;
 import com.polar.nextcloudservices.Notification.NotificationController;
+import com.polar.nextcloudservices.Notification.NotificationControllerExtData;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
+import com.polar.nextcloudservices.Notification.Processors.spreed.chat.ChatController;
 import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Utils.CommonUtil;
@@ -42,6 +45,11 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public final int priority = 2;
     private static final String TAG = "Notification.Processors.NextcloudTalkProcessor";
     private static final String KEY_TEXT_REPLY = "key_text_reply";
+    private final ChatController mChatController;
+
+    public NextcloudTalkProcessor() {
+        mChatController = new ChatController();
+    }
 
     @SuppressLint("UnspecifiedImmutableFlag")
     static private PendingIntent getReplyIntent(Context context,
@@ -152,15 +160,47 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     }
 
 
+    private NotificationBuilderResult setMessagingChatStyle(NotificationController controller,
+                                                             NotificationBuilderResult builderResult,
+                                                             @NonNull JSONObject rawNotification) throws Exception {
+        Person person = getPersonFromNotification(controller, rawNotification);
+        final String room = rawNotification.getString("link");
+        final String title = rawNotification.getJSONObject("subjectRichParameters")
+                .getJSONObject("call").getString("name");
+        final String text = rawNotification.getString("message");
+        int nc_notification_id = rawNotification.getInt("notification_id");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
+        final String dateStr = rawNotification.getString("datetime");
+        long unixTime = 0;
+        try {
+            Date date = format.parse(dateStr);
+            if (date == null) {
+                throw new ParseException("Date was not parsed: result is null", 0);
+            }
+            unixTime = date.getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        mChatController.onNewMessageReceived(room, text, person, unixTime, nc_notification_id);
+        NotificationCompat.MessagingStyle style = new NotificationCompat.MessagingStyle(person);
+        style = mChatController.addChatRoomMessagesToStyle(style, room);
+        style.setConversationTitle(title);
+        int notification_id = mChatController.getNotificationIdByRoom(room);
+        builderResult.extraData.setNotificationIdOverride(notification_id);
+        builderResult.builder = builderResult.builder.setStyle(style);
+        return builderResult;
+    }
+
+
     @SuppressLint("UnspecifiedImmutableFlag")
     @Override
-    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
-                                                         NotificationManager manager,
-                                                         @NonNull JSONObject rawNotification,
-                                                         Context context, NotificationController controller) throws Exception {
+    public NotificationBuilderResult updateNotification(int id, NotificationBuilderResult builderResult,
+                                                        NotificationManager manager,
+                                                        @NonNull JSONObject rawNotification,
+                                                        Context context, NotificationController controller) throws Exception {
 
         if (!rawNotification.getString("app").equals("spreed")) {
-            return builder;
+            return builderResult;
         }
 
         Log.d(TAG, "Setting up talk notification");
@@ -180,22 +220,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                                 .addRemoteInput(remoteInput)
                                 .setAllowGeneratedReplies(true)
                                 .build();
-                builder.addAction(action);
-                final String title = rawNotification.getJSONObject("subjectRichParameters")
-                        .getJSONObject("call").getString("name");
-                Person chat = getPersonFromNotification(controller, rawNotification);
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'");
-                final String dateStr = rawNotification.getString("datetime");
-                long unixTime = 0;
-                try {
-                    Date date = format.parse(dateStr);
-                    if (date == null) {
-                        throw new ParseException("Date was not parsed: result is null", 0);
-                    }
-                    unixTime = date.getTime();
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                builderResult.builder.addAction(action);
                 if (rawNotification.getString("messageRich").equals("{file}") && rawNotification
                         .getJSONObject("messageRichParameters")
                         .getJSONObject("file")
@@ -203,18 +228,17 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                     Bitmap imagePreview = controller.getAPI().getImagePreview(rawNotification
                             .getJSONObject("messageRichParameters")
                             .getJSONObject("file").getString("id"));
-                    builder.setStyle(new NotificationCompat.BigPictureStyle()
+                    builderResult.builder.setStyle(new NotificationCompat.BigPictureStyle()
                             .bigPicture(imagePreview));
                 } else {
-                    builder.setStyle(new NotificationCompat.MessagingStyle(chat)
-                            .setConversationTitle(title)
-                            .addMessage(rawNotification.getString("message"), unixTime, chat));
+                    builderResult = setMessagingChatStyle(controller, builderResult,
+                            rawNotification);
                 }
             }
         }
-        builder = setOpenIntent(controller, builder, context,
+        builderResult.builder = setOpenIntent(controller, builderResult.builder, context,
                 rawNotification.getString("link"));
-        return builder;
+        return builderResult;
     }
 
     @Override

@@ -7,14 +7,15 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.Config;
-import com.polar.nextcloudservices.Notification.Processors.ActionsNotificationProcessor;
-import com.polar.nextcloudservices.Notification.Processors.BasicNotificationProcessor;
-import com.polar.nextcloudservices.Notification.Processors.NextcloudTalkProcessor;
-import com.polar.nextcloudservices.Notification.Processors.OpenBrowserProcessor;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
@@ -57,17 +58,25 @@ public class NotificationController implements NotificationEventReceiver, Status
         active_notifications.add(notification_id);
         //FIXME: In worst case too many threads can be run
         Thread thread = new Thread(() -> {
-            Notification mNotification;
+            NotificationBuilderResult builderResult;
+            Notification aNotification;
+            int n_id = notification_id;
             try {
-                mNotification = mNotificationBuilder.buildNotification(notification_id,
+                builderResult = mNotificationBuilder.buildNotification(n_id,
                         notification, mContext, this);
+                aNotification = builderResult.getNotification();
+                NotificationControllerExtData data = builderResult.getExtraData();
+                if(data.needOverrideId()){
+                    n_id = data.getNotificationId();
+                    Log.d(TAG, "Overriding " + notification_id + " by " + n_id);
+                }
             } catch (Exception e) {
                 Log.e(TAG, "Failed to parse notification");
                 e.printStackTrace();
                 return ;
             }
             Log.d(TAG, "Will post notification now");
-            mNotificationManager.notify(notification_id, mNotification);
+            mNotificationManager.notify(n_id, aNotification);
         });
         thread.start();
     }

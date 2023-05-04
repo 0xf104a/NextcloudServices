@@ -15,13 +15,11 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.NotificationBuilderResult;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
-import com.polar.nextcloudservices.Notification.NotificationEventReceiver;
-import com.polar.nextcloudservices.Services.NotificationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,12 +30,12 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
 
     @SuppressLint("UnspecifiedImmutableFlag")
     @Override
-    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
-                                                         NotificationManager manager,
-                                                         JSONObject rawNotification,
-                                                         Context context, NotificationController controller) throws JSONException {
+    public NotificationBuilderResult updateNotification(int id, NotificationBuilderResult builderResult,
+                                                        NotificationManager manager,
+                                                        JSONObject rawNotification,
+                                                        Context context, NotificationController controller) throws JSONException {
         if (!rawNotification.has("link")) {
-            return builder;
+            return builderResult;
         }
 
         Log.d(TAG, "Setting link for browser opening");
@@ -53,11 +51,13 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
         browserIntent.intent.setData(Uri.parse(rawNotification.getString("link")));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return builder.setContentIntent(PendingIntent.getActivity(context, 0,
+            builderResult.builder = builderResult.builder.setContentIntent(PendingIntent.getActivity(context, 0,
                     browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+            return builderResult;
         }else{
-            return builder.setContentIntent(PendingIntent.getActivity(context, 0,
+            builderResult.builder = builderResult.builder.setContentIntent(PendingIntent.getActivity(context, 0,
                     browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
+            return builderResult;
         }
     }
 

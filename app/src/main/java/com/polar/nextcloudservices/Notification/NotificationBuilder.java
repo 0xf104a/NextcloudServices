@@ -22,16 +22,17 @@ public class NotificationBuilder {
         processors = new Vector<>();
     }
 
-    public Notification buildNotification(int id, JSONObject rawNotification, Context context,
-                                          NotificationController service) throws Exception {
+    public NotificationBuilderResult buildNotification(int id, JSONObject rawNotification, Context context,
+                                          NotificationController controller) throws Exception {
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, rawNotification.getString("app"));
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, rawNotification.getString("app"));
+        NotificationBuilderResult result = new NotificationBuilderResult(builder);
         for(int i=0; i<processors.size(); ++i){
             Log.d(TAG, "Will call notification processor: " + processors.get(i).toString());
-            mBuilder = processors.get(i).updateNotification(id, mBuilder, mNotificationManager,
-                    rawNotification, context, service);
+            result = processors.get(i).updateNotification(id, result, mNotificationManager,
+                    rawNotification, context, controller);
         }
-        return mBuilder.build();
+        return result;
     }
 
     public void addProcessor(AbstractNotificationProcessor processor){

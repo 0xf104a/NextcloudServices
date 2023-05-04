@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
+import com.polar.nextcloudservices.Notification.NotificationBuilderResult;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.Utils.CommonUtil;
@@ -68,7 +69,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
     }
 
     @Override
-    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
+    public NotificationBuilderResult updateNotification(int id, NotificationBuilderResult builderResult,
                                                          NotificationManager manager,
                                                          @NonNull JSONObject rawNotification,
                                                          Context context,
@@ -76,12 +77,12 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
         final String appName = rawNotification.getString("app");
         if (CommonUtil.isInArray(appName, IGNORED_APPS)) {
             Log.d(TAG, appName + " is ignored");
-            return builder;
+            return builderResult;
         } else {
             Log.d(TAG, appName + " is not ignored");
         }
         if(!rawNotification.has("actions")){
-            return builder;
+            return builderResult;
         }
         JSONArray actions = rawNotification.getJSONArray("actions");
         final int n_actions = actions.length();
@@ -90,16 +91,16 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             PendingIntent actionPendingIntent = getCustomActionIntent(context, action, i);
             if(actionPendingIntent == null){
                 Log.w(TAG, "Can not create action for notification");
-                return builder;
+                return builderResult;
             }
             final String actionTitle = action.getString("label");
             NotificationCompat.Action notificationAction = new NotificationCompat.Action.Builder(
                     null,
                     actionTitle, actionPendingIntent)
                     .build();
-            builder.addAction(notificationAction);
+            builderResult.builder.addAction(notificationAction);
         }
-        return builder;
+        return builderResult;
     }
 
     @Override

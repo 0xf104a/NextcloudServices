@@ -11,10 +11,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
-import androidx.core.app.NotificationCompat;
-
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Config;
+import com.polar.nextcloudservices.Notification.NotificationBuilderResult;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.R;
@@ -82,11 +81,11 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
     }
 
     @Override
-    public NotificationCompat.Builder updateNotification(int id, NotificationCompat.Builder builder,
-                                                         NotificationManager manager,
-                                                         JSONObject rawNotification,
-                                                         Context context,
-                                                         NotificationController controller) throws JSONException {
+    public NotificationBuilderResult updateNotification(int id, NotificationBuilderResult builderResult,
+                                                        NotificationManager manager,
+                                                        JSONObject rawNotification,
+                                                        Context context,
+                                                        NotificationController controller) throws JSONException {
         final ServiceSettings settings = new ServiceSettings(context);
         final boolean removeOnDismiss = settings.isRemoveOnDismissEnabled();
         final String app = prettifyChannelName(rawNotification.getString("app"));
@@ -110,22 +109,22 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        builder = builder.setSmallIcon(iconByApp(app_name))
+        builderResult.builder = builderResult.builder.setSmallIcon(iconByApp(app_name))
                 .setContentTitle(title)
                 .setAutoCancel(true)
                 .setContentText(text)
                 .setChannelId(app_name);
         if(unixTime != 0){
-            builder.setWhen(unixTime);
+            builderResult.builder.setWhen(unixTime);
         }else{
             Log.w(TAG, "unixTime is 0, maybe parse failure?");
         }
         if(removeOnDismiss){
             Log.d(TAG, "Adding intent for delete notification event");
-            builder = builder.setDeleteIntent(createNotificationDeleteIntent(context,
+            builderResult.builder = builderResult.builder.setDeleteIntent(createNotificationDeleteIntent(context,
                     rawNotification.getInt("notification_id")));
         }
-        return builder;
+        return builderResult;
     }
 
     @Override
