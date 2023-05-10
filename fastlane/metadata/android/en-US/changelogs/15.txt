@@ -1,0 +1,3 @@
+- Allow to choose whether to open chats via Nextcloud Talk or via webbrowser
+- Update a notification when message to a certain chat received adding new messages in chat to a single notification instead of creating new notification per each message
+- Refactoring of a service 
