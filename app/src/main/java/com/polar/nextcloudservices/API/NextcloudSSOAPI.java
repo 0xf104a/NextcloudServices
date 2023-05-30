@@ -65,9 +65,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .build();
         StringBuilder buffer = new StringBuilder();
         try {
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(API.performNetworkRequestV2(request).getBody()));
-
+            BufferedReader in = new BufferedReader(new InputStreamReader(API.performNetworkRequest(request)));
             String line;
             while ((line = in.readLine()) != null) {
                 buffer.append(line);
@@ -106,7 +104,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .setHeader(header)
                 .build();
         try {
-            API.performNetworkRequestV2(request);
+            API.performNetworkRequest(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -130,7 +128,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .build();
 
         try {
-            API.performNetworkRequestV2(request);
+            API.performNetworkRequest(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -141,7 +139,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
                 .setUrl(Uri.encode("/index.php/avatar/"+userId+"/256 ", "/"))
                 .build();
-        InputStream stream = API.performNetworkRequestV2(request).getBody();
+        InputStream stream = API.performNetworkRequest(request);
         return BitmapFactory.decodeStream(stream);
     }
 
@@ -156,7 +154,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .setUrl(Uri.encode("/index.php/core/preview", "/"))
                 .setParameter(parameter)
                 .build();
-        InputStream stream = API.performNetworkRequestV2(request).getBody();
+        InputStream stream = API.performNetworkRequest(request);
         return BitmapFactory.decodeStream(stream);
     }
 
@@ -164,7 +162,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     public void sendAction(String link, String method) throws Exception {
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod(method)
                 .setUrl(Uri.encode(link, "/")).build();
-        API.performNetworkRequestV2(request);
+        API.performNetworkRequest(request);
     }
 
     @Override
