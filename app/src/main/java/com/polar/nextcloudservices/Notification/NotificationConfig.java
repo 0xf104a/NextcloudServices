@@ -1,7 +1,7 @@
 package com.polar.nextcloudservices.Notification;
 
 import com.polar.nextcloudservices.Notification.Processors.ActionsNotificationProcessor;
-import com.polar.nextcloudservices.Notification.Processors.BasicNotificationProcessor;
+import com.polar.nextcloudservices.Notification.Processors.basic.BasicNotificationProcessor;
 import com.polar.nextcloudservices.Notification.Processors.OpenBrowserProcessor;
 import com.polar.nextcloudservices.Notification.Processors.spreed.NextcloudTalkProcessor;
 

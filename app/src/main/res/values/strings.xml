@@ -6,4 +6,8 @@
     <!-- Open spreed notifications via browser -->
     <string name="open_spreed_in_browser_title">Open Talk notifications in browser</string>
     <string name="open_spreed_in_browser_summary">Enables opening Talk notifications via browser instead of launching Talk app</string>
+    <!--Names of apps-->
+    <string name="spreed_name">Nextcloud Talk</string>
+    <string name="twofactor_nextcloud_notification_name">Two-factor authentication via notification</string>
+    <string name="updatenotification_name">App updates</string>
 </resources>

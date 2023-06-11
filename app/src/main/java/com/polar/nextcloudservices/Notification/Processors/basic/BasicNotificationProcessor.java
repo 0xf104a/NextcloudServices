@@ -1,4 +1,4 @@
-package com.polar.nextcloudservices.Notification.Processors;
+package com.polar.nextcloudservices.Notification.Processors.basic;
 
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_DELETE;
 
@@ -43,22 +43,6 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
         }
     }
 
-    public static String prettifyChannelName(String Name) {
-        if (Name.equals("updatenotification")) {
-            return "Update notifications";
-        }
-        if (Name.equals("spreed")) {
-            return "Nextcloud talk";
-        }
-        String[] parts = Name.split("_");
-        StringBuilder nice_name = new StringBuilder();
-        for (String part : parts) {
-            nice_name.append(part);
-        }
-        String result = nice_name.toString();
-        result = Character.toUpperCase(result.charAt(0)) + result.substring(1);
-        return result;
-    }
 
     @SuppressLint("UnspecifiedImmutableFlag")
     private PendingIntent createNotificationDeleteIntent(Context context, int id) {
@@ -91,7 +75,8 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
                                                         NotificationController controller) throws JSONException {
         final ServiceSettings settings = new ServiceSettings(context);
         final boolean removeOnDismiss = settings.isRemoveOnDismissEnabled();
-        final String app = prettifyChannelName(rawNotification.getString("app"));
+        final String app = AppNameMapper.getPrettifiedAppName(context,
+                rawNotification.getString("app"));
         final String title = rawNotification.getString("subject");
         final String text = rawNotification.getString("message");
         final String app_name = rawNotification.getString("app");
