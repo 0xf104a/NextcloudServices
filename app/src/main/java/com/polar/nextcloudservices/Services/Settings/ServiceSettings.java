@@ -81,7 +81,7 @@ public class ServiceSettings {
     }
 
     public int getPollingIntervalMs() {
-        return getIntPreference(ServiceSettingConfig.POLLING_INTERVAL, 3) * 1000;
+        return getIntPreference(ServiceSettingConfig.POLLING_INTERVAL, 10) * 1000;
     }
 
     public String getUsername() {

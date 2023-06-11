@@ -54,6 +54,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
 
     @Override
     public JSONObject getNotifications(PollUpdateListener service) {
+        Log.d(TAG, "getNotifications");
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
