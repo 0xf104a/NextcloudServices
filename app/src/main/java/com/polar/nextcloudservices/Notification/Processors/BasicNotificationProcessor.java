@@ -31,12 +31,15 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
     private final static String TAG = "Notification.Processors.BasicNotificationProcessor";
 
     public int iconByApp(String appName) {
-        if (appName.equals("spreed")) {
-            return R.drawable.ic_icon_foreground;
-        } else if (appName.equals("deck")) {
-            return R.drawable.ic_deck;
-        } else {
-            return R.drawable.ic_logo;
+        switch (appName) {
+            case "spreed":
+                return R.drawable.ic_icon_foreground;
+            case "deck":
+                return R.drawable.ic_deck;
+            case "twofactor_nextcloud_notification":
+                return android.R.drawable.ic_partial_secure;
+            default:
+                return R.drawable.ic_logo;
         }
     }
 
