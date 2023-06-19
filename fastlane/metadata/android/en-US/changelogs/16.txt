@@ -1,0 +1,3 @@
+- Fix bug with non-updating update frequency
+- Update 2FA notification icon
+- Fix increased battery usage(probably)
