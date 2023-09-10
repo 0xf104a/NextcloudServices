@@ -13,6 +13,7 @@ import android.util.Log;
 import android.app.Notification;
 
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import org.json.JSONObject;
@@ -28,7 +29,6 @@ import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.StatusController;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
-    private final String TAG = "Service.NotificationService.PollTask";
 
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
@@ -38,7 +38,7 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
 
 public class NotificationService extends Service implements PollUpdateListener {
     // constant
-    public long pollingInterval = 3 * 1000; // 3 seconds
+    public Integer pollingInterval = null;
     public static final String TAG = "Services.NotificationService";
     private Binder mBinder;
     private PollTimerTask task;
@@ -73,6 +73,7 @@ public class NotificationService extends Service implements PollUpdateListener {
         mTimer.scheduleAtFixedRate(task, 0, pollingInterval);
     }
 
+    @NonNull
     private Notification getPollingNotification(){
         //Create background service notifcation
         String channelId = "__internal_backgorund_polling";
@@ -119,11 +120,11 @@ public class NotificationService extends Service implements PollUpdateListener {
 
     @Override
     public void onCreate() {
-        startTimer();
-        startForeground(1, getPollingNotification());
         mBinder = new Binder();
         mServiceSettings = new ServiceSettings(this);
         mAPI = mServiceSettings.getAPIFromSettings();
+        pollingInterval = mServiceSettings.getPollingIntervalMs();
+        Log.d(TAG, "onCreate: Set polling interval to " + pollingInterval);
         mConnectionController = new ConnectionController(mServiceSettings);
         mNotificationController = new NotificationController(this, mServiceSettings);
         mStatusController = new StatusController(this);
@@ -135,17 +136,14 @@ public class NotificationService extends Service implements PollUpdateListener {
                 NotificationServiceConfig.NOTIFICATION_CONTROLLER_PRIORITY);
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_API,
                 mAPI, NotificationServiceConfig.API_COMPONENT_PRIORITY);
+        startTimer();
+        startForeground(1, getPollingNotification());
     }
 
     public void onPreferencesChange() {
         mServiceSettings.onPreferencesChanged();
         int _pollingInterval = mServiceSettings.getPollingIntervalMs();
         updateAccounts();
-        if (_pollingInterval <= 0) {
-            Log.w(TAG, "Invalid polling interval! Setting to 3 seconds.");
-            _pollingInterval = 3 * 1000;
-        }
-
         if (_pollingInterval != pollingInterval) {
             Log.d(TAG, "Updating timer");
             pollingInterval = _pollingInterval;
