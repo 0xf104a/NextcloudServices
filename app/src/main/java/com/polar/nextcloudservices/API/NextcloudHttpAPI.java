@@ -178,6 +178,12 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
+    public boolean checkNewNotifications() throws Exception {
+        //TODO: implement checking that new notifications available via HEAD request
+        return false;
+    }
+
+    @Override
     public JSONObject getNotifications(PollUpdateListener service) {
         try {
             HttpURLConnection conn = request("/ocs/v2.php/apps/notifications/api/v2/notifications",

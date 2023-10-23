@@ -167,6 +167,12 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
+    public boolean checkNewNotifications() throws Exception {
+        //TODO: implement checking that new notifications available via HEAD request
+        return false;
+    }
+
+    @Override
     public Status getStatus(Context context) {
         if(lastPollSuccessful){
             Log.d(TAG, "Last poll is successful");

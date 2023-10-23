@@ -29,10 +29,19 @@ import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.StatusController;
 
 class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
-
+    private static final String TAG = "NotificationService.PollTask";
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
-        return services[0].getAPI().getNotifications(services[0]);
+        NextcloudAbstractAPI api = services[0].getAPI();
+        try {
+            if(api.checkNewNotifications()) {
+                return api.getNotifications(services[0]);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Can not check new notifications");
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 
@@ -57,7 +66,9 @@ public class NotificationService extends Service implements PollUpdateListener {
     }
 
     public void onPollFinished(JSONObject response) {
-        mNotificationController.onNotificationsUpdated(response);
+        if(response != null) {
+            mNotificationController.onNotificationsUpdated(response);
+        }
     }
 
     @Override
