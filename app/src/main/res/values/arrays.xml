@@ -10,12 +10,14 @@
         <item>reply_all</item>
     </string-array>
 
+    <!--App contributors -->
     <string-array name="oss_libs">
         <item>Contribution: NumberPickerPreference\nLicense: LGPL-3.0</item>
         <item>Contribution: App icon</item>
         <item>Contribution: Bug fixes, ideas</item>
         <item>Contribution: Credits activity improvements</item>
         <item>Contribution: Nextcloud talk "Reply" button fix, other fixes and features</item>
+        <item>Contribution: Redesign of app to Material You design</item>
     </string-array>
 
     <string-array name="oss_libs_owner_Img">
@@ -24,6 +26,7 @@
         <item>https://avatars.githubusercontent.com/u/6894017?v=4</item>
         <item>https://avatars.githubusercontent.com/u/89275109?v=4</item>
         <item>https://avatars.githubusercontent.com/u/65976525?v=4</item>
+        <item>https://avatars.githubusercontent.com/u/4741199?v=4</item>
     </string-array>
 
     <string-array name="oss_libs_owner_name">
@@ -32,6 +35,7 @@
         <item>Daniele Verducci</item>
         <item>Devansh-gaur-1611</item>
         <item>freeflyk</item>
+        <item>Niedermann IT-Dienstleistungen</item>
     </string-array>
 
     <string-array name="oss_libs_owner_github_name">
@@ -40,6 +44,7 @@
         <item>penguin86</item>
         <item>Devansh-gaur-1611</item>
         <item>freeflyk</item>
+        <item>stefan-niedermann</item>
     </string-array>
 
     <string-array name="oss_libs_links">
@@ -48,5 +53,6 @@
         <item>https://github.com/penguin86</item>
         <item>https://github.com/Devansh-gaur-1611</item>
         <item>https://github.com/freeflyk</item>
+        <item>https://github.com/stefan-niedermann</item>
     </string-array>
 </resources>
