@@ -14,6 +14,7 @@ import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.QueryParam;
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
+import com.nextcloud.android.sso.api.Response;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.Services.PollUpdateListener;
 import com.polar.nextcloudservices.Services.Status.Status;
@@ -29,19 +30,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     final private NextcloudAPI API;
     final private static String TAG = "NextcloudSSOAPI";
     private boolean lastPollSuccessful = false;
     private String mStatusString = "Updating settings";
+    private String mETag = "";
 
     public NextcloudSSOAPI(Context context, SingleSignOnAccount ssoAccount) {
-        // ignore this one… see 5)
         NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
             @Override
             public void onConnected() {
-                // ignore this one… see 5)
+                /*stub*/
             }
 
             @Override
@@ -168,7 +170,16 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
 
     @Override
     public boolean checkNewNotifications() throws Exception {
-        //TODO: implement checking that new notifications available via HEAD request
+        NextcloudRequest request = new NextcloudRequest.Builder().setMethod("HEAD")
+                .setUrl(Uri.encode("/ocs/v2.php/apps/notifications/api/v2/notifications", "/"))
+                .build();
+        Response response = API.performNetworkRequestV2(request);
+        String lastEtag = Objects.requireNonNull(response.getPlainHeader("ETag")).toString();
+        if(!lastEtag.equals(mETag)){
+            Log.d(TAG, "New notifications found");
+            mETag = lastEtag;
+            return true;
+        }
         return false;
     }
 

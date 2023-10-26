@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -32,6 +33,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     private String mStatusString = "Updating settings";
     private boolean lastPollSuccessful = false;
     private final ServiceSettings mServiceSettings;
+    private String mETag = "";
 
     public NextcloudHttpAPI(ServiceSettings settings){
         mServiceSettings = settings;
@@ -179,7 +181,17 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
 
     @Override
     public boolean checkNewNotifications() throws Exception {
-        //TODO: implement checking that new notifications available via HEAD request
+        HttpURLConnection connection = request(
+                "/ocs/v2.php/apps/notifications/api/v2/notifications",
+                "HEAD", false);
+        connection.setConnectTimeout(5000);
+        connection.setDoInput(true);
+        String lastETag = connection.getHeaderField("ETag");
+        if(!Objects.equals(lastETag, mETag)){
+            Log.d(TAG, "Detected new notifications");
+            mETag = lastETag;
+            return true;
+        }
         return false;
     }
 
