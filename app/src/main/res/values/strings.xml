@@ -10,4 +10,6 @@
     <string name="spreed_name">Nextcloud Talk</string>
     <string name="twofactor_nextcloud_notification_name">Two-factor authentication via notification</string>
     <string name="updatenotification_name">App updates</string>
+    <string name="donation_thank_you">Thank you! ❤️</string>
+    <string name="avatar">Avatar</string>
 </resources>

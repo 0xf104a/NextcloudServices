@@ -426,7 +426,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                             .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
                             .build();
                     browserIntent.launchUrl(getContext(), Uri.parse("https://liberapay.com/Andrewerr/donate"));
-                    Toast.makeText(getContext(),"Thank you!❤️", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), R.string.donation_thank_you, Toast.LENGTH_SHORT).show();
                     return true;
                 }
             });

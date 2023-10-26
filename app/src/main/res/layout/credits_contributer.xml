@@ -10,7 +10,7 @@
         android:id="@+id/userImage"
         android:layout_width="42dp"
         android:layout_height="42dp"
-        android:contentDescription="User image"
+        android:contentDescription="@string/avatar"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@tools:sample/avatars" />
