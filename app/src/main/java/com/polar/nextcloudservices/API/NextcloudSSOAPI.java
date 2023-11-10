@@ -48,6 +48,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
 
             @Override
             public void onError(Exception ex) {
+                Log.e(TAG, "Exception in Nextcloud API");
                 ex.printStackTrace();
             }
         };
@@ -68,7 +69,8 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
                 .build();
         StringBuilder buffer = new StringBuilder();
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(API.performNetworkRequest(request)));
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(API.performNetworkRequestV2(request).getBody()));
             String line;
             while ((line = in.readLine()) != null) {
                 buffer.append(line);
@@ -170,11 +172,13 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
 
     @Override
     public boolean checkNewNotifications() throws Exception {
-        NextcloudRequest request = new NextcloudRequest.Builder().setMethod("HEAD")
+        NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
                 .setUrl(Uri.encode("/ocs/v2.php/apps/notifications/api/v2/notifications", "/"))
                 .build();
         Response response = API.performNetworkRequestV2(request);
-        String lastEtag = Objects.requireNonNull(response.getPlainHeader("ETag")).toString();
+        String lastEtag = Objects.requireNonNull(response.getPlainHeader("ETag")).getValue();
+        Log.d(TAG, "lastETag=" + lastEtag);
+        Log.d(TAG, "mETag=" + mETag);
         if(!lastEtag.equals(mETag)){
             Log.d(TAG, "New notifications found");
             mETag = lastEtag;

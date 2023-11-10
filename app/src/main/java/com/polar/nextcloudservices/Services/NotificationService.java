@@ -32,9 +32,11 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     private static final String TAG = "NotificationService.PollTask";
     @Override
     protected JSONObject doInBackground(NotificationService... services) {
+        Log.d(TAG, "Checking notifications");
         NextcloudAbstractAPI api = services[0].getAPI();
         try {
-            if(api.checkNewNotifications()) {
+            boolean hasNotifications = api.checkNewNotifications();
+            if(hasNotifications) {
                 return api.getNotifications(services[0]);
             }
         } catch (Exception e) {
