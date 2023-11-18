@@ -10,7 +10,7 @@ android {
         minSdkVersion 25
         targetSdkVersion 33
         versionCode 16
-        versionName '1.0-beta16'
+        versionName '1.0-beta17'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
