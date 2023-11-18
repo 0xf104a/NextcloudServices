@@ -1,0 +1,5 @@
+- Monochrome icon(thanks to @stefan-niedermann)
+- Material-3 UI(thanks to @stefan-niedermann)
+- Optimized data usage(currently does not works with SSO login)
+- Minor fixes and improvements
+You may see issue about data usage optimization not working with SSO login by URL: https://github.com/Andrewerr/NextcloudServices/issues/68

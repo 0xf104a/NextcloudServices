@@ -39,4 +39,4 @@ If you like this app please donate:<br>
 * [@invissvenska](https://github.com/invissvenska) for [NumberPickerPreference](https://github.com/invissvenska/NumberPickerPreference/) (licensed under LGPL-3.0)
 * [@Devansh-Gaur-1611](https://github.com/Devansh-Gaur-1611) for creating credits activity in the app
 * [@freeflyk](https://github.com/freeflyk) for improvements, fixes and adding new features
-* [@stefan-niedermann](https://github.com/stefan-niedermann) for redesigning app to Material You design
+* [@stefan-niedermann](https://github.com/stefan-niedermann) for redesigning app to Material You design and creating monochrome icon
