@@ -172,19 +172,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
 
     @Override
     public boolean checkNewNotifications() throws Exception {
-        NextcloudRequest request = new NextcloudRequest.Builder().setMethod("GET")
-                .setUrl(Uri.encode("/ocs/v2.php/apps/notifications/api/v2/notifications", "/"))
-                .build();
-        Response response = API.performNetworkRequestV2(request);
-        String lastEtag = Objects.requireNonNull(response.getPlainHeader("ETag")).getValue();
-        Log.d(TAG, "lastETag=" + lastEtag);
-        Log.d(TAG, "mETag=" + mETag);
-        if(!lastEtag.equals(mETag)){
-            Log.d(TAG, "New notifications found");
-            mETag = lastEtag;
-            return true;
-        }
-        return false;
+        return true;
     }
 
     @Override
