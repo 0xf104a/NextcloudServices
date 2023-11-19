@@ -102,4 +102,7 @@ public class ServiceSettings {
     public boolean getSpreedOpenedInBrowser(){
         return getBoolPreference(ServiceSettingConfig.OPEN_SPREED_IN_BROWSER, true);
     }
+    public boolean isWebsocketEnabled(){
+        return getBoolPreference(ServiceSettingConfig.USE_WEBSOCKET, false);
+    }
 }
