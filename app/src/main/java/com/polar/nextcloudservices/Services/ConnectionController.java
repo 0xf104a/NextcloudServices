@@ -9,6 +9,9 @@ import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
+/**
+ * Checks connectivity to the network
+ */
 public class ConnectionController implements StatusCheckable {
     private final ServiceSettings mServiceSettings;
     private final static String TAG = "Services.ConnectionController";
@@ -17,7 +20,8 @@ public class ConnectionController implements StatusCheckable {
     }
 
     public boolean checkConnection(Context context) {
-        ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivity =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity != null) {
             //We need to check only active network state
             final NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();

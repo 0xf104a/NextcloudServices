@@ -8,12 +8,14 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
 import com.polar.nextcloudservices.BuildConfig;
 import com.polar.nextcloudservices.Services.NotificationListener;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 
 import org.java_websocket.client.WebSocketClient;
+import org.jetbrains.annotations.Contract;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -196,9 +199,52 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         return false;
     }
 
+    @NonNull
+    private JSONObject readConnectionToJson(@NonNull HttpURLConnection conn)
+            throws IOException, JSONException{
+        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        StringBuilder buffer = new StringBuilder();
+        String line;
+        while ((line = in.readLine()) != null) {
+            buffer.append(line);
+        }
+        in.close();
+        return new JSONObject(buffer.toString());
+    }
+
+    //See get_endpoint from
+    //         https://github.com/nextcloud/notify_push/blob/main/test_client/src/main.rs
+    @NonNull
+    private String getWebsocketURL() throws Exception {
+        HttpURLConnection connection = request(
+                "/ocs/v2.php/cloud/capabilities",
+                "GET", false);
+        connection.setConnectTimeout(5000);
+        connection.setDoInput(true);
+        JSONObject capabilities = readConnectionToJson(connection);
+        return capabilities.getJSONObject("ocs")
+                .getJSONObject("data")
+                .getJSONObject("capabilities")
+                .getJSONObject("endpoints")
+                .getString("websocket");
+    }
+
     @Override
-    public WebSocketClient getNotificationsWebsocket() throws Exception {
-        return null;
+    public WebSocketClient getNotificationsWebsocket(NotificationListener listener) throws Exception {
+        Log.i(TAG, "Starting new websocket connection");
+        String endpoint = "";
+        try {
+            endpoint = getWebsocketURL();
+        } catch (Exception e){
+            Log.e(TAG, "Can not get websocket URL", e);
+            return null;
+        }
+        WebSocketClient client = new NotificationWebsocket(new URI(endpoint),
+                mServiceSettings.getUsername(),
+                mServiceSettings.getPassword(),
+                listener);
+        client.connect();
+        return client;
     }
 
     @Override
@@ -211,15 +257,8 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             String responseCode = Integer.toString(conn.getResponseCode());
             Log.d(TAG, "--> GET "+ getEndpoint(mServiceSettings) + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder buffer = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                buffer.append(line);
-            }
-            in.close();
             //Log.d(TAG, buffer.toString());
-            JSONObject response = new JSONObject(buffer.toString());
+            JSONObject response = readConnectionToJson(conn);
             lastPollSuccessful = true;
 
             service.onNewNotifications(response);

@@ -74,6 +74,6 @@ public interface NextcloudAbstractAPI extends StatusCheckable {
      * @return WebsocketClient instance which holds pre-authorized connection
      * @throws Exception in case of any unhandlable error
      */
-    WebSocketClient getNotificationsWebsocket() throws Exception;
+    WebSocketClient getNotificationsWebsocket(NotificationListener listener) throws Exception;
 
 }

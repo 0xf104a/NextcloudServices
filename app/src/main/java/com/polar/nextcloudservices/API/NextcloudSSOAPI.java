@@ -31,6 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import kotlin.NotImplementedError;
+
 public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     final private NextcloudAPI API;
     final private static String TAG = "NextcloudSSOAPI";
@@ -175,8 +177,8 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public WebSocketClient getNotificationsWebsocket() throws Exception {
-        return null;
+    public WebSocketClient getNotificationsWebsocket(NotificationListener listener) throws Exception {
+        throw new NotImplementedError("getNotificationsWebsoket() is not implemented for SSO API");
     }
 
     @Override
