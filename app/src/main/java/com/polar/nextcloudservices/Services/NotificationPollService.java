@@ -28,10 +28,10 @@ import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.StatusController;
 
-class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
-    private static final String TAG = "NotificationService.PollTask";
+class PollTask extends AsyncTask<NotificationPollService, Void, JSONObject> {
+    private static final String TAG = "Services.NotificationPollService.PollTask";
     @Override
-    protected JSONObject doInBackground(NotificationService... services) {
+    protected JSONObject doInBackground(NotificationPollService... services) {
         Log.d(TAG, "Checking notifications");
         NextcloudAbstractAPI api = services[0].getAPI();
         try {
@@ -47,10 +47,10 @@ class PollTask extends AsyncTask<NotificationService, Void, JSONObject> {
     }
 }
 
-public class NotificationService extends Service implements PollUpdateListener {
+public class NotificationPollService extends Service implements NotificationListener {
     // constant
     public Integer pollingInterval = null;
-    public static final String TAG = "Services.NotificationService";
+    public static final String TAG = "Services.NotificationPollService";
     private Binder mBinder;
     private PollTimerTask task;
     public NextcloudAbstractAPI mAPI;
@@ -67,7 +67,7 @@ public class NotificationService extends Service implements PollUpdateListener {
         return mStatusController.getStatusString();
     }
 
-    public void onPollFinished(JSONObject response) {
+    public void onNewNotifications(JSONObject response) {
         if(response != null) {
             mNotificationController.onNotificationsUpdated(response);
         }
@@ -203,7 +203,7 @@ public class NotificationService extends Service implements PollUpdateListener {
             // run on another thread
             mHandler.post(() -> {
                 if (mConnectionController.checkConnection(getApplicationContext())) {
-                    new PollTask().execute(NotificationService.this);
+                    new PollTask().execute(NotificationPollService.this);
                 }
             });
         }

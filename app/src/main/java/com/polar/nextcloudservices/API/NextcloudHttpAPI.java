@@ -9,10 +9,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.polar.nextcloudservices.BuildConfig;
-import com.polar.nextcloudservices.Services.PollUpdateListener;
+import com.polar.nextcloudservices.Services.NotificationListener;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 
+import org.java_websocket.client.WebSocketClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -196,7 +197,12 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public JSONObject getNotifications(PollUpdateListener service) {
+    public WebSocketClient getNotificationsWebsocket() throws Exception {
+        return null;
+    }
+
+    @Override
+    public JSONObject getNotifications(NotificationListener service) {
         try {
             HttpURLConnection conn = request("/ocs/v2.php/apps/notifications/api/v2/notifications",
             "GET", true);
@@ -216,7 +222,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             JSONObject response = new JSONObject(buffer.toString());
             lastPollSuccessful = true;
 
-            service.onPollFinished(response);
+            service.onNewNotifications(response);
             return response;
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");

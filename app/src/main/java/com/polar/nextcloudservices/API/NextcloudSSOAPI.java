@@ -14,11 +14,11 @@ import com.google.gson.GsonBuilder;
 import com.nextcloud.android.sso.QueryParam;
 import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
-import com.nextcloud.android.sso.api.Response;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
-import com.polar.nextcloudservices.Services.PollUpdateListener;
+import com.polar.nextcloudservices.Services.NotificationListener;
 import com.polar.nextcloudservices.Services.Status.Status;
 
+import org.java_websocket.client.WebSocketClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     final private NextcloudAPI API;
@@ -56,7 +55,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public JSONObject getNotifications(PollUpdateListener service) {
+    public JSONObject getNotifications(NotificationListener service) {
         Log.d(TAG, "getNotifications");
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<>();
@@ -85,7 +84,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
 
         try {
             JSONObject response = new JSONObject(buffer.toString());
-            service.onPollFinished(response);
+            service.onNewNotifications(response);
             Log.d(TAG, "Setting lastPollSuccessful as true");
             lastPollSuccessful = true;
             return response;
@@ -173,6 +172,11 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     @Override
     public boolean checkNewNotifications() throws Exception {
         return true;
+    }
+
+    @Override
+    public WebSocketClient getNotificationsWebsocket() throws Exception {
+        return null;
     }
 
     @Override

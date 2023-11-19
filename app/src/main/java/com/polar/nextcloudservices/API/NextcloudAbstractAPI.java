@@ -2,15 +2,16 @@ package com.polar.nextcloudservices.API;
 
 import android.graphics.Bitmap;
 
-import com.polar.nextcloudservices.Services.PollUpdateListener;
+import com.polar.nextcloudservices.Services.NotificationListener;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
+import org.java_websocket.client.WebSocketClient;
 import org.json.JSONObject;
 
 import java.io.IOException;
 
 /*
- * Nextcloud abstract API crates possibility to use different libraries for
+ * Nextcloud abstract API creates possibility to use different libraries for
  * polling for notifications. This is needed to use Nextcloud SSO library
  * since it does not give per-app key.
  * The inheritors of this interface should be passed to NotificationService.
@@ -21,7 +22,7 @@ public interface NextcloudAbstractAPI extends StatusCheckable {
      * @param service PollUpdateListener which handles notifications
      * @return notifications response as a JSONObject
      */
-    JSONObject getNotifications(PollUpdateListener service);
+    JSONObject getNotifications(NotificationListener service);
 
     /**
      * Removes notification from server
@@ -67,4 +68,12 @@ public interface NextcloudAbstractAPI extends StatusCheckable {
      * @throws Exception in case of any error
      */
     boolean checkNewNotifications() throws Exception;
+
+    /**
+     * @doc Gets websocket client which is authorized and receives notification updates
+     * @return WebsocketClient instance which holds pre-authorized connection
+     * @throws Exception in case of any unhandlable error
+     */
+    WebSocketClient getNotificationsWebsocket() throws Exception;
+
 }

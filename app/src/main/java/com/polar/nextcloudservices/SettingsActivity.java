@@ -45,7 +45,7 @@ import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGrant
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
-import com.polar.nextcloudservices.Services.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationPollService;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
 import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;
@@ -54,7 +54,7 @@ import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragme
 class NotificationServiceConnection implements ServiceConnection {
     private final String TAG = "SettingsActivity.NotificationServiceConnection";
     private final SettingsActivity.SettingsFragment settings;
-    private NotificationService.Binder mService;
+    private NotificationPollService.Binder mService;
     public boolean isConnected = false;
 
     public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings) {
@@ -63,9 +63,9 @@ class NotificationServiceConnection implements ServiceConnection {
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        if (service instanceof NotificationService.Binder) {
-            mService = (NotificationService.Binder) service;
-            settings.setStatus(((NotificationService.Binder) service).getServiceStatus());
+        if (service instanceof NotificationPollService.Binder) {
+            mService = (NotificationPollService.Binder) service;
+            settings.setStatus(((NotificationPollService.Binder) service).getServiceStatus());
             isConnected = true;
         } else {
             Log.wtf(TAG, "Bad Binder type passed!");
@@ -151,7 +151,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             //mServiceConnection = null;
             unbindService(mServiceConnection);
             mServiceConnection = null;
-            context.stopService(new Intent(context, NotificationService.class));
+            context.stopService(new Intent(context, NotificationPollService.class));
         }
     }
     public void startNotificationService() {
@@ -159,7 +159,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         //Log.d(TAG, "startService: ENTERING");
         if (!isNotificationServiceRunning() && getBoolPreference("enable_polling",true)) {
             Log.d(TAG, "Service is not running: creating intent to start it");
-            startService(new Intent(getApplicationContext(), NotificationService.class));
+            startService(new Intent(getApplicationContext(), NotificationPollService.class));
         }
     }
 
@@ -176,7 +176,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         } else if(mServiceConnection == null && isNotificationServiceRunning()) {
             Log.d(TAG, "Service is running but disconnected");
             mServiceConnection = new NotificationServiceConnection(settings);
-            bindService(new Intent(getApplicationContext(), NotificationService.class),
+            bindService(new Intent(getApplicationContext(), NotificationPollService.class),
                     mServiceConnection, 0);
         } else {
             mServiceConnection.updateStatus();
