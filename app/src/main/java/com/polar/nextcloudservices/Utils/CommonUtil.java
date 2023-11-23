@@ -62,10 +62,4 @@ public class CommonUtil {
     public static <T>  boolean isInArray(T obj, T[] array){
         return Arrays.asList(array).contains(obj);
     }
-
-    public static String getDateTime() {
-        // get date time in custom format
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
-        return sdf.format(new Date());
-    }
 }
