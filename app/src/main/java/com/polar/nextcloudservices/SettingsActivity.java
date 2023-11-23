@@ -46,6 +46,8 @@ import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledExcepti
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
 import com.polar.nextcloudservices.Services.NotificationPollService;
+import com.polar.nextcloudservices.Services.NotificationServiceController;
+import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
 import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;
@@ -105,6 +107,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     private Timer mTimer = null;
     private PreferenceUpdateTimerTask mTask = null;
     private NotificationServiceConnection mServiceConnection = null;
+    private NotificationServiceController mServiceController;
     private static final int NOTIFICATION_PERMISSION_CODE = 1;
 
     //Exit from activity when back arrow is pressed
@@ -159,7 +162,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         //Log.d(TAG, "startService: ENTERING");
         if (!isNotificationServiceRunning() && getBoolPreference("enable_polling",true)) {
             Log.d(TAG, "Service is not running: creating intent to start it");
-            startService(new Intent(getApplicationContext(), NotificationPollService.class));
+            mServiceController.startService(this);
         }
     }
 
@@ -241,6 +244,8 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        mServiceController = new NotificationServiceController(new ServiceSettings(this));
 
         requestNotificationPermission();
         startNotificationService();

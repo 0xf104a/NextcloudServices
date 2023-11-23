@@ -99,10 +99,16 @@ public class ServiceSettings {
     public boolean getUseHttp(){
         return getBoolPreference(ServiceSettingConfig.USE_HTTP, false);
     }
+
     public boolean getSpreedOpenedInBrowser(){
         return getBoolPreference(ServiceSettingConfig.OPEN_SPREED_IN_BROWSER, true);
     }
+
     public boolean isWebsocketEnabled(){
         return getBoolPreference(ServiceSettingConfig.USE_WEBSOCKET, false);
+    }
+
+    public boolean isServiceEnabled(){
+        return getBoolPreference(ServiceSettingConfig.ENABLE_SERVICE, true);
     }
 }

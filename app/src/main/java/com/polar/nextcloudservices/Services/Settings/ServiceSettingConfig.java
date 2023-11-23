@@ -11,4 +11,5 @@ public class ServiceSettingConfig {
     public static final String USE_HTTP = "insecure_connection";
     public static final String OPEN_SPREED_IN_BROWSER = "open_spreed_in_browser";
     public static final String USE_WEBSOCKET = "use_websocket";
+    public static final String ENABLE_SERVICE = "enable_polling";
 }
