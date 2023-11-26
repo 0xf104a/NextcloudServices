@@ -1,20 +1,13 @@
 
 package com.polar.nextcloudservices.Services;
 
-import android.os.Build;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.app.Notification;
 
-
-import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
 
 import org.json.JSONObject;
 
@@ -24,7 +17,6 @@ import java.util.TimerTask;
 
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.Notification.NotificationController;
-import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.StatusController;
 
@@ -86,30 +78,6 @@ public class NotificationPollService extends Service implements NotificationList
         mTimer.scheduleAtFixedRate(task, 0, pollingInterval);
     }
 
-    @NonNull
-    private Notification getPollingNotification(){
-        //Create background service notifcation
-        String channelId = "__internal_backgorund_polling";
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId, "Background polling", NotificationManager.IMPORTANCE_LOW);
-            mNotificationManager.createNotificationChannel(channel);
-        }
-        //Build notification
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.ic_logo)
-                        .setContentTitle(getString(R.string.app_name))
-                        .setPriority(-2)
-                        .setOnlyAlertOnce(true)
-                        .setContentText("Background connection notification");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mBuilder.setChannelId(channelId);
-        }
-        return mBuilder.build();
-    }
-
     private void startTimer(){
         // cancel if already existed
         if (mTimer != null) {
@@ -150,7 +118,7 @@ public class NotificationPollService extends Service implements NotificationList
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_API,
                 mAPI, NotificationServiceConfig.API_COMPONENT_PRIORITY);
         startTimer();
-        startForeground(1, getPollingNotification());
+        startForeground(1, mNotificationController.getServiceNotification());
     }
 
     public void onPreferencesChange() {
