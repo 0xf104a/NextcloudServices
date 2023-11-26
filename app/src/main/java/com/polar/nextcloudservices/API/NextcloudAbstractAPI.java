@@ -2,6 +2,7 @@ package com.polar.nextcloudservices.API;
 
 import android.graphics.Bitmap;
 
+import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
 import com.polar.nextcloudservices.Services.NotificationListener;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
@@ -70,10 +71,10 @@ public interface NextcloudAbstractAPI extends StatusCheckable {
     boolean checkNewNotifications() throws Exception;
 
     /**
-     * @doc Gets websocket client which is authorized and receives notification updates
      * @return WebsocketClient instance which holds pre-authorized connection
      * @throws Exception in case of any unhandlable error
+     * @doc Gets websocket client which is authorized and receives notification updates
      */
-    WebSocketClient getNotificationsWebsocket(NotificationListener listener) throws Exception;
+    NotificationWebsocket getNotificationsWebsocket(NotificationListener listener) throws Exception;
 
 }

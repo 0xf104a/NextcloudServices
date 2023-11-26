@@ -1,19 +1,24 @@
 package com.polar.nextcloudservices.API.websocket;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.polar.nextcloudservices.Services.NotificationListener;
+import com.polar.nextcloudservices.Services.Status.Status;
+import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 
-public class NotificationWebsocket extends WebSocketClient {
+public class NotificationWebsocket extends WebSocketClient implements StatusCheckable {
     private final static String TAG = "NotificationWebsocket";
     private final String mUsername;
     private final String mPassword;
     private final NotificationListener mNotificationListener;
+    private String mStatus;
+    private boolean isConnected;
 
     public NotificationWebsocket(URI serverUri, String username, String password,
                                  NotificationListener notificationListener) {
@@ -21,6 +26,8 @@ public class NotificationWebsocket extends WebSocketClient {
         mUsername = username;
         mPassword = password;
         mNotificationListener = notificationListener;
+        isConnected = false;
+        mStatus = "Disconnected";
     }
 
     /**
@@ -32,6 +39,8 @@ public class NotificationWebsocket extends WebSocketClient {
         send(mUsername);
         send(mPassword);
         send("listen notify_file_id");
+        isConnected = true;
+        mStatus = "Connected";
     }
 
     /**
@@ -52,9 +61,12 @@ public class NotificationWebsocket extends WebSocketClient {
     public void onClose(int code, String reason, boolean remote) {
         if(remote){
             Log.w(TAG, "Remote has disconnected, code=" + code + ", reason=" + reason);
+            mStatus = "Remote disconnected";
         } else {
             Log.i(TAG, "We have disconnected, code=" + code + ", reason=" + reason);
+            mStatus = "Disconnected";
         }
+        isConnected = false;
     }
 
     /**
@@ -63,5 +75,18 @@ public class NotificationWebsocket extends WebSocketClient {
     @Override
     public void onError(Exception ex) {
         Log.e(TAG, "Error in websocket", ex);
+    }
+
+    /**
+     * @param context context which may be used for obtaining app and device status
+     * @return status information in form of Status class
+     */
+    @Override
+    public Status getStatus(Context context) {
+        if(isConnected){
+            return Status.Ok();
+        }else{
+            return Status.Failed(mStatus);
+        }
     }
 }

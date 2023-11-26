@@ -15,7 +15,6 @@ import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 
 import org.java_websocket.client.WebSocketClient;
-import org.jetbrains.annotations.Contract;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -230,7 +229,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public WebSocketClient getNotificationsWebsocket(NotificationListener listener) throws Exception {
+    public NotificationWebsocket getNotificationsWebsocket(NotificationListener listener) throws Exception {
         Log.i(TAG, "Starting new websocket connection");
         String endpoint = "";
         try {
@@ -239,7 +238,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             Log.e(TAG, "Can not get websocket URL", e);
             return null;
         }
-        WebSocketClient client = new NotificationWebsocket(new URI(endpoint),
+        NotificationWebsocket client = new NotificationWebsocket(new URI(endpoint),
                 mServiceSettings.getUsername(),
                 mServiceSettings.getPassword(),
                 listener);
