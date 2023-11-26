@@ -62,5 +62,7 @@ public class NotificationWebsocketService extends Service implements Notificatio
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        //Initially get notifications
+        mAPI.getNotifications(this);
     }
 }
