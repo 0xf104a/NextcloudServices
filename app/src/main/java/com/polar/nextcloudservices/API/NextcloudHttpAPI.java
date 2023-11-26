@@ -9,6 +9,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
+import com.polar.nextcloudservices.API.websocket.NotificationWebsocketEventListener;
 import com.polar.nextcloudservices.BuildConfig;
 import com.polar.nextcloudservices.Services.NotificationListener;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
@@ -229,7 +230,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public NotificationWebsocket getNotificationsWebsocket(NotificationListener listener) throws Exception {
+    public NotificationWebsocket getNotificationsWebsocket(NotificationWebsocketEventListener listener) throws Exception {
         Log.i(TAG, "Starting new websocket connection");
         String endpoint = "";
         try {

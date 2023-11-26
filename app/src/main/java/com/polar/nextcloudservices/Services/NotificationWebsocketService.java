@@ -7,13 +7,18 @@ import android.util.Log;
 
 import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
 import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
+import com.polar.nextcloudservices.API.websocket.NotificationWebsocketEventListener;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.StatusController;
+import com.polar.nextcloudservices.Utils.CommonUtil;
 
 import org.json.JSONObject;
 
-public class NotificationWebsocketService extends Service implements NotificationListener {
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
+
+public class NotificationWebsocketService extends Service implements NotificationWebsocketEventListener {
     private NextcloudAbstractAPI mAPI;
     private ServiceSettings mServiceSettings;
     private NotificationController mNotificationController;
@@ -64,5 +69,24 @@ public class NotificationWebsocketService extends Service implements Notificatio
         }
         //Initially get notifications
         mAPI.getNotifications(this);
+    }
+
+    /**
+     * @param isError whether disconnect resulted from error
+     */
+    @Override
+    public void onWebsocketDisconnected(boolean isError) {
+        if(mConnectionController.checkConnection(this)){
+            Log.w(TAG, "Received disconnect from websocket. Restart pause 3 seconds");
+            CommonUtil.safeSleep(3000);
+            startListening();
+        } else {
+            Log.w(TAG, "Disconnected from websocket. Seems that we have no network");
+        }
+    }
+
+    @Override
+    public void onWebsocketConnected() {
+        /* stub */
     }
 }

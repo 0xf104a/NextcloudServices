@@ -25,8 +25,8 @@ public class StatusController {
         components_priority_mapping = new HashMap<>();
     }
 
-    public void addComponent(Integer componentId, @NonNull StatusCheckable component,
-                             Integer priority){
+    public void addComponent(@NonNull Integer componentId, @NonNull StatusCheckable component,
+                             @NonNull Integer priority){
         components.put(componentId, component);
         components_priority_mapping.put(componentId, priority);
     }

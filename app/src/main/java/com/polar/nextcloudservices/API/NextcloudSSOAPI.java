@@ -16,6 +16,7 @@ import com.nextcloud.android.sso.aidl.NextcloudRequest;
 import com.nextcloud.android.sso.api.NextcloudAPI;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
+import com.polar.nextcloudservices.API.websocket.NotificationWebsocketEventListener;
 import com.polar.nextcloudservices.Services.NotificationListener;
 import com.polar.nextcloudservices.Services.Status.Status;
 
@@ -177,7 +178,7 @@ public class NextcloudSSOAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public NotificationWebsocket getNotificationsWebsocket(NotificationListener listener) throws Exception {
+    public NotificationWebsocket getNotificationsWebsocket(NotificationWebsocketEventListener listener) throws Exception {
         throw new NotImplementedError("getNotificationsWebsoket() is not implemented for SSO API");
     }
 

@@ -16,12 +16,12 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
     private final static String TAG = "NotificationWebsocket";
     private final String mUsername;
     private final String mPassword;
-    private final NotificationListener mNotificationListener;
+    private final NotificationWebsocketEventListener mNotificationListener;
     private String mStatus;
     private boolean isConnected;
 
     public NotificationWebsocket(URI serverUri, String username, String password,
-                                 NotificationListener notificationListener) {
+                                 NotificationWebsocketEventListener notificationListener) {
         super(serverUri);
         mUsername = username;
         mPassword = password;
@@ -41,6 +41,7 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
         send("listen notify_file_id");
         isConnected = true;
         mStatus = "Connected";
+        mNotificationListener.onWebsocketConnected();
     }
 
     /**
@@ -67,6 +68,7 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
             mStatus = "Disconnected";
         }
         isConnected = false;
+        mNotificationListener.onWebsocketDisconnected(false);
     }
 
     /**
@@ -75,6 +77,7 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
     @Override
     public void onError(Exception ex) {
         Log.e(TAG, "Error in websocket", ex);
+        mNotificationListener.onWebsocketDisconnected(true);
     }
 
     /**
