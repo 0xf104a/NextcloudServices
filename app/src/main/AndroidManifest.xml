@@ -25,7 +25,11 @@
         <service
             android:name=".Services.NotificationWebsocketService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </service>
 
         <activity
             android:name=".CreditsActivity"
