@@ -24,6 +24,7 @@ public class NotificationWebsocketService extends Service
     private ConnectionController mConnectionController;
     private StatusController mStatusController;
     private NotificationWebsocket mNotificationWebsocket;
+    private NotificationServiceBinder mNotificationServiceBinder;
     private final static String TAG = "Services.NotificationWebsocketService";
 
     @Override
@@ -39,14 +40,14 @@ public class NotificationWebsocketService extends Service
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_CONNECTION,
                 mConnectionController, NotificationServiceConfig.CONNECTION_COMPONENT_PRIORITY);
         mConnectionController.addConnectionStatusListener(this, this);
-        startListening();
+        Thread wsThread = new Thread(this::startListening);
+        wsThread.start();
         startForeground(1, mNotificationController.getServiceNotification());
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        return new NotificationServiceBinder(this);
     }
 
     @Override
@@ -60,6 +61,10 @@ public class NotificationWebsocketService extends Service
 
     @Override
     public void onConnectionStatusChanged(boolean isConnected){
+        if(mNotificationWebsocket == null){
+            Log.w(TAG, "Notification websocket is currently null. Ignoring connection state change.");
+            return;
+        }
         if(!mNotificationWebsocket.getConnected() && isConnected){
             Log.d(TAG, "Not connected: restarting connection");
             startListening();
@@ -72,11 +77,10 @@ public class NotificationWebsocketService extends Service
             mStatusController.addComponent(
                     NotificationServiceComponents.SERVICE_COMPONENT_WEBSOCKET,
                     mNotificationWebsocket, NotificationServiceConfig.API_COMPONENT_PRIORITY);
+            mAPI.getNotifications(this);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Log.e(TAG, "Exception while starting listening:", e);
         }
-        //Initially get notifications
-        mAPI.getNotifications(this);
     }
 
     /**

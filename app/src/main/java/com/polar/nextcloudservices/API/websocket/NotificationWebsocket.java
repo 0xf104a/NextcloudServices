@@ -3,6 +3,7 @@ package com.polar.nextcloudservices.API.websocket;
 import android.content.Context;
 import android.util.Log;
 
+import com.polar.nextcloudservices.API.INextcloudAbstractAPI;
 import com.polar.nextcloudservices.Services.Status.Status;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
@@ -11,22 +12,30 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 
+class NotificationWebsocketConfig{
+    public final static String NOTIFICATION_MESSAGE = "notify_notification";
+    public final static String LISTEN_TOPIC ="listen notify_file_id";
+}
+
 public class NotificationWebsocket extends WebSocketClient implements StatusCheckable {
     private final static String TAG = "NotificationWebsocket";
     private final String mUsername;
     private final String mPassword;
     private final INotificationWebsocketEventListener mNotificationListener;
     private String mStatus;
+    private final INextcloudAbstractAPI mAPI;
     private boolean isConnected;
 
     public NotificationWebsocket(URI serverUri, String username, String password,
-                                 INotificationWebsocketEventListener notificationListener) {
+                                 INotificationWebsocketEventListener notificationListener,
+                                 INextcloudAbstractAPI api) {
         super(serverUri);
         mUsername = username;
         mPassword = password;
         mNotificationListener = notificationListener;
         isConnected = false;
         mStatus = "Disconnected";
+        mAPI = api;
     }
 
     /**
@@ -37,7 +46,7 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
         Log.i(TAG, "Connected to websocket");
         send(mUsername);
         send(mPassword);
-        send("listen notify_file_id");
+        send(NotificationWebsocketConfig.LISTEN_TOPIC);
         isConnected = true;
         mStatus = "Connected";
         mNotificationListener.onWebsocketConnected();
@@ -48,7 +57,10 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
      */
     @Override
     public void onMessage(String message) {
-        Log.d(TAG, "Got message:" + message);
+        Log.d(TAG, "Got message: " + message);
+        if(message.equals(NotificationWebsocketConfig.NOTIFICATION_MESSAGE)) {
+            mAPI.getNotifications(mNotificationListener);
+        }
     }
 
     /**

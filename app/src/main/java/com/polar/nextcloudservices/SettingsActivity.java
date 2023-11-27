@@ -70,9 +70,10 @@ class NotificationServiceConnection implements ServiceConnection {
             mService = (NotificationServiceBinder) service;
             settings.setStatus(((NotificationServiceBinder) service).getServiceStatus());
             isConnected = true;
+            Log.i(TAG, "Connected to service");
         } else {
             Log.wtf(TAG, "Bad Binder type passed!");
-            throw new RuntimeException("Expected NotificationService.Binder");
+            throw new RuntimeException("Expected NotificationServiceBinder");
         }
     }
 
@@ -98,6 +99,10 @@ class NotificationServiceConnection implements ServiceConnection {
 
     public void tellPreferencesChanged() {
         Log.d(TAG, "Telling about preferences change to service");
+        if(mService == null){
+            Log.wtf(TAG, "Service is null. Have nobody to tell about settings update.");
+            return;
+        }
         mService.onPreferencesChanged();
     }
 }

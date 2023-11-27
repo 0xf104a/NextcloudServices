@@ -217,13 +217,14 @@ public class NextcloudHttpAPI implements INextcloudAbstractAPI {
     private String getWebsocketURL() throws Exception {
         HttpURLConnection connection = request(
                 "/ocs/v2.php/cloud/capabilities",
-                "GET", false);
+                "GET", true);
         connection.setConnectTimeout(5000);
         connection.setDoInput(true);
         JSONObject capabilities = readConnectionToJson(connection);
         return capabilities.getJSONObject("ocs")
                 .getJSONObject("data")
                 .getJSONObject("capabilities")
+                .getJSONObject("notify_push")
                 .getJSONObject("endpoints")
                 .getString("websocket");
     }
@@ -241,7 +242,7 @@ public class NextcloudHttpAPI implements INextcloudAbstractAPI {
         NotificationWebsocket client = new NotificationWebsocket(new URI(endpoint),
                 mServiceSettings.getUsername(),
                 mServiceSettings.getPassword(),
-                listener);
+                listener, this);
         client.connect();
         return client;
     }
