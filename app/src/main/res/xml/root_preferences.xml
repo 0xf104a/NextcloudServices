@@ -48,6 +48,11 @@
             android:key="enable_polling"
             android:summary="Enables polling notifications"
             android:title="Enable service" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="use_websocket"
+            android:summary="Use notify_push websocket for getting notifications"
+            android:title="Enable websocket" />
         <nl.invissvenska.numberpickerpreference.NumberDialogPreference
             android:key="polling_interval"
             android:title="Polling interval"
