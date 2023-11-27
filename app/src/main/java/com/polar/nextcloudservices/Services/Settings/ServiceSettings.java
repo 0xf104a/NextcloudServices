@@ -7,7 +7,7 @@ import android.util.Log;
 import androidx.preference.PreferenceManager;
 
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
-import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.API.INextcloudAbstractAPI;
 import com.polar.nextcloudservices.API.NextcloudHttpAPI;
 import com.polar.nextcloudservices.API.NextcloudSSOAPI;
 
@@ -17,13 +17,13 @@ import com.polar.nextcloudservices.API.NextcloudSSOAPI;
 public class ServiceSettings {
     private static final String TAG = "Services.Settings.ServiceSettings";
     private final Context mContext;
-    private NextcloudAbstractAPI mCachedAPI = null;
+    private INextcloudAbstractAPI mCachedAPI = null;
 
     public ServiceSettings(Context context){
         mContext = context;
     }
 
-    private NextcloudAbstractAPI makeAPIFromSettings(){
+    private INextcloudAbstractAPI makeAPIFromSettings(){
         if (getBoolPreference("sso_enabled", false)) {
             final String name = getPreference("sso_name");
             final String server = getPreference("sso_server");
@@ -39,7 +39,7 @@ public class ServiceSettings {
         }
     }
 
-    public NextcloudAbstractAPI getAPIFromSettings(){
+    public INextcloudAbstractAPI getAPIFromSettings(){
         if(mCachedAPI == null){
             mCachedAPI = makeAPIFromSettings();
         }

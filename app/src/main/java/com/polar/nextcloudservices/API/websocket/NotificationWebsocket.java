@@ -3,7 +3,6 @@ package com.polar.nextcloudservices.API.websocket;
 import android.content.Context;
 import android.util.Log;
 
-import com.polar.nextcloudservices.Services.NotificationListener;
 import com.polar.nextcloudservices.Services.Status.Status;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
@@ -16,12 +15,12 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
     private final static String TAG = "NotificationWebsocket";
     private final String mUsername;
     private final String mPassword;
-    private final NotificationWebsocketEventListener mNotificationListener;
+    private final INotificationWebsocketEventListener mNotificationListener;
     private String mStatus;
     private boolean isConnected;
 
     public NotificationWebsocket(URI serverUri, String username, String password,
-                                 NotificationWebsocketEventListener notificationListener) {
+                                 INotificationWebsocketEventListener notificationListener) {
         super(serverUri);
         mUsername = username;
         mPassword = password;
@@ -77,6 +76,8 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
     @Override
     public void onError(Exception ex) {
         Log.e(TAG, "Error in websocket", ex);
+        isConnected = false;
+        mStatus = "Unexpected error in websocket connection";
         mNotificationListener.onWebsocketDisconnected(true);
     }
 
@@ -91,5 +92,13 @@ public class NotificationWebsocket extends WebSocketClient implements StatusChec
         }else{
             return Status.Failed(mStatus);
         }
+    }
+
+    /**
+     * Checks that websocket is connected
+     * @return true if websocket is connected
+     */
+    public boolean getConnected(){
+        return isConnected;
     }
 }

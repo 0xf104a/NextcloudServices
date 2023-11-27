@@ -1,9 +1,11 @@
 package com.polar.nextcloudservices.Services;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
@@ -49,5 +51,12 @@ public class ConnectionController implements StatusCheckable {
             return Status.Ok();
         }
         return Status.Failed("Disconnected: no suitable network found.");
+    }
+
+    public void addConnectionStatusListener(Context context, IConnectionStatusListener listener){
+        context.registerReceiver(new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                listener.onConnectionStatusChanged(checkConnection(context));
+            }}, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
     }
 }

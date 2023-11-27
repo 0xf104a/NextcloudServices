@@ -14,7 +14,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
-import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.API.INextcloudAbstractAPI;
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
@@ -154,7 +154,7 @@ public class NotificationController implements NotificationEventReceiver, Status
         return Status.Ok();
     }
 
-    public NextcloudAbstractAPI getAPI(){
+    public INextcloudAbstractAPI getAPI(){
         return mServiceSettings.getAPIFromSettings();
     }
 

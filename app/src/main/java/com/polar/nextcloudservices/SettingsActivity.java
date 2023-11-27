@@ -46,6 +46,7 @@ import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledExcepti
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
 import com.polar.nextcloudservices.Services.NotificationPollService;
+import com.polar.nextcloudservices.Services.NotificationServiceBinder;
 import com.polar.nextcloudservices.Services.NotificationServiceController;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 
@@ -56,7 +57,7 @@ import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragme
 class NotificationServiceConnection implements ServiceConnection {
     private final String TAG = "SettingsActivity.NotificationServiceConnection";
     private final SettingsActivity.SettingsFragment settings;
-    private NotificationPollService.Binder mService;
+    private NotificationServiceBinder mService;
     public boolean isConnected = false;
 
     public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings) {
@@ -65,9 +66,9 @@ class NotificationServiceConnection implements ServiceConnection {
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        if (service instanceof NotificationPollService.Binder) {
-            mService = (NotificationPollService.Binder) service;
-            settings.setStatus(((NotificationPollService.Binder) service).getServiceStatus());
+        if (service instanceof NotificationServiceBinder) {
+            mService = (NotificationServiceBinder) service;
+            settings.setStatus(((NotificationServiceBinder) service).getServiceStatus());
             isConnected = true;
         } else {
             Log.wtf(TAG, "Bad Binder type passed!");

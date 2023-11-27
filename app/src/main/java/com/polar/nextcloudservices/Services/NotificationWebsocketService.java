@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.API.INextcloudAbstractAPI;
 import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
-import com.polar.nextcloudservices.API.websocket.NotificationWebsocketEventListener;
+import com.polar.nextcloudservices.API.websocket.INotificationWebsocketEventListener;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.StatusController;
@@ -15,11 +15,10 @@ import com.polar.nextcloudservices.Utils.CommonUtil;
 
 import org.json.JSONObject;
 
-import java.util.Timer;
-import java.util.concurrent.TimeUnit;
-
-public class NotificationWebsocketService extends Service implements NotificationWebsocketEventListener {
-    private NextcloudAbstractAPI mAPI;
+public class NotificationWebsocketService extends Service
+        implements INotificationWebsocketEventListener, 
+        IConnectionStatusListener, INotificationService {
+    private INextcloudAbstractAPI mAPI;
     private ServiceSettings mServiceSettings;
     private NotificationController mNotificationController;
     private ConnectionController mConnectionController;
@@ -39,6 +38,7 @@ public class NotificationWebsocketService extends Service implements Notificatio
                 NotificationServiceConfig.NOTIFICATION_CONTROLLER_PRIORITY);
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_CONNECTION,
                 mConnectionController, NotificationServiceConfig.CONNECTION_COMPONENT_PRIORITY);
+        mConnectionController.addConnectionStatusListener(this, this);
         startListening();
         startForeground(1, mNotificationController.getServiceNotification());
     }
@@ -55,6 +55,14 @@ public class NotificationWebsocketService extends Service implements Notificatio
             mNotificationController.onNotificationsUpdated(response);
         }else{
             Log.e(TAG, "null response for notifications");
+        }
+    }
+
+    @Override
+    public void onConnectionStatusChanged(boolean isConnected){
+        if(!mNotificationWebsocket.getConnected() && isConnected){
+            Log.d(TAG, "Not connected: restarting connection");
+            startListening();
         }
     }
 
@@ -88,5 +96,31 @@ public class NotificationWebsocketService extends Service implements Notificatio
     @Override
     public void onWebsocketConnected() {
         /* stub */
+    }
+
+    @Override
+    public String getStatus() {
+        return mStatusController.getStatusString();
+    }
+
+    @Override
+    public void onPreferencesChanged() {
+        if(!mServiceSettings.isWebsocketEnabled()){
+            Log.i(TAG, "Websocket is no more enabled. Disconnecting websocket and stopping service");
+            mNotificationWebsocket.close();
+            stopForeground(true);
+        }
+        Log.i(TAG, "Preferences changed. Re-connecting to websocket.");
+        mNotificationWebsocket.close();
+        mAPI = mServiceSettings.getAPIFromSettings();
+        startListening();
+    }
+
+    @Override
+    public void onAccountChanged() {
+        Log.i(TAG, "Account changed. Re-connecting to websocket.");
+        mNotificationWebsocket.close();
+        mAPI = mServiceSettings.getAPIFromSettings();
+        startListening();
     }
 }

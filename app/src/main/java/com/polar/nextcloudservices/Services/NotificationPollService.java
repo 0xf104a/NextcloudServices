@@ -15,7 +15,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.API.INextcloudAbstractAPI;
 import com.polar.nextcloudservices.Notification.NotificationController;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.StatusController;
@@ -25,7 +25,7 @@ class PollTask extends AsyncTask<NotificationPollService, Void, JSONObject> {
     @Override
     protected JSONObject doInBackground(NotificationPollService... services) {
         Log.d(TAG, "Checking notifications");
-        NextcloudAbstractAPI api = services[0].getAPI();
+        INextcloudAbstractAPI api = services[0].getAPI();
         try {
             boolean hasNotifications = api.checkNewNotifications();
             if(hasNotifications) {
@@ -39,13 +39,14 @@ class PollTask extends AsyncTask<NotificationPollService, Void, JSONObject> {
     }
 }
 
-public class NotificationPollService extends Service implements NotificationListener {
+public class NotificationPollService extends Service
+        implements INotificationListener, INotificationService {
     // constant
     public Integer pollingInterval = null;
     public static final String TAG = "Services.NotificationPollService";
-    private Binder mBinder;
+    private NotificationServiceBinder mBinder;
     private PollTimerTask task;
-    public NextcloudAbstractAPI mAPI;
+    public INextcloudAbstractAPI mAPI;
     private ServiceSettings mServiceSettings;
     private ConnectionController mConnectionController;
     private StatusController mStatusController;
@@ -55,9 +56,11 @@ public class NotificationPollService extends Service implements NotificationList
     // timer handling
     private Timer mTimer = null;
 
+    @Override
     public String getStatus() {
         return mStatusController.getStatusString();
     }
+
 
     public void onNewNotifications(JSONObject response) {
         if(response != null) {
@@ -91,7 +94,7 @@ public class NotificationPollService extends Service implements NotificationList
         mTimer.scheduleAtFixedRate(task, 0, pollingInterval);
     }
 
-    public NextcloudAbstractAPI getAPI(){
+    public INextcloudAbstractAPI getAPI(){
         if(mServiceSettings == null){
             Log.wtf(TAG, "mServiceSettings is null!");
             return null;
@@ -101,7 +104,7 @@ public class NotificationPollService extends Service implements NotificationList
 
     @Override
     public void onCreate() {
-        mBinder = new Binder();
+        mBinder = new NotificationServiceBinder(this);
         mServiceSettings = new ServiceSettings(this);
         mAPI = mServiceSettings.getAPIFromSettings();
         pollingInterval = mServiceSettings.getPollingIntervalMs();
@@ -121,10 +124,11 @@ public class NotificationPollService extends Service implements NotificationList
         startForeground(1, mNotificationController.getServiceNotification());
     }
 
-    public void onPreferencesChange() {
+    @Override
+    public void onPreferencesChanged() {
         mServiceSettings.onPreferencesChanged();
         int _pollingInterval = mServiceSettings.getPollingIntervalMs();
-        updateAccounts();
+        onAccountChanged();
         if (_pollingInterval != pollingInterval) {
             Log.d(TAG, "Updating timer");
             pollingInterval = _pollingInterval;
@@ -141,24 +145,10 @@ public class NotificationPollService extends Service implements NotificationList
     }
 
 
-    public class Binder extends android.os.Binder {
-        // Returns current status string of a service
-        public String getServiceStatus() {
-            return getStatus();
-        }
 
-        // Runs re-check of preferences, can be called from activities
-        public void onPreferencesChanged() {
-            onPreferencesChange();
-        }
 
-        // Update API class when accounts state change
-        public void onAccountChanged() {
-            updateAccounts();
-        }
-    }
-
-    public void updateAccounts(){
+    @Override
+    public void onAccountChanged(){
         mAPI = mServiceSettings.getAPIFromSettings();
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_API, mAPI,
                 NotificationServiceConfig.CONNECTION_COMPONENT_PRIORITY);

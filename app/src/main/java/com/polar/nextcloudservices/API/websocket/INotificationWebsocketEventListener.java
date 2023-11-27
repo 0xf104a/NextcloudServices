@@ -1,8 +1,8 @@
 package com.polar.nextcloudservices.API.websocket;
 
-import com.polar.nextcloudservices.Services.NotificationListener;
+import com.polar.nextcloudservices.Services.INotificationListener;
 
-public interface NotificationWebsocketEventListener extends NotificationListener {
+public interface INotificationWebsocketEventListener extends INotificationListener {
     /**
      * Called whenever websocket is disconnected
      * @param isError whether disconnect resulted from error

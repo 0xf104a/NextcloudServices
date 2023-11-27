@@ -9,13 +9,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
-import com.polar.nextcloudservices.API.websocket.NotificationWebsocketEventListener;
+import com.polar.nextcloudservices.API.websocket.INotificationWebsocketEventListener;
 import com.polar.nextcloudservices.BuildConfig;
-import com.polar.nextcloudservices.Services.NotificationListener;
+import com.polar.nextcloudservices.Services.INotificationListener;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 
-import org.java_websocket.client.WebSocketClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,7 +30,7 @@ import java.util.Objects;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class NextcloudHttpAPI implements NextcloudAbstractAPI {
+public class NextcloudHttpAPI implements INextcloudAbstractAPI {
     private final String TAG = "NextcloudHttpAPI";
     private final String UA = "NextcloudServices/" + BuildConfig.VERSION_NAME;
     private String mStatusString = "Updating settings";
@@ -230,7 +229,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public NotificationWebsocket getNotificationsWebsocket(NotificationWebsocketEventListener listener) throws Exception {
+    public NotificationWebsocket getNotificationsWebsocket(INotificationWebsocketEventListener listener) throws Exception {
         Log.i(TAG, "Starting new websocket connection");
         String endpoint = "";
         try {
@@ -248,7 +247,7 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
     }
 
     @Override
-    public JSONObject getNotifications(NotificationListener service) {
+    public JSONObject getNotifications(INotificationListener service) {
         try {
             HttpURLConnection conn = request("/ocs/v2.php/apps/notifications/api/v2/notifications",
             "GET", true);

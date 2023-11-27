@@ -3,11 +3,10 @@ package com.polar.nextcloudservices.API;
 import android.graphics.Bitmap;
 
 import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
-import com.polar.nextcloudservices.API.websocket.NotificationWebsocketEventListener;
-import com.polar.nextcloudservices.Services.NotificationListener;
+import com.polar.nextcloudservices.API.websocket.INotificationWebsocketEventListener;
+import com.polar.nextcloudservices.Services.INotificationListener;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
-import org.java_websocket.client.WebSocketClient;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -18,13 +17,13 @@ import java.io.IOException;
  * since it does not give per-app key.
  * The inheritors of this interface should be passed to NotificationService.
  */
-public interface NextcloudAbstractAPI extends StatusCheckable {
+public interface INextcloudAbstractAPI extends StatusCheckable {
     /**
      * Gets all notifications from server
      * @param service PollUpdateListener which handles notifications
      * @return notifications response as a JSONObject
      */
-    JSONObject getNotifications(NotificationListener service);
+    JSONObject getNotifications(INotificationListener service);
 
     /**
      * Removes notification from server
@@ -76,6 +75,6 @@ public interface NextcloudAbstractAPI extends StatusCheckable {
      * @throws Exception in case of any unhandlable error
      * @doc Gets websocket client which is authorized and receives notification updates
      */
-    NotificationWebsocket getNotificationsWebsocket(NotificationWebsocketEventListener listener) throws Exception;
+    NotificationWebsocket getNotificationsWebsocket(INotificationWebsocketEventListener listener) throws Exception;
 
 }

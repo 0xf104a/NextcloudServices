@@ -5,6 +5,6 @@ import org.json.JSONObject;
 /**
  * An interface for delivering new notifications
  */
-public interface NotificationListener {
+public interface INotificationListener {
     void onNewNotifications(JSONObject response);
 }
