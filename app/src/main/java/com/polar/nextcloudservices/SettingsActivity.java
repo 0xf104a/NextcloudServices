@@ -1,6 +1,5 @@
 package com.polar.nextcloudservices;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,7 +30,6 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -61,6 +59,7 @@ class NotificationServiceConnection implements ServiceConnection {
     public boolean isConnected = false;
 
     public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings) {
+        super();
         settings = _settings;
     }
 
@@ -84,11 +83,6 @@ class NotificationServiceConnection implements ServiceConnection {
         } else {
             settings.setStatus(mService.getServiceStatus());
         }
-    }
-
-    public void tellAccountChanged(){
-        Log.d(TAG, "Telling service that account has cahnged");
-        mService.onAccountChanged();
     }
 
     @Override
@@ -158,6 +152,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private boolean isNotificationServiceRunning() {
         Class<?> serviceClass = mServiceController.getServiceClass();
+        Log.d(TAG, "Checking whether service " + serviceClass + " is alive");
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
@@ -172,6 +167,10 @@ public class SettingsActivity extends AppCompatActivity {
             Log.e(TAG, "Service is not running!");
             settings.setStatus("Disconnected: service is not running");
         } else if(mServiceConnection == null && isNotificationServiceRunning()) {
+            Log.d(TAG, "Service is running but disconnected");
+            mServiceConnection = new NotificationServiceConnection(settings);
+            mServiceController.bindService(this, mServiceConnection);
+        } else if(mServiceConnection != null && isNotificationServiceRunning() && !mServiceConnection.isConnected){
             Log.d(TAG, "Service is running but disconnected");
             mServiceConnection = new NotificationServiceConnection(settings);
             mServiceController.bindService(this, mServiceConnection);
@@ -279,14 +278,19 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private boolean needRestartService(String key){
-        if(key == null){
-            return true;
-        }
-        return key.equals(ServiceSettingConfig.USE_WEBSOCKET);
+        return key == null;
     }
 
-    public void onPreferencesChanges(String key){
-        if(needRestartService(key)) {
+    public void onPreferencesChange(String key){
+        Log.d(TAG, "key = " + key);
+        if(Objects.equals(key, ServiceSettingConfig.USE_WEBSOCKET)){
+            if(!mServiceSettings.isServiceEnabled()){
+                return;
+            }
+            mServiceController.onServiceClassChange(this);
+            mServiceConnection = new NotificationServiceConnection(mSettingsFragment);
+            mServiceController.bindService(this, mServiceConnection);
+        } else if(needRestartService(key)) {
             mServiceController.restartService(this);
             mServiceConnection = new NotificationServiceConnection(mSettingsFragment);
             mServiceController.bindService(this, mServiceConnection);
@@ -297,6 +301,7 @@ public class SettingsActivity extends AppCompatActivity {
                 mServiceController.bindService(this, mServiceConnection);
             } else if(!mServiceSettings.isServiceEnabled()){
                 mServiceController.stopService(this);
+                mServiceConnection = null;
             }
         } else {
             mServiceConnection.tellPreferencesChanged();
@@ -320,7 +325,7 @@ public class SettingsActivity extends AppCompatActivity {
                 Log.wtf(TAG, "Activity can not be null!");
                 throw new NullPointerException();
             }
-            activity.onPreferencesChanges(null);
+            activity.onPreferencesChange(null);
         }
 
 
@@ -547,7 +552,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         private void onWebsocketStatusChanged(){
             if(getBoolPreference(ServiceSettingConfig.USE_WEBSOCKET, false)) {
-                disableSSO();
                 findPreference("login_sso").setEnabled(false);
             } else {
                 findPreference("login_sso").setEnabled(true);
@@ -564,7 +568,7 @@ public class SettingsActivity extends AppCompatActivity {
             if(key.equals(ServiceSettingConfig.USE_WEBSOCKET)){
                 onWebsocketStatusChanged();
             }
-            activity.onPreferencesChanges(key);
+            activity.onPreferencesChange(key);
         }
     }
 }

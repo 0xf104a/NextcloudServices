@@ -1,5 +1,7 @@
 package com.polar.nextcloudservices.Services;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -17,7 +19,7 @@ import org.json.JSONObject;
 
 public class NotificationWebsocketService extends Service
         implements INotificationWebsocketEventListener, 
-        IConnectionStatusListener, INotificationService {
+        IConnectionStatusListener, INotificationService{
     private INextcloudAbstractAPI mAPI;
     private ServiceSettings mServiceSettings;
     private NotificationController mNotificationController;
@@ -25,13 +27,13 @@ public class NotificationWebsocketService extends Service
     private StatusController mStatusController;
     private NotificationWebsocket mNotificationWebsocket;
     private NotificationServiceBinder mBinder;
+    private Thread mWsThread;
     private final static String TAG = "Services.NotificationWebsocketService";
 
     @Override
     public void onCreate(){
-        mBinder = new NotificationServiceBinder(this);
+        Log.d(TAG, "onCreate");
         mNotificationController = new NotificationController(this, mServiceSettings);
-        startForeground(1, mNotificationController.getServiceNotification());
         mServiceSettings = new ServiceSettings(this);
         mAPI = mServiceSettings.getAPIFromSettings();
         mStatusController = new StatusController(this);
@@ -42,12 +44,17 @@ public class NotificationWebsocketService extends Service
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_CONNECTION,
                 mConnectionController, NotificationServiceConfig.CONNECTION_COMPONENT_PRIORITY);
         mConnectionController.setConnectionStatusListener(this, this);
-        Thread wsThread = new Thread(this::startListening);
-        wsThread.start();
+        mWsThread = new Thread(this::listenForever);
+        mWsThread.start();
+        Notification notification = mNotificationController.getServiceNotification();
+        startForeground(2, notification);
+        Log.d(TAG, "startForeground done");
+        mBinder = new NotificationServiceBinder(this);
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(TAG, "onBind");
         if(mBinder == null){
             Log.e(TAG, "Binder is null!");
         }
@@ -71,19 +78,37 @@ public class NotificationWebsocketService extends Service
         }
         if(!mNotificationWebsocket.getConnected() && isConnected){
             Log.d(TAG, "Not connected: restarting connection");
-            startListening();
+            mWsThread.interrupt();
+            mWsThread = new Thread(this::listenForever);
+            mWsThread.start();
         }
     }
 
-    private void startListening(){
+    private boolean startListening(){
         try {
             mNotificationWebsocket = mAPI.getNotificationsWebsocket(this);
             mStatusController.addComponent(
                     NotificationServiceComponents.SERVICE_COMPONENT_WEBSOCKET,
                     mNotificationWebsocket, NotificationServiceConfig.API_COMPONENT_PRIORITY);
             mAPI.getNotifications(this);
+            return true;
         } catch (Exception e) {
             Log.e(TAG, "Exception while starting listening:", e);
+        }
+        return false;
+    }
+
+    private void listenForever(){
+        for(;;){
+            if(mConnectionController.checkConnection(this)){
+                if(startListening()){
+                    return;
+                }
+            } else {
+                Log.w(TAG, "We are not connected, not starting-up");
+            }
+            Log.i(TAG, "Restart pause 3s");
+            CommonUtil.safeSleep(3000);
         }
     }
 
@@ -98,6 +123,7 @@ public class NotificationWebsocketService extends Service
             startListening();
         } else {
             Log.w(TAG, "Disconnected from websocket. Seems that we have no network");
+            //listenForever();
         }
     }
 
