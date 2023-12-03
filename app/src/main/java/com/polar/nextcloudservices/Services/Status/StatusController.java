@@ -41,7 +41,11 @@ public class StatusController {
         Status status = Status.Ok();
         for(Integer componentId: components.keySet()){
             StatusCheckable component = components.get(componentId);
-            assert component != null;
+            if(component == null){
+                Log.e(TAG, "Can not get status for component with id: " + componentId);
+                Log.e(TAG, "Component is null, skipping it");
+                continue;
+            }
             Status state = component.getStatus(mContext);
             Integer priority = components_priority_mapping.getOrDefault(componentId,
                     Integer.MIN_VALUE);
