@@ -30,9 +30,10 @@ public class NotificationWebsocketService extends Service
     @Override
     public void onCreate(){
         mBinder = new NotificationServiceBinder(this);
+        mNotificationController = new NotificationController(this, mServiceSettings);
+        startForeground(1, mNotificationController.getServiceNotification());
         mServiceSettings = new ServiceSettings(this);
         mAPI = mServiceSettings.getAPIFromSettings();
-        mNotificationController = new NotificationController(this, mServiceSettings);
         mStatusController = new StatusController(this);
         mConnectionController = new ConnectionController(mServiceSettings);
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_CONNECTION,
@@ -43,7 +44,6 @@ public class NotificationWebsocketService extends Service
         mConnectionController.setConnectionStatusListener(this, this);
         Thread wsThread = new Thread(this::startListening);
         wsThread.start();
-        startForeground(1, mNotificationController.getServiceNotification());
     }
 
     @Override

@@ -58,7 +58,6 @@ class NotificationServiceConnection implements ServiceConnection {
     private final String TAG = "SettingsActivity.NotificationServiceConnection";
     private final SettingsActivity.SettingsFragment settings;
     private NotificationServiceBinder mService;
-    private ServiceSettings mServiceSettings;
     public boolean isConnected = false;
 
     public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings) {
@@ -158,9 +157,14 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private boolean isNotificationServiceRunning() {
+        Class<?> serviceClass = mServiceController.getServiceClass();
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        List<?> services = manager.getRunningServices(Integer.MAX_VALUE);
-        return (services.size() > 0);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateNotificationServiceStatus(SettingsFragment settings) {
@@ -358,11 +362,15 @@ public class SettingsActivity extends AppCompatActivity {
                 Log.wtf(TAG, "login_sso preference is null!");
                 throw new NullPointerException();
             }
+            if(getBoolPreference(ServiceSettingConfig.USE_WEBSOCKET, false)){
+                login_sso.setEnabled(false);
+            }
             if(getBoolPreference("sso_enabled",false)){
                 findPreference("server").setEnabled(false);
                 findPreference("password").setEnabled(false);
                 findPreference("login").setEnabled(false);
                 findPreference("insecure_connection").setEnabled(false);
+                findPreference("use_websocket").setEnabled(false);
                 login_sso.setSummary("Stop using Nextcloud app for authentication");
                 login_sso.setTitle("Log out from Nexcloud");
                 login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -377,6 +385,7 @@ public class SettingsActivity extends AppCompatActivity {
                 findPreference("password").setEnabled(true);
                 findPreference("login").setEnabled(true);
                 findPreference("insecure_connection").setEnabled(true);
+                findPreference("use_websocket").setEnabled(true);
                 login_sso.setSummary("Use on-device Nextcloud account");
                 login_sso.setTitle("Log in via Nextcloud app");
                 login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -536,12 +545,24 @@ public class SettingsActivity extends AppCompatActivity {
             Log.d(TAG, "onResume called");
         }
 
+        private void onWebsocketStatusChanged(){
+            if(getBoolPreference(ServiceSettingConfig.USE_WEBSOCKET, false)) {
+                disableSSO();
+                findPreference("login_sso").setEnabled(false);
+            } else {
+                findPreference("login_sso").setEnabled(true);
+            }
+        }
+
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             SettingsActivity activity = (SettingsActivity) getActivity();
             if(activity == null){
                 Log.wtf(TAG, "Activity can not be null!");
                 throw new NullPointerException();
+            }
+            if(key.equals(ServiceSettingConfig.USE_WEBSOCKET)){
+                onWebsocketStatusChanged();
             }
             activity.onPreferencesChanges(key);
         }

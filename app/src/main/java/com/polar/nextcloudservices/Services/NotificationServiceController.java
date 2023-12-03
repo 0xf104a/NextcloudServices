@@ -41,11 +41,13 @@ public class NotificationServiceController {
 
     public void stopService(Context context){
         Log.i(TAG, "Stopping service...");
-        if(getServiceClass() == null){
+        Class<?> serviceClass = getServiceClass();
+        Log.d(TAG, "Class: " + serviceClass);
+        if(serviceClass == null){
             Log.w(TAG, "Can not stop service: we do not know its class");
             return;
         }
-        context.stopService(new Intent(context, getServiceClass()));
+        context.stopService(new Intent(context, serviceClass));
     }
 
     public void bindService(Context context, ServiceConnection connection){
