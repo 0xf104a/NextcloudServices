@@ -1,23 +1,30 @@
 package com.polar.nextcloudservices.Services;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
+/**
+ * Checks connectivity to the network
+ */
 public class ConnectionController implements StatusCheckable {
     private final ServiceSettings mServiceSettings;
     private final static String TAG = "Services.ConnectionController";
+    private BroadcastReceiver broadcastReceiver = null;
     public ConnectionController(ServiceSettings settings){
         mServiceSettings = settings;
     }
 
     public boolean checkConnection(Context context) {
-        ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivity =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity != null) {
             //We need to check only active network state
             final NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();
@@ -45,5 +52,21 @@ public class ConnectionController implements StatusCheckable {
             return Status.Ok();
         }
         return Status.Failed("Disconnected: no suitable network found.");
+    }
+
+    public void setConnectionStatusListener(Context context, IConnectionStatusListener listener){
+        if(broadcastReceiver != null){
+            context.unregisterReceiver(broadcastReceiver);
+        }
+        broadcastReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                listener.onConnectionStatusChanged(checkConnection(context));
+            }};
+        context.registerReceiver(broadcastReceiver,
+                new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+    }
+
+    public void removeConnectionListener(Context context){
+        context.unregisterReceiver(broadcastReceiver);
     }
 }

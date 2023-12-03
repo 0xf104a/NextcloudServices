@@ -1,6 +1,5 @@
 package com.polar.nextcloudservices;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,7 +30,6 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -45,7 +43,10 @@ import com.nextcloud.android.sso.exceptions.AndroidGetAccountsPermissionNotGrant
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppNotInstalledException;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import com.nextcloud.android.sso.ui.UiExceptionManager;
-import com.polar.nextcloudservices.Services.NotificationService;
+import com.polar.nextcloudservices.Services.NotificationServiceBinder;
+import com.polar.nextcloudservices.Services.NotificationServiceController;
+import com.polar.nextcloudservices.Services.Settings.ServiceSettingConfig;
+import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 
 import nl.invissvenska.numberpickerpreference.NumberDialogPreference;
 import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragment;
@@ -54,22 +55,24 @@ import nl.invissvenska.numberpickerpreference.NumberPickerPreferenceDialogFragme
 class NotificationServiceConnection implements ServiceConnection {
     private final String TAG = "SettingsActivity.NotificationServiceConnection";
     private final SettingsActivity.SettingsFragment settings;
-    private NotificationService.Binder mService;
+    private NotificationServiceBinder mService;
     public boolean isConnected = false;
 
     public NotificationServiceConnection(SettingsActivity.SettingsFragment _settings) {
+        super();
         settings = _settings;
     }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        if (service instanceof NotificationService.Binder) {
-            mService = (NotificationService.Binder) service;
-            settings.setStatus(((NotificationService.Binder) service).getServiceStatus());
+        if (service instanceof NotificationServiceBinder) {
+            mService = (NotificationServiceBinder) service;
+            settings.setStatus(((NotificationServiceBinder) service).getServiceStatus());
             isConnected = true;
+            Log.i(TAG, "Connected to service");
         } else {
             Log.wtf(TAG, "Bad Binder type passed!");
-            throw new RuntimeException("Expected NotificationService.Binder");
+            throw new RuntimeException("Expected NotificationServiceBinder");
         }
     }
 
@@ -82,11 +85,6 @@ class NotificationServiceConnection implements ServiceConnection {
         }
     }
 
-    public void tellAccountChanged(){
-        Log.d(TAG, "Telling service that account has cahnged");
-        mService.onAccountChanged();
-    }
-
     @Override
     public void onServiceDisconnected(ComponentName name) {
         Log.w(TAG, "Service has disconnected.");
@@ -95,16 +93,23 @@ class NotificationServiceConnection implements ServiceConnection {
 
     public void tellPreferencesChanged() {
         Log.d(TAG, "Telling about preferences change to service");
+        if(mService == null){
+            Log.wtf(TAG, "Service is null. Have nobody to tell about settings update.");
+            return;
+        }
         mService.onPreferencesChanged();
     }
 }
 
-public class SettingsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class SettingsActivity extends AppCompatActivity {
     private final String TAG = "SettingsActivity";
     private final Handler mHandler = new Handler();
     private Timer mTimer = null;
     private PreferenceUpdateTimerTask mTask = null;
     private NotificationServiceConnection mServiceConnection = null;
+    private NotificationServiceController mServiceController;
+    private ServiceSettings mServiceSettings;
+    private SettingsFragment mSettingsFragment;
     private static final int NOTIFICATION_PERMISSION_CODE = 1;
 
     //Exit from activity when back arrow is pressed
@@ -119,54 +124,42 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     }
 
     class PreferenceUpdateTimerTask extends TimerTask {
-        private final SettingsFragment settings;
+        private final SettingsFragment mSettingsFragment;
         public PreferenceUpdateTimerTask(SettingsFragment _settings) {
-            settings = _settings;
+            mSettingsFragment = _settings;
         }
 
         @Override
         public void run() {
             // run on another thread
             mHandler.post(() -> {
-                //Log.d(TAG, "Entered run in preference updater timer task");
-                if(!getBoolPreference("enable_polling", true)){
-                    stopNotificationService();
-                } else if(!isNotificationServiceRunning()) {
-                    startNotificationService();
-                }
                 if (isNotificationServiceRunning()) {
                     Log.d(TAG, "Service is running");
-                    updateNotificationServiceStatus(settings);
+                    updateNotificationServiceStatus(mSettingsFragment);
                 } else {
-                    (settings).setStatus("Disconnected: service is not running");
+                    (mSettingsFragment).setStatus("Disconnected: service is not running");
                 }
             });
         }
     }
 
-    public void stopNotificationService() {
-        if(isNotificationServiceRunning()) {
-            Log.i(TAG, "Stopping service");
-            Context context = getApplicationContext();
-            //mServiceConnection = null;
-            unbindService(mServiceConnection);
-            mServiceConnection = null;
-            context.stopService(new Intent(context, NotificationService.class));
-        }
-    }
     public void startNotificationService() {
-        ///--------
-        //Log.d(TAG, "startService: ENTERING");
-        if (!isNotificationServiceRunning() && getBoolPreference("enable_polling",true)) {
+        if (!isNotificationServiceRunning() && mServiceSettings.isServiceEnabled() ) {
             Log.d(TAG, "Service is not running: creating intent to start it");
-            startService(new Intent(getApplicationContext(), NotificationService.class));
+            mServiceController.startService(this);
         }
     }
 
     private boolean isNotificationServiceRunning() {
+        Class<?> serviceClass = mServiceController.getServiceClass();
+        Log.d(TAG, "Checking whether service " + serviceClass + " is alive");
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        List<?> services = manager.getRunningServices(Integer.MAX_VALUE);
-        return (services.size() > 0);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateNotificationServiceStatus(SettingsFragment settings) {
@@ -176,30 +169,15 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         } else if(mServiceConnection == null && isNotificationServiceRunning()) {
             Log.d(TAG, "Service is running but disconnected");
             mServiceConnection = new NotificationServiceConnection(settings);
-            bindService(new Intent(getApplicationContext(), NotificationService.class),
-                    mServiceConnection, 0);
+            mServiceController.bindService(this, mServiceConnection);
+        } else if(mServiceConnection != null && isNotificationServiceRunning() && !mServiceConnection.isConnected){
+            Log.d(TAG, "Service is running but disconnected");
+            mServiceConnection = new NotificationServiceConnection(settings);
+            mServiceController.bindService(this, mServiceConnection);
         } else {
             mServiceConnection.updateStatus();
         }
     }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        Log.d(TAG, "onSharedPreferenceChanged");
-        Log.d(TAG, "key=" + key);
-    }
-
-
-    public String getPreference(String key) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getString(key, "");
-    }
-
-    private boolean getBoolPreference(String key, boolean fallback) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPreferences.getBoolean(key, fallback);
-    }
-
 
     @Override
     public void onDestroy(){
@@ -242,6 +220,12 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        mServiceSettings = new ServiceSettings(this);
+        mServiceController = new NotificationServiceController(mServiceSettings);
+
+        FragmentManager manager = getSupportFragmentManager();
+        mSettingsFragment = (SettingsFragment) manager.findFragmentById(R.id.settings);
+
         requestNotificationPermission();
         startNotificationService();
     }
@@ -273,8 +257,8 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     protected void onResume() {
         super.onResume();
         FragmentManager manager = getSupportFragmentManager();
-        Fragment settings = manager.findFragmentById(R.id.settings);
-        if (!(settings instanceof SettingsFragment)) {
+        mSettingsFragment = (SettingsFragment) manager.findFragmentById(R.id.settings);
+        if (mSettingsFragment == null) {
             Log.wtf(TAG, "Programming error: settings fragment is not instance of SettingsFragment!");
             throw new RuntimeException("Programming error: settings fragment is not instance of SettingsFragment!");
         } else {
@@ -288,14 +272,40 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 }
             }
             Log.d(TAG, "Starting timer");
-            mTask = new PreferenceUpdateTimerTask((SettingsFragment) settings);
+            mTask = new PreferenceUpdateTimerTask((SettingsFragment) mSettingsFragment);
             mTimer.scheduleAtFixedRate( mTask, 0, 5000);
         }
     }
 
-    private void setupSharedPreferences() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    private boolean needRestartService(String key){
+        return key == null;
+    }
+
+    public void onPreferencesChange(String key){
+        Log.d(TAG, "key = " + key);
+        if(Objects.equals(key, ServiceSettingConfig.USE_WEBSOCKET)){
+            if(!mServiceSettings.isServiceEnabled()){
+                return;
+            }
+            mServiceController.onServiceClassChange(this);
+            mServiceConnection = new NotificationServiceConnection(mSettingsFragment);
+            mServiceController.bindService(this, mServiceConnection);
+        } else if(needRestartService(key)) {
+            mServiceController.restartService(this);
+            mServiceConnection = new NotificationServiceConnection(mSettingsFragment);
+            mServiceController.bindService(this, mServiceConnection);
+        } else if(key.equals(ServiceSettingConfig.ENABLE_SERVICE)){
+            if(!isNotificationServiceRunning() && mServiceSettings.isServiceEnabled()){
+                mServiceController.startService(this);
+                mServiceConnection = new NotificationServiceConnection(mSettingsFragment);
+                mServiceController.bindService(this, mServiceConnection);
+            } else if(!mServiceSettings.isServiceEnabled()){
+                mServiceController.stopService(this);
+                mServiceConnection = null;
+            }
+        } else {
+            mServiceConnection.tellPreferencesChanged();
+        }
     }
 
 
@@ -315,21 +325,9 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 Log.wtf(TAG, "Activity can not be null!");
                 throw new NullPointerException();
             }
-            notifyPreferenceChange();
+            activity.onPreferencesChange(null);
         }
 
-        private void notifyPreferenceChange(){
-            SettingsActivity activity = (SettingsActivity) getActivity();
-            if(activity == null){
-                Log.wtf(TAG, "Activity can not be null!");
-                throw new NullPointerException();
-            }
-            if(activity.mServiceConnection == null){
-                Log.i(TAG, "Not notifying service about preference change: no connection to it.");
-                return;
-            }
-            activity.mServiceConnection.tellPreferencesChanged();
-        }
 
         private void enableSSO(@NonNull SingleSignOnAccount account){
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -369,11 +367,15 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 Log.wtf(TAG, "login_sso preference is null!");
                 throw new NullPointerException();
             }
+            if(getBoolPreference(ServiceSettingConfig.USE_WEBSOCKET, false)){
+                login_sso.setEnabled(false);
+            }
             if(getBoolPreference("sso_enabled",false)){
                 findPreference("server").setEnabled(false);
                 findPreference("password").setEnabled(false);
                 findPreference("login").setEnabled(false);
                 findPreference("insecure_connection").setEnabled(false);
+                findPreference("use_websocket").setEnabled(false);
                 login_sso.setSummary("Stop using Nextcloud app for authentication");
                 login_sso.setTitle("Log out from Nexcloud");
                 login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -388,6 +390,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 findPreference("password").setEnabled(true);
                 findPreference("login").setEnabled(true);
                 findPreference("insecure_connection").setEnabled(true);
+                findPreference("use_websocket").setEnabled(true);
                 login_sso.setSummary("Use on-device Nextcloud account");
                 login_sso.setTitle("Log in via Nextcloud app");
                 login_sso.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -547,9 +550,25 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
             Log.d(TAG, "onResume called");
         }
 
+        private void onWebsocketStatusChanged(){
+            if(getBoolPreference(ServiceSettingConfig.USE_WEBSOCKET, false)) {
+                findPreference("login_sso").setEnabled(false);
+            } else {
+                findPreference("login_sso").setEnabled(true);
+            }
+        }
+
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            notifyPreferenceChange();
+            SettingsActivity activity = (SettingsActivity) getActivity();
+            if(activity == null){
+                Log.wtf(TAG, "Activity can not be null!");
+                throw new NullPointerException();
+            }
+            if(key.equals(ServiceSettingConfig.USE_WEBSOCKET)){
+                onWebsocketStatusChanged();
+            }
+            activity.onPreferencesChange(key);
         }
     }
 }

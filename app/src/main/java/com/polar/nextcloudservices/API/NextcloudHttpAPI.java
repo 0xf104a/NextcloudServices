@@ -8,8 +8,10 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.polar.nextcloudservices.API.websocket.NotificationWebsocket;
+import com.polar.nextcloudservices.API.websocket.INotificationWebsocketEventListener;
 import com.polar.nextcloudservices.BuildConfig;
-import com.polar.nextcloudservices.Services.PollUpdateListener;
+import com.polar.nextcloudservices.Services.INotificationListener;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 
@@ -21,13 +23,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class NextcloudHttpAPI implements NextcloudAbstractAPI {
+public class NextcloudHttpAPI implements INextcloudAbstractAPI {
     private final String TAG = "NextcloudHttpAPI";
     private final String UA = "NextcloudServices/" + BuildConfig.VERSION_NAME;
     private String mStatusString = "Updating settings";
@@ -195,8 +198,57 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
         return false;
     }
 
+    @NonNull
+    private JSONObject readConnectionToJson(@NonNull HttpURLConnection conn)
+            throws IOException, JSONException{
+        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        StringBuilder buffer = new StringBuilder();
+        String line;
+        while ((line = in.readLine()) != null) {
+            buffer.append(line);
+        }
+        in.close();
+        return new JSONObject(buffer.toString());
+    }
+
+    //See get_endpoint from
+    //         https://github.com/nextcloud/notify_push/blob/main/test_client/src/main.rs
+    @NonNull
+    private String getWebsocketURL() throws Exception {
+        HttpURLConnection connection = request(
+                "/ocs/v2.php/cloud/capabilities",
+                "GET", true);
+        connection.setConnectTimeout(5000);
+        connection.setDoInput(true);
+        JSONObject capabilities = readConnectionToJson(connection);
+        return capabilities.getJSONObject("ocs")
+                .getJSONObject("data")
+                .getJSONObject("capabilities")
+                .getJSONObject("notify_push")
+                .getJSONObject("endpoints")
+                .getString("websocket");
+    }
+
     @Override
-    public JSONObject getNotifications(PollUpdateListener service) {
+    public NotificationWebsocket getNotificationsWebsocket(INotificationWebsocketEventListener listener) throws Exception {
+        Log.i(TAG, "Starting new websocket connection");
+        String endpoint = "";
+        try {
+            endpoint = getWebsocketURL();
+        } catch (Exception e){
+            Log.e(TAG, "Can not get websocket URL", e);
+            return null;
+        }
+        NotificationWebsocket client = new NotificationWebsocket(new URI(endpoint),
+                mServiceSettings.getUsername(),
+                mServiceSettings.getPassword(),
+                listener, this);
+        client.connect();
+        return client;
+    }
+
+    @Override
+    public JSONObject getNotifications(INotificationListener service) {
         try {
             HttpURLConnection conn = request("/ocs/v2.php/apps/notifications/api/v2/notifications",
             "GET", true);
@@ -205,18 +257,11 @@ public class NextcloudHttpAPI implements NextcloudAbstractAPI {
             String responseCode = Integer.toString(conn.getResponseCode());
             Log.d(TAG, "--> GET "+ getEndpoint(mServiceSettings) + "/ocs/v2.php/apps/notifications/api/v2/notifications -- " + responseCode);
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder buffer = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                buffer.append(line);
-            }
-            in.close();
             //Log.d(TAG, buffer.toString());
-            JSONObject response = new JSONObject(buffer.toString());
+            JSONObject response = readConnectionToJson(conn);
             lastPollSuccessful = true;
 
-            service.onPollFinished(response);
+            service.onNewNotifications(response);
             return response;
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing JSON");

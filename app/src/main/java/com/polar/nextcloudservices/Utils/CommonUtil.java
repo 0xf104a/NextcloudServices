@@ -62,4 +62,12 @@ public class CommonUtil {
     public static <T>  boolean isInArray(T obj, T[] array){
         return Arrays.asList(array).contains(obj);
     }
+
+    public static void safeSleep(long millis){
+       try {
+           Thread.sleep(millis);
+       } catch (InterruptedException e){
+           Log.e(TAG, "Interrupted while sleeping " + millis + "ms");
+       }
+    }
 }

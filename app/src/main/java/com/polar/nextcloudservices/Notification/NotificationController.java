@@ -3,19 +3,20 @@ package com.polar.nextcloudservices.Notification;
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
-import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.API.INextcloudAbstractAPI;
 import com.polar.nextcloudservices.Config;
+import com.polar.nextcloudservices.R;
 import com.polar.nextcloudservices.Services.Settings.ServiceSettings;
 import com.polar.nextcloudservices.Services.Status.Status;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
@@ -45,6 +46,31 @@ public class NotificationController implements NotificationEventReceiver, Status
                 (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
         mServiceSettings = settings;
         registerNotificationProcessors();
+    }
+
+    @NonNull
+    public Notification getServiceNotification(){
+        //Create background service notifcation
+        String channelId = "__internal_backgorund_polling";
+        NotificationManager mNotificationManager =
+                (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(channelId,
+                    "Background polling", NotificationManager.IMPORTANCE_LOW);
+            mNotificationManager.createNotificationChannel(channel);
+        }
+        //Build notification
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(mContext, channelId)
+                        .setSmallIcon(R.drawable.ic_logo)
+                        .setContentTitle(mContext.getString(R.string.app_name))
+                        .setPriority(-2)
+                        .setOnlyAlertOnce(true)
+                        .setContentText("Background connection notification");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mBuilder.setChannelId(channelId);
+        }
+        return mBuilder.build();
     }
 
     private void registerNotificationProcessors(){
@@ -128,7 +154,7 @@ public class NotificationController implements NotificationEventReceiver, Status
         return Status.Ok();
     }
 
-    public NextcloudAbstractAPI getAPI(){
+    public INextcloudAbstractAPI getAPI(){
         return mServiceSettings.getAPIFromSettings();
     }
 

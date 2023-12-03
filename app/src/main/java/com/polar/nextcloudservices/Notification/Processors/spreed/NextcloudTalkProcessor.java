@@ -22,12 +22,11 @@ import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
 import androidx.core.graphics.drawable.IconCompat;
 
-import com.polar.nextcloudservices.API.NextcloudAbstractAPI;
+import com.polar.nextcloudservices.API.INextcloudAbstractAPI;
 import com.polar.nextcloudservices.Config;
 import com.polar.nextcloudservices.Notification.AbstractNotificationProcessor;
 import com.polar.nextcloudservices.Notification.NotificationBuilderResult;
 import com.polar.nextcloudservices.Notification.NotificationController;
-import com.polar.nextcloudservices.Notification.NotificationControllerExtData;
 import com.polar.nextcloudservices.Notification.NotificationEvent;
 import com.polar.nextcloudservices.Notification.Processors.spreed.chat.Chat;
 import com.polar.nextcloudservices.Notification.Processors.spreed.chat.ChatController;
@@ -260,7 +259,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 return;
             }
             final String reply = remoteInput.getCharSequence(KEY_TEXT_REPLY).toString();
-            NextcloudAbstractAPI api = controller.getAPI();
+            INextcloudAbstractAPI api = controller.getAPI();
             Thread thread = new Thread(() -> {
                 try {
                     api.sendTalkReply(chatroom, reply);
@@ -283,7 +282,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 Log.wtf(TAG, "Can not find chat by notification id " + notification_id);
                 return;
             }
-            NextcloudAbstractAPI api = controller.getAPI();
+            INextcloudAbstractAPI api = controller.getAPI();
             for(ChatMessage message : chat.messages){
                 Thread thread = new Thread(() -> {
                     try {
