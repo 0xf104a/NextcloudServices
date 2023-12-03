@@ -134,6 +134,9 @@ public class NotificationWebsocketService extends Service
 
     @Override
     public String getStatus() {
+        if(mNotificationWebsocket == null){
+            return "Disconnected: can not connect to websocket. Are login details correct? Is notify_push installed on server?";
+        }
         return mStatusController.getStatusString();
     }
 
