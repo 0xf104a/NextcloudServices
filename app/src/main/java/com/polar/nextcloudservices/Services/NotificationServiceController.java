@@ -2,6 +2,7 @@ package com.polar.nextcloudservices.Services;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Build;
 import android.util.Log;
 
@@ -19,10 +20,6 @@ public class NotificationServiceController {
     }
 
     public Class<?> getServiceClass(){
-        if(!mServiceSettings.isServiceEnabled()){
-            Log.i(TAG, "Not starting service as it is not enabled");
-            return null;
-        }
         if(mServiceSettings.isWebsocketEnabled()){
             return NotificationWebsocketService.class;
         }else{
@@ -31,12 +28,36 @@ public class NotificationServiceController {
     }
 
     public void startService(Context context){
-        Intent intent = new Intent(context, getServiceClass());
+        Class<?> serviceClass = getServiceClass();
+        Log.i(TAG, "Starting service...");
+        Log.d(TAG, "Class: " + serviceClass);
+        Intent intent = new Intent(context, serviceClass);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
             context.startService(intent);
         }
+    }
+
+    public void stopService(Context context){
+        Log.i(TAG, "Stopping service...");
+        if(getServiceClass() == null){
+            Log.w(TAG, "Can not stop service: we do not know its class");
+            return;
+        }
+        context.stopService(new Intent(context, getServiceClass()));
+    }
+
+    public void bindService(Context context, ServiceConnection connection){
+        context.bindService(new Intent(context.getApplicationContext(),
+                        NotificationPollService.class),
+                connection, 0);
+    }
+
+    public void restartService(Context context){
+        Log.i(TAG, "Restarting service");
+        stopService(context);
+        startService(context);
     }
 
 }

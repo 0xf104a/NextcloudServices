@@ -24,11 +24,12 @@ public class NotificationWebsocketService extends Service
     private ConnectionController mConnectionController;
     private StatusController mStatusController;
     private NotificationWebsocket mNotificationWebsocket;
-    private NotificationServiceBinder mNotificationServiceBinder;
+    private NotificationServiceBinder mBinder;
     private final static String TAG = "Services.NotificationWebsocketService";
 
     @Override
     public void onCreate(){
+        mBinder = new NotificationServiceBinder(this);
         mServiceSettings = new ServiceSettings(this);
         mAPI = mServiceSettings.getAPIFromSettings();
         mNotificationController = new NotificationController(this, mServiceSettings);
@@ -39,7 +40,7 @@ public class NotificationWebsocketService extends Service
                 NotificationServiceConfig.NOTIFICATION_CONTROLLER_PRIORITY);
         mStatusController.addComponent(NotificationServiceComponents.SERVICE_COMPONENT_CONNECTION,
                 mConnectionController, NotificationServiceConfig.CONNECTION_COMPONENT_PRIORITY);
-        mConnectionController.addConnectionStatusListener(this, this);
+        mConnectionController.setConnectionStatusListener(this, this);
         Thread wsThread = new Thread(this::startListening);
         wsThread.start();
         startForeground(1, mNotificationController.getServiceNotification());
@@ -47,7 +48,10 @@ public class NotificationWebsocketService extends Service
 
     @Override
     public IBinder onBind(Intent intent) {
-        return new NotificationServiceBinder(this);
+        if(mBinder == null){
+            Log.e(TAG, "Binder is null!");
+        }
+        return mBinder;
     }
 
     @Override
@@ -126,5 +130,11 @@ public class NotificationWebsocketService extends Service
         mNotificationWebsocket.close();
         mAPI = mServiceSettings.getAPIFromSettings();
         startListening();
+    }
+
+    @Override
+    public void onDestroy(){
+        mConnectionController.removeConnectionListener(this);
+        super.onDestroy();
     }
 }
