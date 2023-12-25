@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -152,6 +153,10 @@ public class NotificationController implements NotificationEventReceiver, Status
             return Status.Failed(mStatusString);
         }
         return Status.Ok();
+    }
+
+    public void tellActionRequestFailed(){
+        Toast.makeText(mContext, R.string.quick_action_failed, Toast.LENGTH_LONG).show();
     }
 
     public INextcloudAbstractAPI getAPI(){

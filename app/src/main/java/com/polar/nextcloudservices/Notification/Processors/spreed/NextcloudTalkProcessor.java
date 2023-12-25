@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
     public final int priority = 2;
@@ -258,13 +259,15 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 Log.e(TAG, "Reply event has null reply text");
                 return;
             }
-            final String reply = remoteInput.getCharSequence(KEY_TEXT_REPLY).toString();
+            final String reply =
+                    Objects.requireNonNull(remoteInput.getCharSequence(KEY_TEXT_REPLY)).toString();
             INextcloudAbstractAPI api = controller.getAPI();
             Thread thread = new Thread(() -> {
                 try {
                     api.sendTalkReply(chatroom, reply);
                 } catch (IOException e) {
                     Log.e(TAG, e.toString());
+                    controller.tellActionRequestFailed();
                 }
             });
             thread.start();

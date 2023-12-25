@@ -11,5 +11,6 @@
     <string name="twofactor_nextcloud_notification_name">Two-factor authentication via notification</string>
     <string name="updatenotification_name">App updates</string>
     <string name="donation_thank_you">Thank you! ❤️</string>
+    <string name="quick_action_failed">Quick action failed to complete</string>
     <string name="avatar">Avatar</string>
 </resources>

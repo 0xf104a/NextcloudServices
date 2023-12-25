@@ -115,6 +115,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
                     controller.getAPI().sendAction(link, method);
                 } catch (Exception e) {
                     Log.e(TAG, e.toString());
+                    controller.tellActionRequestFailed();
                 }
             });
             thread.start();
