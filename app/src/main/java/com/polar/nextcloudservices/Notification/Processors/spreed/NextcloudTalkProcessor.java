@@ -244,11 +244,22 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         return builderResult;
     }
 
+    private static String cleanUpChatroom(@NonNull String chatroom){
+        String[] splits =  chatroom.split("#");
+        if(splits.length == 0){
+            return null;
+        } else {
+            return splits[0];
+        }
+    }
+
     @Override
     public void onNotificationEvent(NotificationEvent event, Intent intent,
                                     NotificationController controller) {
         if (event == NOTIFICATION_EVENT_FASTREPLY) {
-            final String chatroom = intent.getStringExtra("talk_chatroom"); // the string send by spreed is chatroomid
+            final String chatroom =
+                    cleanUpChatroom(
+                            Objects.requireNonNull(intent.getStringExtra("talk_chatroom"))); // the string send by spreed is chatroomid
             final int notification_id = intent.getIntExtra("notification_id", -1);
             if (notification_id < 0) {
                 Log.wtf(TAG, "Bad notification id: " + notification_id);

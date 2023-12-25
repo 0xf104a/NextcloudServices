@@ -41,15 +41,6 @@ public class NextcloudSSOAPI implements INextcloudAbstractAPI {
     private String mStatusString = "Updating settings";
     private String mETag = "";
 
-    private static String cleanUpChatroom(String chatroom){
-        String[] splits =  chatroom.split("#");
-        if(splits.length == 0){
-            return null;
-        } else {
-            return splits[0];
-        }
-    }
-
     public NextcloudSSOAPI(Context context, SingleSignOnAccount ssoAccount) {
         NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
             @Override
@@ -128,8 +119,6 @@ public class NextcloudSSOAPI implements INextcloudAbstractAPI {
 
     @Override
     public void sendTalkReply(String chatroom, String message) throws JSONException {
-        //FIXME: the caller of this method should provide clean chatroom
-        chatroom = cleanUpChatroom(chatroom);
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
