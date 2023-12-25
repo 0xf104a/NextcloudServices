@@ -7,6 +7,7 @@ import com.polar.nextcloudservices.API.websocket.INotificationWebsocketEventList
 import com.polar.nextcloudservices.Services.INotificationListener;
 import com.polar.nextcloudservices.Services.Status.StatusCheckable;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -36,8 +37,10 @@ public interface INextcloudAbstractAPI extends StatusCheckable {
      * @param chatroom id of a chat
      * @param message message to send
      * @throws IOException in case of network error
+     * @throws JSONException in case of low-level errors(like allocation failure),
+     *      should be almost impossible to get it here as JSON should be used for serialization only
      */
-    void sendTalkReply(String chatroom, String message) throws IOException;
+    void sendTalkReply(String chatroom, String message) throws IOException, JSONException;
 
     /**
      * Get user avatar

@@ -265,7 +265,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             Thread thread = new Thread(() -> {
                 try {
                     api.sendTalkReply(chatroom, reply);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     Log.e(TAG, e.toString());
                     controller.tellActionRequestFailed();
                 }

@@ -41,6 +41,15 @@ public class NextcloudSSOAPI implements INextcloudAbstractAPI {
     private String mStatusString = "Updating settings";
     private String mETag = "";
 
+    private static String cleanUpChatroom(String chatroom){
+        String[] splits =  chatroom.split("#");
+        if(splits.length == 0){
+            return null;
+        } else {
+            return splits[0];
+        }
+    }
+
     public NextcloudSSOAPI(Context context, SingleSignOnAccount ssoAccount) {
         NextcloudAPI.ApiConnectedListener apiCallback = new NextcloudAPI.ApiConnectedListener() {
             @Override
@@ -118,15 +127,21 @@ public class NextcloudSSOAPI implements INextcloudAbstractAPI {
     }
 
     @Override
-    public void sendTalkReply(String chatroom, String message) {
+    public void sendTalkReply(String chatroom, String message) throws JSONException {
+        //FIXME: the caller of this method should provide clean chatroom
+        chatroom = cleanUpChatroom(chatroom);
         Map<String, List<String>> header = new HashMap<>();
         LinkedList<String> values = new LinkedList<>();
         values.add("application/json");
         header.put("Accept", values);
         header.put("Content-Type", values);
 
-        //FIXME: build params in a better way
-        final String params = "{\"message\": \"" + message + "\", \"chatroom\": \"" + chatroom + "\"}";
+        JSONObject jsonParams  = new JSONObject();
+        jsonParams.put("message", message);
+        jsonParams.put("chatroom", chatroom);
+        final String params = jsonParams.toString();
+
+        Log.d(TAG, "POST to /ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom);
 
         NextcloudRequest request = new NextcloudRequest.Builder().setMethod("POST")
                 .setUrl(Uri.encode("/ocs/v2.php/apps/spreed/api/v1/chat/" + chatroom, "/"))
@@ -135,7 +150,7 @@ public class NextcloudSSOAPI implements INextcloudAbstractAPI {
                 .build();
 
         try {
-            API.performNetworkRequest(request);
+            API.performNetworkRequestV2(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
