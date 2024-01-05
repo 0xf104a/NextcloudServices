@@ -111,6 +111,10 @@ public class NotificationController implements NotificationEventReceiver, Status
     }
 
     public void removeNotification(int notification_id){
+        if(notification_id < 0){
+            Log.w(TAG, "Got notification id which is negative, ignoring request");
+            return;
+        }
         Log.d(TAG, "Removing notification " + Integer.valueOf(notification_id).toString());
         mNotificationManager.cancel(notification_id);
         synchronized (active_notifications) {
