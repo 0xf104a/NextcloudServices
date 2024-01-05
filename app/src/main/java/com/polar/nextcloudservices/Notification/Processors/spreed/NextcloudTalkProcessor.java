@@ -84,6 +84,12 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         }
     }
 
+    private Person getUserPerson(){
+        Person.Builder builder = new Person.Builder();
+        builder.setName("You");
+        return builder.build();
+    }
+
     @NonNull
     private Person getPersonFromNotification(@NonNull NotificationController controller,
                                              @NonNull JSONObject rawNotification) throws Exception {
@@ -332,7 +338,14 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, notification);
         NotificationCompat.MessagingStyle style = NotificationCompat
                 .MessagingStyle.extractMessagingStyleFromNotification(notification);
-        style.addMessage(text, CommonUtil.getTimestamp(), "You");
+        if(style == null){
+            Log.wtf(TAG, "appendQuickReply: got null style");
+            return;
+        }
+        style.addMessage(text, CommonUtil.getTimestamp(), getUserPerson());
+        final String room = mChatController.getChatByNotificationId(notification_id).room;
+        mChatController.onNewMessageReceived(room, text, getUserPerson(),
+                CommonUtil.getTimestamp(), -1);
         notification = builder.setStyle(style).build();
         controller.postNotification(notification_id, notification);
     }
