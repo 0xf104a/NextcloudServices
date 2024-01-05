@@ -9,6 +9,7 @@ import androidx.core.app.Person;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * A generic controller of a chat logic.
@@ -38,7 +39,10 @@ public class ChatController {
         return chat_by_room.get(room);
     }
 
-    public Integer getNotificationIdByRoom(String room){
+    public @NonNull Integer getNotificationIdByRoom(String room) throws NoSuchElementException{
+        if(!notification_id_by_room.containsKey(room)){
+            throw new NoSuchElementException("Can not find room: " + room);
+        }
         return notification_id_by_room.get(room);
     }
 

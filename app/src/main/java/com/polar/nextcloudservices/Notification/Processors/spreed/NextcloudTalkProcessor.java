@@ -64,7 +64,8 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         intent.putExtra("notification_id", rawNotification.getInt("notification_id"));
         intent.putExtra("notification_event", NOTIFICATION_EVENT_FASTREPLY);
         String[] link = rawNotification.getString("link").split("/"); // use provided link to extract talk chatroom id
-        intent.putExtra("talk_chatroom", link[link.length-1]);
+        intent.putExtra("talk_chatroom", cleanUpChatroom(link[link.length-1]));
+        intent.putExtra("talk_link", cleanUpChatroom(rawNotification.getString("link")));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return PendingIntent.getBroadcast(
@@ -102,8 +103,8 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             builder.setKey(key);
             final String name = rawNotification.getJSONObject("subjectRichParameters")
                     .getJSONObject("call").getString("name");
-            //NOTE:Nextcloud Talk does not seem to provide ability for setting avatar for calls
-            //     so it is not fetched here
+            //NOTE: Nextcloud Talk does not seem to provide ability for setting avatar for calls
+            //      so it is not fetched here
             return builder.setName(name).build();
         }
     }
@@ -254,62 +255,73 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         }
     }
 
+    private void onFastReply(Intent intent, NotificationController controller){
+        final String chatroom =
+                cleanUpChatroom(
+                        Objects.requireNonNull(intent.getStringExtra("talk_chatroom"))); // the string send by spreed is chatroomid
+        final String chatroom_link = cleanUpChatroom(
+                Objects.requireNonNull(intent.getStringExtra("talk_link")));
+        final int notification_id = intent.getIntExtra("notification_id", -1);
+        if (notification_id < 0) {
+            Log.wtf(TAG, "Bad notification id: " + notification_id);
+            return;
+        }
+        Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
+        if (remoteInput == null) {
+            Log.e(TAG, "Reply event has null reply text");
+            return;
+        }
+        final String reply =
+                Objects.requireNonNull(remoteInput.getCharSequence(KEY_TEXT_REPLY)).toString();
+        INextcloudAbstractAPI api = controller.getAPI();
+        Thread thread = new Thread(() -> {
+            try {
+                api.sendTalkReply(chatroom, reply);
+                appendQuickReply(controller,
+                        mChatController.getNotificationIdByRoom(chatroom_link), reply);
+            } catch (Exception e) {
+                Log.e(TAG, e.toString());
+                e.printStackTrace();
+                ///controller.tellActionRequestFailed();
+            }
+        });
+        thread.start();
+    }
+
+    private void onDeleteNotification(Intent intent, NotificationController controller){
+        //NOTE: we actually can not get here if remove on dismiss disabled
+        //      so we may safely ignore checking settings
+        final int notification_id = intent.getIntExtra("notification_id", -1);
+        if(notification_id == -1){
+            Log.e(TAG, "Invalid notification id, can not properly handle notification deletion");
+            return;
+        }
+        Chat chat = mChatController.getChatByNotificationId(notification_id);
+        if(chat == null){
+            Log.wtf(TAG, "Can not find chat by notification id " + notification_id);
+            return;
+        }
+        INextcloudAbstractAPI api = controller.getAPI();
+        for(ChatMessage message : chat.messages){
+            Thread thread = new Thread(() -> {
+                try {
+                    api.removeNotification(message.notification_id);
+                } catch (Exception e) {
+                    Log.e(TAG, e.toString());
+                }
+            });
+            thread.start();
+        }
+        mChatController.removeChat(chat);
+    }
+
     @Override
     public void onNotificationEvent(NotificationEvent event, Intent intent,
                                     NotificationController controller) {
         if (event == NOTIFICATION_EVENT_FASTREPLY) {
-            final String chatroom =
-                    cleanUpChatroom(
-                            Objects.requireNonNull(intent.getStringExtra("talk_chatroom"))); // the string send by spreed is chatroomid
-            final int notification_id = intent.getIntExtra("notification_id", -1);
-            if (notification_id < 0) {
-                Log.wtf(TAG, "Bad notification id: " + notification_id);
-                return;
-            }
-            Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
-            if (remoteInput == null) {
-                Log.e(TAG, "Reply event has null reply text");
-                return;
-            }
-            final String reply =
-                    Objects.requireNonNull(remoteInput.getCharSequence(KEY_TEXT_REPLY)).toString();
-            INextcloudAbstractAPI api = controller.getAPI();
-            Thread thread = new Thread(() -> {
-                try {
-                    api.sendTalkReply(chatroom, reply);
-                    appendQuickReply(controller, notification_id, reply);
-                } catch (Exception e) {
-                    Log.e(TAG, e.toString());
-                    controller.tellActionRequestFailed();
-                }
-            });
-            thread.start();
-
+            onFastReply(intent, controller);
         } else if(event == NOTIFICATION_EVENT_DELETE){
-            //NOTE: we actually can not get here if remove on dismiss disabled
-            //      so we may safely ignore checking settings
-            final int notification_id = intent.getIntExtra("notification_id", -1);
-            if(notification_id == -1){
-                Log.e(TAG, "Invalid notification id, can not properly handle notification deletion");
-                return;
-            }
-            Chat chat = mChatController.getChatByNotificationId(notification_id);
-            if(chat == null){
-                Log.wtf(TAG, "Can not find chat by notification id " + notification_id);
-                return;
-            }
-            INextcloudAbstractAPI api = controller.getAPI();
-            for(ChatMessage message : chat.messages){
-                Thread thread = new Thread(() -> {
-                    try {
-                        api.removeNotification(message.notification_id);
-                    } catch (Exception e) {
-                        Log.e(TAG, e.toString());
-                    }
-                });
-                thread.start();
-            }
-            mChatController.removeChat(chat);
+            onDeleteNotification(intent, controller);
         }
     }
 
