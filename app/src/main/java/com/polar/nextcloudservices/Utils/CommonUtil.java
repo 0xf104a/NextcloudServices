@@ -70,4 +70,8 @@ public class CommonUtil {
            Log.e(TAG, "Interrupted while sleeping " + millis + "ms");
        }
     }
+
+    public static long getTimestamp(){
+       return System.currentTimeMillis();
+    }
 }

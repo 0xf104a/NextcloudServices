@@ -4,6 +4,7 @@ import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFIC
 import static com.polar.nextcloudservices.Notification.NotificationEvent.NOTIFICATION_EVENT_FASTREPLY;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -276,6 +277,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             Thread thread = new Thread(() -> {
                 try {
                     api.sendTalkReply(chatroom, reply);
+                    appendQuickReply(controller, notification_id, reply);
                 } catch (Exception e) {
                     Log.e(TAG, e.toString());
                     controller.tellActionRequestFailed();
@@ -309,6 +311,18 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
             }
             mChatController.removeChat(chat);
         }
+    }
+
+    private void appendQuickReply(NotificationController controller,
+                                  int notification_id, String text){
+        Notification notification = controller.getNotificationById(notification_id);
+        Context context = controller.getContext();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, notification);
+        NotificationCompat.MessagingStyle style = NotificationCompat
+                .MessagingStyle.extractMessagingStyleFromNotification(notification);
+        style.addMessage(text, CommonUtil.getTimestamp(), "You");
+        notification = builder.setStyle(style).build();
+        controller.postNotification(notification_id, notification);
     }
 
     @Override

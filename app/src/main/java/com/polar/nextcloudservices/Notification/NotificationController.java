@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 
 public class NotificationController implements NotificationEventReceiver, StatusCheckable {
     private final HashSet<Integer> active_notifications = new HashSet<>();
@@ -157,6 +159,19 @@ public class NotificationController implements NotificationEventReceiver, Status
 
     public void tellActionRequestFailed(){
         Toast.makeText(mContext, R.string.quick_action_failed, Toast.LENGTH_LONG).show();
+    }
+
+    public Notification getNotificationById(int id) throws NoSuchElementException {
+        for(StatusBarNotification notification: mNotificationManager.getActiveNotifications()){
+            if(notification.getId() == id){
+                return notification.getNotification();
+            }
+        }
+        throw new NoSuchElementException("Can not find notification with specified id: " + id);
+    }
+
+    public void postNotification(int id, Notification notification){
+        mNotificationManager.notify(id, notification);
     }
 
     public INextcloudAbstractAPI getAPI(){
