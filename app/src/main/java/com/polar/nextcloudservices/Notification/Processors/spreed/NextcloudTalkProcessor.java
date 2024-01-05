@@ -167,7 +167,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                                                              NotificationBuilderResult builderResult,
                                                              @NonNull JSONObject rawNotification) throws Exception {
         Person person = getPersonFromNotification(controller, rawNotification);
-        final String room = rawNotification.getString("link");
+        final String room = cleanUpChatroom(rawNotification.getString("link"));
         final String title = rawNotification.getJSONObject("subjectRichParameters")
                 .getJSONObject("call").getString("name");
         final String text = rawNotification.getString("message");
@@ -211,7 +211,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         if (rawNotification.has("object_type")) {
             if (rawNotification.getString("object_type").equals("chat")) {
                 Log.d(TAG, "Talk notification of chat type, adding fast reply button");
-                String replyLabel = "Reply"; //FIXME: get text from resources
+                String replyLabel = context.getString(R.string.talk_fast_reply);
                 RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
                         .setLabel(replyLabel)
                         .build();
