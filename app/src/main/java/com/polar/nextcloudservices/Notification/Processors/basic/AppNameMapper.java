@@ -24,6 +24,7 @@ public class AppNameMapper {
      */
     public static final Map<String, Integer> APP_TO_RESID_MAPPING;
     static {
+        // Put app mapping here
         Map<String, Integer> aMap = new HashMap<>();
         aMap.put("spreed", R.string.spreed_name);
         aMap.put("updatenotification", R.string.updatenotification_name);
