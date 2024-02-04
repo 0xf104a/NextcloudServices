@@ -3,12 +3,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId "com.polar.nextcloudservices"
         minSdkVersion 25
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 17
         versionName '1.0-beta17'
 
