@@ -6,56 +6,56 @@
             android:key="server"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="Address of your nextcloud server(without http(s)://)"
-            android:title="Nextcloud address" />
+            android:summary="@string/address_of_your_nextcloud_server_without_http_s"
+            android:title="@string/nextcloud_address" />
         <EditTextPreference
             android:key="password"
-            android:title="Password"
-            android:summary="Your password"
+            android:title="@string/password_title"
+            android:summary="@string/password_summary"
             android:inputType="textPassword"/>
         <EditTextPreference
             android:defaultValue=""
             android:key="login"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="Your username"
-            android:title="Login" />
+            android:summary="@string/username_title"
+            android:title="@string/login_title" />
         <Preference
-            android:title="Log in via Nextcloud app"
-            android:summary="Use on-device Nextcloud account"
+            android:title="@string/sso_title"
+            android:summary="@string/sso_summary"
             android:id="@+id/login_sso"
             android:key="login_sso"
             />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Connection">
+    <PreferenceCategory android:title="@string/connection">
         <SwitchPreference
             android:defaultValue="false"
             android:key="insecure_connection"
-            android:summary="Use http instead of https"
-            android:title="Use insecure connection" />
+            android:summary="@string/use_http_instead_of_https_summary"
+            android:title="@string/use_insecure_connection_summary" />
         <SwitchPreference
             android:defaultValue="false"
             android:key="allow_roaming"
-            android:summary="Allows checking for notifications when in roaming"
-            android:title="Allow roaming" />
+            android:summary="@string/roamin_summary"
+            android:title="@string/roaming_title" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="allow_metered"
-            android:summary="Allows networks which are metered"
-            android:title="Allow metered networks" />
+            android:summary="@string/metered_summary"
+            android:title="@string/metered_title" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="enable_polling"
-            android:summary="Enables polling notifications"
-            android:title="Enable service" />
+            android:summary="@string/service_enable_summary"
+            android:title="@string/service_enable_title" />
         <SwitchPreference
             android:defaultValue="false"
             android:key="use_websocket"
-            android:summary="Use notify_push websocket for getting notifications"
-            android:title="Enable websocket" />
+            android:summary="@string/notify_push_summary"
+            android:title="@string/notify_push_title" />
         <nl.invissvenska.numberpickerpreference.NumberDialogPreference
             android:key="polling_interval"
-            android:title="Polling interval"
+            android:title="@string/polling_interval_title"
             android:defaultValue="10"
             app:numberPickerPreference_minValue="1"
             app:numberPickerPreference_maxValue="899"
@@ -65,37 +65,37 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="remove_on_dismiss"
-            android:summary="Remove notifications from server when they are dismissed."
-            android:title="Remove notifications on dismiss" />
+            android:summary="@string/remove_on_dismiss_summary"
+            android:title="@string/remove_on_dismiss_title" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="open_spreed_in_browser"
             android:summary="@string/open_spreed_in_browser_summary"
             android:title="@string/open_spreed_in_browser_title" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Status">
+    <PreferenceCategory android:title="@string/status">
         <EditTextPreference
             android:defaultValue="Default value"
             android:enabled="false"
             android:key="status"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="Disconnected"
+            android:summary="@string/status_disconnected"
             android:id="@+id/status"
             android:title="Status"
             app:enabled="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Others">
+    <PreferenceCategory android:title="@string/others_title">
         <Preference
-            android:title="Credits"
-            android:summary="See people who contributed to this project"
+            android:title="@string/credits_title"
+            android:summary="@string/credits_summary"
             android:id="@+id/credits"
             android:key="credits"
            />
         <Preference
-        android:title="Donate"
-        android:summary="Buy me a coffee"
+        android:title="@string/donate_title"
+        android:summary="@string/donate_summary"
         android:id="@+id/donate"
         android:key="donate"
            />
