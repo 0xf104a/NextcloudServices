@@ -42,4 +42,12 @@
     <string name="credits_summary">See people who contributed to this project</string>
     <string name="donate_title">Donate</string>
     <string name="donate_summary">Buy me a coffee</string>
+    <string name="reply_string">Reply</string>
+    <string name="reply_to_all">Reply to all</string>
+    <string name="contribution_invissvenska">Contribution: NumberPickerPreference\nLicense: LGPL-3.0</string>
+    <string name="contribution_Donnno">Contribution: App icon</string>
+    <string name="contribution_penguin86">Contribution: Bug fixes, ideas</string>
+    <string name="contribution_Devansh_gaur_1611">Contribution: Credits activity improvements</string>
+    <string name="contribution_freeflyk">Contribution: Nextcloud talk "Reply" button fix, other fixes and features</string>
+    <string name="contribution_stefan_niedermann">Contribution: Redesign of app to Material You design, monochrome icon</string>
 </resources>

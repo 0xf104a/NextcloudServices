@@ -1,8 +1,8 @@
 <resources>
     <!-- Reply Preference -->
     <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
+        <item>@string/reply_string</item>
+        <item>@string/reply_to_all</item>
     </string-array>
 
     <string-array name="reply_values">
@@ -12,12 +12,12 @@
 
     <!--App contributors -->
     <string-array name="oss_libs">
-        <item>Contribution: NumberPickerPreference\nLicense: LGPL-3.0</item>
-        <item>Contribution: App icon</item>
-        <item>Contribution: Bug fixes, ideas</item>
-        <item>Contribution: Credits activity improvements</item>
-        <item>Contribution: Nextcloud talk "Reply" button fix, other fixes and features</item>
-        <item>Contribution: Redesign of app to Material You design, monochrome icon</item>
+        <item>@string/contribution_invissvenska</item>
+        <item>@string/contribution_Donnno</item>
+        <item>@string/contribution_penguin86</item>
+        <item>@string/contribution_Devansh_gaur_1611</item>
+        <item>@string/contribution_freeflyk</item>
+        <item>@string/contribution_stefan_niedermann</item>
     </string-array>
 
     <string-array name="oss_libs_owner_Img">
