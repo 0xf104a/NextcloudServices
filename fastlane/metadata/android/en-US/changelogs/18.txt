@@ -1,0 +1,5 @@
+- Put reply for Talk chats to notification
+- Fix quick reply error
+- Made strings translatable for future translations
+- Fix for Talk notifications groupping
+- Add websocket(experimental, SSO not supported yet)
