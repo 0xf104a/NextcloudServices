@@ -64,8 +64,8 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         intent.putExtra("notification_id", rawNotification.getInt("notification_id"));
         intent.putExtra("notification_event", NOTIFICATION_EVENT_FASTREPLY);
         String[] link = rawNotification.getString("link").split("/"); // use provided link to extract talk chatroom id
-        intent.putExtra("talk_chatroom", cleanUpChatroom(link[link.length-1]));
-        intent.putExtra("talk_link", cleanUpChatroom(rawNotification.getString("link")));
+        intent.putExtra("talk_chatroom", CommonUtil.cleanUpURLParams(link[link.length-1]));
+        intent.putExtra("talk_link", CommonUtil.cleanUpURLParams(rawNotification.getString("link")));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return PendingIntent.getBroadcast(
@@ -175,7 +175,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                                                              NotificationBuilderResult builderResult,
                                                              @NonNull JSONObject rawNotification) throws Exception {
         Person person = getPersonFromNotification(controller, rawNotification);
-        final String room = cleanUpChatroom(rawNotification.getString("link"));
+        final String room = CommonUtil.cleanUpURLParams(rawNotification.getString("link"));
         final String title = rawNotification.getJSONObject("subjectRichParameters")
                 .getJSONObject("call").getString("name");
         final String text = rawNotification.getString("message");
@@ -252,20 +252,11 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         return builderResult;
     }
 
-    private static String cleanUpChatroom(@NonNull String chatroom){
-        String[] splits =  chatroom.split("#");
-        if(splits.length == 0){
-            return null;
-        } else {
-            return splits[0];
-        }
-    }
-
     private void onFastReply(Intent intent, NotificationController controller){
         final String chatroom =
-                cleanUpChatroom(
+                CommonUtil.cleanUpURLParams(
                         Objects.requireNonNull(intent.getStringExtra("talk_chatroom"))); // the string send by spreed is chatroomid
-        final String chatroom_link = cleanUpChatroom(
+        final String chatroom_link = CommonUtil.cleanUpURLParams(
                 Objects.requireNonNull(intent.getStringExtra("talk_link")));
         final int notification_id = intent.getIntExtra("notification_id", -1);
         if (notification_id < 0) {

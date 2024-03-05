@@ -30,4 +30,16 @@ public class CommonUtilTest {
         assertTrue(CommonUtil.isInArray(foo, items));
         assertFalse(CommonUtil.isInArray(bar, items));
     }
+
+    @Test
+    public void testCleanUpURLParams(){
+        assertEquals(CommonUtil.cleanUpURLParams(""), "");
+        assertEquals(CommonUtil.cleanUpURLParams("https://example.com/#abcdef"),
+                "https://example.com/");
+        assertEquals(CommonUtil.cleanUpURLParams("https://example.com/url/example#abcdef"),
+                "https://example.com/url/example");
+        assertEquals(CommonUtil.cleanUpURLParams(
+                "https://example.com/url/example?a=b&c=d&f=42#abcdef"),
+                "https://example.com/url/example?a=b&c=d&f=42");
+    }
 }

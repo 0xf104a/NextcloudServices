@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -69,6 +71,15 @@ public class CommonUtil {
        } catch (InterruptedException e){
            Log.e(TAG, "Interrupted while sleeping " + millis + "ms");
        }
+    }
+
+    public static String cleanUpURLParams(@NonNull String chatroom){
+        String[] splits =  chatroom.split("#");
+        if(splits.length == 0){
+            return null;
+        } else {
+            return splits[0];
+        }
     }
 
     public static long getTimestamp(){
