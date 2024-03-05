@@ -158,6 +158,10 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                                                      NotificationCompat.Builder builder,
                                                      Context context, String link){
         ServiceSettings settings = controller.getServiceSettings();
+        if(settings == null){
+            Log.wtf(TAG, "settings is null!");
+            throw new RuntimeException("controller.getServiceSettings() returned null");
+        }
         if(settings.getSpreedOpenedInBrowser()){
             return setCustomTabsIntent(context, builder, link);
         } else {

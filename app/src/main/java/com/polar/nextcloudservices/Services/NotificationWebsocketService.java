@@ -33,8 +33,8 @@ public class NotificationWebsocketService extends Service
     @Override
     public void onCreate(){
         Log.d(TAG, "onCreate");
-        mNotificationController = new NotificationController(this, mServiceSettings);
         mServiceSettings = new ServiceSettings(this);
+        mNotificationController = new NotificationController(this, mServiceSettings);
         mAPI = mServiceSettings.getAPIFromSettings();
         mStatusController = new StatusController(this);
         mConnectionController = new ConnectionController(mServiceSettings);
@@ -140,15 +140,21 @@ public class NotificationWebsocketService extends Service
         return mStatusController.getStatusString();
     }
 
+    private void safeCloseWebsocket(){
+        if(mNotificationWebsocket != null){
+            mNotificationWebsocket.close();
+        }
+    }
+
     @Override
     public void onPreferencesChanged() {
         if(!mServiceSettings.isWebsocketEnabled()){
             Log.i(TAG, "Websocket is no more enabled. Disconnecting websocket and stopping service");
-            mNotificationWebsocket.close();
+            safeCloseWebsocket();
             stopForeground(true);
         }
         Log.i(TAG, "Preferences changed. Re-connecting to websocket.");
-        mNotificationWebsocket.close();
+        safeCloseWebsocket();
         mAPI = mServiceSettings.getAPIFromSettings();
         startListening();
     }
