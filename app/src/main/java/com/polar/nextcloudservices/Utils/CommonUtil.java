@@ -38,7 +38,6 @@ public class CommonUtil {
      * according to wikipedia a uniform resource locator is composed of the following elements:
      * URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
      * authority = [userinfo "@"] host [":" port]
-     *
      * Example: "https://cloud.example.com/path?query#fragment" -> "/path?query#fragment"
      * @param target Target URL to remove everything in front of the path
      * @return String cleaned-up from protocol and domain
