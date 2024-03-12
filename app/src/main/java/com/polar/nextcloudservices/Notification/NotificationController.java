@@ -2,6 +2,7 @@ package com.polar.nextcloudservices.Notification;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -39,11 +40,19 @@ public class NotificationController implements NotificationEventReceiver, Status
     private final NotificationManager mNotificationManager;
     private final ServiceSettings mServiceSettings;
 
-    public NotificationController(Context context, ServiceSettings settings){
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    public NotificationController(Context context, ServiceSettings settings) {
         mNotificationBuilder = new NotificationBuilder();
-        context.getApplicationContext().registerReceiver(
-                new NotificationBroadcastReceiver(this),
-                new IntentFilter(Config.NotificationEventAction));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            context.getApplicationContext().registerReceiver(
+                    new NotificationBroadcastReceiver(this),
+                    new IntentFilter(Config.NotificationEventAction),
+                    Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            context.getApplicationContext().registerReceiver(
+                    new NotificationBroadcastReceiver(this),
+                    new IntentFilter(Config.NotificationEventAction));
+        }
         mContext = context;
         mNotificationManager =
                 (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
