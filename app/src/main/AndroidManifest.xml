@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.INTERNET" /> <!-- Permissions for old android versions -->
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <queries>
         <package android:name="com.nextcloud.client" />
@@ -25,6 +26,7 @@
         <service
             android:name=".Services.NotificationWebsocketService"
             android:enabled="true"
+            android:foregroundServiceType="dataSync"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
@@ -38,6 +40,7 @@
         <service
             android:name=".Services.NotificationPollService"
             android:enabled="true"
+            android:foregroundServiceType="dataSync"
             android:exported="false" />
 
         <receiver
