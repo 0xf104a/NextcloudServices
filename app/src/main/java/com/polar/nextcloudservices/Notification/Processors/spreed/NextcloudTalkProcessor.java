@@ -39,7 +39,6 @@ import com.polar.nextcloudservices.Utils.CommonUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -66,6 +65,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         String[] link = rawNotification.getString("link").split("/"); // use provided link to extract talk chatroom id
         intent.putExtra("talk_chatroom", CommonUtil.cleanUpURLParams(link[link.length-1]));
         intent.putExtra("talk_link", CommonUtil.cleanUpURLParams(rawNotification.getString("link")));
+        intent.setPackage(context.getPackageName()); // Issue_78: https://developer.android.com/about/versions/14/behavior-changes-14?hl=en#safer-intents
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return PendingIntent.getBroadcast(
@@ -127,6 +127,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
                 .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
                 .build();
         browserIntent.intent.setData(Uri.parse(link));
+        browserIntent.intent.setPackage(context.getPackageName()); // Issue_78: https://developer.android.com/about/versions/14/behavior-changes-14?hl=en#safer-intents
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return builder.setContentIntent(PendingIntent.getActivity(context, 0,

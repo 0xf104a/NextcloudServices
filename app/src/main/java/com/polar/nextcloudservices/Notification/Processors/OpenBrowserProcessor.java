@@ -49,6 +49,7 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
                 .setShareState(CustomTabsIntent.SHARE_STATE_OFF)
                 .build();
         browserIntent.intent.setData(Uri.parse(rawNotification.getString("link")));
+        browserIntent.intent.setPackage(context.getPackageName()); // Issue_78: https://developer.android.com/about/versions/14/behavior-changes-14?hl=en#safer-intents
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             builderResult.builder = builderResult.builder.setContentIntent(PendingIntent.getActivity(context, 0,
