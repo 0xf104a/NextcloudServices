@@ -66,6 +66,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         String[] link = rawNotification.getString("link").split("/"); // use provided link to extract talk chatroom id
         intent.putExtra("talk_chatroom", CommonUtil.cleanUpURLParams(link[link.length-1]));
         intent.putExtra("talk_link", CommonUtil.cleanUpURLParams(rawNotification.getString("link")));
+        intent.setPackage(context.getPackageName()); // Issue 78 --> https://developer.android.com/about/versions/14/behavior-changes-14?hl=en#safer-intents
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return PendingIntent.getBroadcast(

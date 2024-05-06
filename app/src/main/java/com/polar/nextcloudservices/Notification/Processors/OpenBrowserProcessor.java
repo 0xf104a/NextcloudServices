@@ -28,7 +28,6 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
     public final int priority = 1;
     private static final String TAG = "Notification.Processors.OpenBrowserProcessor";
 
-    @SuppressLint("UnspecifiedImmutableFlag")
     @Override
     public NotificationBuilderResult updateNotification(int id, NotificationBuilderResult builderResult,
                                                         NotificationManager manager,
@@ -52,13 +51,12 @@ public class OpenBrowserProcessor implements AbstractNotificationProcessor {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             builderResult.builder = builderResult.builder.setContentIntent(PendingIntent.getActivity(context, 0,
-                    browserIntent.intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
-            return builderResult;
+                    browserIntent.intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         }else{
             builderResult.builder = builderResult.builder.setContentIntent(PendingIntent.getActivity(context, 0,
                     browserIntent.intent, PendingIntent.FLAG_UPDATE_CURRENT));
-            return builderResult;
         }
+        return builderResult;
     }
 
     @Override
