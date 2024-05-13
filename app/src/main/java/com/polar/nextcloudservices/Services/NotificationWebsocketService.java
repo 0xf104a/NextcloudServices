@@ -135,12 +135,8 @@ public class NotificationWebsocketService extends Service
     public String getStatus() {
         if(!mConnectionController.checkConnection(this)){
             return "Disconnected: no suitable network found";
-        }else if(mNotificationWebsocket == null && mWsThread.isAlive()){
+        }else if(mNotificationWebsocket == null){
             return "Disconnected: can not connect to websocket. Are login details correct? Is notify_push installed on server?";
-        }else if(mNotificationWebsocket == null && !mWsThread.isAlive()){
-            mWsThread = new Thread(this::listenForever);
-            mWsThread.start();
-            return "Disconnected: trying to reconnect to websocket.";
         }
         return mStatusController.getStatusString();
     }
