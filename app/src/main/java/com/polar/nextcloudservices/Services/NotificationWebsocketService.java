@@ -1,7 +1,6 @@
 package com.polar.nextcloudservices.Services;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -134,7 +133,9 @@ public class NotificationWebsocketService extends Service
 
     @Override
     public String getStatus() {
-        if(mNotificationWebsocket == null){
+        if(!mConnectionController.checkConnection(this)){
+            return "Disconnected: no suitable network found";
+        }else if(mNotificationWebsocket == null){
             return "Disconnected: can not connect to websocket. Are login details correct? Is notify_push installed on server?";
         }
         return mStatusController.getStatusString();
@@ -148,15 +149,14 @@ public class NotificationWebsocketService extends Service
 
     @Override
     public void onPreferencesChanged() {
+        safeCloseWebsocket();
         if(!mServiceSettings.isWebsocketEnabled()){
             Log.i(TAG, "Websocket is no more enabled. Disconnecting websocket and stopping service");
-            safeCloseWebsocket();
             stopForeground(true);
+        }else{
+            Log.i(TAG, "Preferences changed. Re-connecting to websocket.");
+            mAPI = mServiceSettings.getAPIFromSettings();
         }
-        Log.i(TAG, "Preferences changed. Re-connecting to websocket.");
-        safeCloseWebsocket();
-        mAPI = mServiceSettings.getAPIFromSettings();
-        startListening();
     }
 
     @Override
