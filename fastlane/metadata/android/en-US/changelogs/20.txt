@@ -1,0 +1,2 @@
+- Fixes for Android 14 SDK(thanks to @freeflyk)
+- Fixes for websocket implementation
