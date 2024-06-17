@@ -44,12 +44,13 @@ public class BasicNotificationProcessor implements AbstractNotificationProcessor
     }
 
 
-    @SuppressLint("UnspecifiedImmutableFlag")
+    //@SuppressLint("UnspecifiedImmutableFlag")
     private PendingIntent createNotificationDeleteIntent(Context context, int id) {
         Intent intent = new Intent();
         intent.setAction(Config.NotificationEventAction);
         intent.putExtra("notification_id", id);
         intent.putExtra("notification_event", NOTIFICATION_EVENT_DELETE);
+        intent.setPackage(context.getPackageName());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return PendingIntent.getBroadcast(
                     context,
