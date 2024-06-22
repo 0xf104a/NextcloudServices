@@ -46,6 +46,7 @@ public class ActionsNotificationProcessor implements AbstractNotificationProcess
             }
             intent.putExtra("action_link", link);
             intent.putExtra("action_method", type);
+            intent.setPackage(context.getPackageName()); // Issue 78 --> https://developer.android.com/about/versions/14/behavior-changes-14?hl=en#safer-intents
         } catch (JSONException e) {
             Log.e(TAG, "Can not get link or method from action provided by Nextcloud API");
             e.printStackTrace();

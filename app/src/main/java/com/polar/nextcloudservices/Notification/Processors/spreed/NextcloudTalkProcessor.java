@@ -149,6 +149,7 @@ public class NextcloudTalkProcessor implements AbstractNotificationProcessor {
         Log.d(TAG, "Setting up talk notification open intent");
 
         Intent intent = pm.getLaunchIntentForPackage("com.nextcloud.talk2");
+        intent.setPackage(context.getPackageName());
         PendingIntent pending_intent;
         pending_intent = PendingIntent.getActivity(context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
